@@ -1,6 +1,7 @@
 <?php
 
 /**
+ * The set of configuration directives that Labrador will respond to.
  * 
  * @license See LICENSE in source root
  * @version 1.0

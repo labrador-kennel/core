@@ -1,7 +1,7 @@
 <?php
 
 /**
- *
+ * A bootstrap that will register all services and run all other bootstraps.
  * 
  * @license See LICENSE in source root
  * @version 1.0
@@ -9,7 +9,6 @@
  */
 
 namespace Labrador\Bootstrap;
-
 
 use Labrador\ConfigDirective;
 use Labrador\Exception\BootupException;

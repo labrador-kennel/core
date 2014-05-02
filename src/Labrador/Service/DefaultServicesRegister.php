@@ -1,8 +1,8 @@
 <?php
 
 /**
- * A service register that will include all of the default services provided by
- * the library.
+ * A service register that will wire the dependency graph for the services required
+ * by Labrador.
  * 
  * @license See LICENSE in source root
  * @version 1.0
@@ -19,6 +19,10 @@ use Symfony\Component\HttpFoundation\Request;
  */
 class DefaultServicesRegister implements Register {
 
+    /**
+     * @param Injector $injector
+     * @return void
+     */
     function register(Injector $injector) {
         $this->registerLabradorServices($injector);
         $this->registerFastRouteServices($injector);

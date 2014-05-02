@@ -1,6 +1,7 @@
 <?php
 
 /**
+ * Thrown if a server error occurs that should require a 500 status response.
  * 
  * @license See LICENSE in source root
  * @version 1.0

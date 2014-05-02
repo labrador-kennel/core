@@ -1,10 +1,13 @@
 <?php
 
 /**
+ * A router that is a wrapper around nikic's FastRoute implementation.
  * 
  * @license See LICENSE in source root
  * @version 1.0
  * @since   1.0
+ *
+ * @see https://github.com/nikic/FastRoute
  */
 
 namespace Labrador\Router;
@@ -21,31 +24,74 @@ class FastRouteRouter implements Router {
     private $dispatcherCb;
     private $collector;
 
+    /**
+     * Pass a FastRoute\RouteCollector and a callback that returns a FastRoute\Dispatcher.
+     *
+     * We ask for a callback instead of the object itself to work around needing
+     * the list of routes at dispatcher instantiation. The $dispatcherCb is
+     * invoked when a Request is matched and it should expect an array of data
+     * in the same format as $collector->getData().
+     *
+     * @param RouteCollector $collector
+     * @param callable $dispatcherCb
+     */
     function __construct(RouteCollector $collector, callable $dispatcherCb) {
         $this->dispatcherCb = $dispatcherCb;
         $this->collector = $collector;
     }
 
+    /**
+     * @param string $pattern
+     * @param mixed $controllerAction
+     * @return $this|void
+     */
     function get($pattern, $controllerAction) {
         $this->collector->addRoute('GET', $pattern, $controllerAction);
     }
 
+    /**
+     * @param string $pattern
+     * @param mixed $controllerAction
+     * @return $this|void
+     */
     function post($pattern, $controllerAction) {
         $this->collector->addRoute('POST', $pattern, $controllerAction);
     }
 
+    /**
+     * @param string $pattern
+     * @param mixed $controllerAction
+     * @return $this|void
+     */
     function put($pattern, $controllerAction) {
         $this->collector->addRoute('PUT', $pattern, $controllerAction);
     }
 
+    /**
+     * @param string $pattern
+     * @param mixed $controllerAction
+     * @return $this|void
+     */
     function delete($pattern, $controllerAction) {
         $this->collector->addRoute('DELETE', $pattern, $controllerAction);
     }
 
+    /**
+     * @param string $httpMethod
+     * @param string $pattern
+     * @param mixed $controllerAction
+     * @return $this|void
+     */
     function custom($httpMethod, $pattern, $controllerAction) {
         $this->collector->addRoute($httpMethod, $pattern, $controllerAction);
     }
 
+    /**
+     * @param Request $request
+     * @return string
+     * @throws NotFoundException
+     * @throws MethodNotAllowedException
+     */
     function match(Request $request) {
         $dispatcher = $this->getDispatcher();
         $route = $dispatcher->dispatch($request->getMethod(), $request->getPathInfo());
@@ -68,7 +114,7 @@ class FastRouteRouter implements Router {
 
     /**
      * @return Dispatcher
-     * @throws \Labrador\Exception\InvalidTypeException
+     * @throws InvalidTypeException
      */
     private function getDispatcher() {
         $cb = $this->dispatcherCb;
