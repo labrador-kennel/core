@@ -10,6 +10,7 @@
 namespace Labrador\Bootstrap;
 
 use Configlet\Config;
+use Labrador\ConfigDirective;
 
 class EnvironmentConfigBootstrap implements Bootstrap {
 
@@ -20,8 +21,8 @@ class EnvironmentConfigBootstrap implements Bootstrap {
     }
 
     function run() {
-        $configDir = $this->config['labrador.config_dir'];
-        $env = $this->config['labrador.environment'];
+        $configDir = $this->config[ConfigDirective::CONFIG_DIR];
+        $env = $this->config[ConfigDirective::ENVIRONMENT];
 
         $path = sprintf('%s/environment/%s/config.php', $configDir, $env);
         /** @var callable $cb */
