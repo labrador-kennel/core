@@ -19,7 +19,7 @@ We recommend you use Composer to install Labrador.
 ```php
 <?php
 
-if (!$notUsingComposer) {
+if (!$usingComposer) {
     $me->assumesCompetentDeveloper();
     $you->downloadLibrary();
     $you->setupPsr0Autoloader('Labrador', '/your/install/path/src');
@@ -44,7 +44,7 @@ Provides an extension point to the greater PHP community and takes advantage of 
 
 ### [`cspray/Configlet`](https://github.com/cspray/Configlet)
 
-An object oriented means of writing and working with PHP configuration values.
+A robust, module-oriented library for writing and working with PHP configuration values.
 
 ## Getting Started
 
