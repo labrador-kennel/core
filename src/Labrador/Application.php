@@ -10,11 +10,15 @@
 
 namespace Labrador;
 
+use Labrador\Events\ApplicationFinishedEvent;
+use Labrador\Events\ApplicationHandleEvent;
+use Labrador\Events\RouteFoundEvent;
 use Labrador\Router\Router;
 use Labrador\Router\HandlerResolver;
 use Labrador\Exception\HttpException;
 use Labrador\Exception\InvalidHandlerException;
 use Labrador\Exception\ServerErrorException;
+use Symfony\Component\EventDispatcher\EventDispatcherInterface;
 use Symfony\Component\HttpFoundation\Request;
 use Symfony\Component\HttpFoundation\Response;
 use Symfony\Component\HttpKernel\HttpKernelInterface;
@@ -24,6 +28,8 @@ class Application implements HttpKernelInterface {
 
     const CATCH_EXCEPTIONS = true;
     const DO_NOT_CATCH_EXCEPTIONS = false;
+
+    private $eventDispatcher;
 
     /**
      * @property HandlerResolver
@@ -38,10 +44,12 @@ class Application implements HttpKernelInterface {
     /**
      * @param Router $router
      * @param HandlerResolver $resolver
+     * @param EventDispatcherInterface $eventDispatcher
      */
-    function __construct(Router $router, HandlerResolver $resolver) {
-        $this->resolver = $resolver;
+    function __construct(Router $router, HandlerResolver $resolver, EventDispatcherInterface $eventDispatcher) {
         $this->router = $router;
+        $this->resolver = $resolver;
+        $this->eventDispatcher = $eventDispatcher;
     }
 
     /**
@@ -63,23 +71,43 @@ class Application implements HttpKernelInterface {
      */
     function handle(Request $request, $type = self::MASTER_REQUEST, $catch = self::CATCH_EXCEPTIONS) {
         try {
-            $handler = $this->router->match($request);
-            $cb = $this->resolver->resolve($handler);
-            $response = $cb($request);
-            if (!$response instanceof Response) {
-                throw new ServerErrorException('Controller actions MUST return an instance of Symfony\\Component\\HttpFoundation\\Response');
-            }
+            $this->triggerHandleEvent($request);
+            $cb = $this->getControllerCallback($request);
+            $response = $this->getResponse($request, $cb);
         } catch (HttpException $httpExc) {
             if (!$catch) { throw $httpExc; }
             $response = new Response($httpExc->getMessage(), $httpExc->getCode());
-        } catch (InvalidHandlerException $handlerExc) {
-            if (!$catch) { throw $handlerExc; }
-            $response = new Response('Fatal error creating the requested handler', Response::HTTP_INTERNAL_SERVER_ERROR);
         } catch (PhpException $phpExc) {
+            if (!$catch) { throw $phpExc; }
             $response = new Response($phpExc->getMessage(), Response::HTTP_INTERNAL_SERVER_ERROR);
         }
 
         return $response;
+    }
+
+    private function triggerHandleEvent(Request $request) {
+        $event = new ApplicationHandleEvent($request);
+        $this->eventDispatcher->dispatch(Events::APP_HANDLE_EVENT, $event);
+    }
+
+    private function getControllerCallback(Request $request) {
+        $handler = $this->router->match($request);
+        $cb = $this->resolver->resolve($handler);
+        $event = new RouteFoundEvent($request, $cb);
+        $this->eventDispatcher->dispatch(Events::ROUTE_FOUND_EVENT, $event);
+        return $event->getController();
+    }
+
+    private function getResponse(Request $request, callable $cb) {
+        $response = $cb($request);
+        if (!$response instanceof Response) {
+            throw new ServerErrorException('Controller actions MUST return an instance of Symfony\\Component\\HttpFoundation\\Response');
+        }
+
+        $event = new ApplicationFinishedEvent($request, $response);
+        $this->eventDispatcher->dispatch(Events::APP_FINISHED_EVENT, $event);
+
+        return $event->getResponse();
     }
 
 }
