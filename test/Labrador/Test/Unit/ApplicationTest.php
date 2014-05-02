@@ -1,6 +1,8 @@
 <?php
 
 /**
+ * Testing that the appropriate actions take place when an Application handles
+ * a Request.
  * 
  * @license See LICENSE in source root
  * @version 1.0
@@ -10,6 +12,7 @@
 namespace Labrador\Test\Unit;
 
 use Labrador\Application;
+use Labrador\Events;
 use Labrador\Exception\InvalidHandlerException;
 use Labrador\Exception\MethodNotAllowedException;
 use Labrador\Exception\NotFoundException;
@@ -17,47 +20,63 @@ use Labrador\Exception\ServerErrorException;
 use PHPUnit_Framework_TestCase as UnitTestCase;
 use Symfony\Component\HttpFoundation\Request;
 use Exception as PhpException;
+use Symfony\Component\HttpFoundation\Response;
 
 class ApplicationTest extends UnitTestCase {
 
+    private $eventDispatcher;
     private $router;
-
     private $resolver;
 
     function setUp() {
         $this->router = $this->getMock('Labrador\\Router\\Router');
         $this->resolver = $this->getMock('Labrador\\Router\\HandlerResolver');
+        $this->eventDispatcher = $this->getMock('Symfony\\Component\\EventDispatcher\\EventDispatcherInterface');
     }
 
-    function testRouteNotFoundReturns404Response() {
+    /**
+     * @return Application
+     */
+    private function createApplication() {
+        return new Application($this->router, $this->resolver, $this->eventDispatcher);
+    }
+
+    /**
+     * Provides the [Exception, HTTP status code, HTTP status message] for an
+     * exception that might be thrown by a Labrador\Router\FastRouterRouter.
+     *
+     * @return array
+     */
+    function httpRouteFailureProvider() {
+        return [
+            [new NotFoundException(), 404, 'Not Found'],
+            [new MethodNotAllowedException(), 405, 'Method Not Allowed'],
+            [new PhpException('Some error message'), 500, 'Some error message']
+        ];
+    }
+
+    /**
+     * Ensures that exceptions thrown during routing are properly handled.g
+     *
+     * @param $exception
+     * @param $code
+     * @param $msg
+     * @dataProvider httpRouteFailureProvider
+     */
+    function testHttpRouteFailureProperlyHandled($exception, $code, $msg) {
         $request = Request::create('http://www.labrador.dev');
         $this->router->expects($this->once())
                      ->method('match')
                      ->with($request)
-                     ->will($this->throwException(new NotFoundException()));
-        $app = new Application($this->router, $this->resolver);
+                     ->will($this->throwException($exception));
+        $app = $this->createApplication();
         $response = $app->handle($request);
         $this->assertInstanceOf('Symfony\\Component\\HttpFoundation\\Response', $response);
-        $this->assertSame(404, $response->getStatusCode());
-        $this->assertSame('Not Found', $response->getContent());
+        $this->assertSame($code, $response->getStatusCode());
+        $this->assertSame($msg, $response->getContent());
     }
 
-    function testRouteMethodNotAllowedReturns406Response() {
-        $request = Request::create('http://www.labrador.dev');
-
-        $this->router->expects($this->once())
-                     ->method('match')
-                     ->with($request)
-                     ->will($this->throwException(new MethodNotAllowedException()));
-
-        $app = new Application($this->router, $this->resolver);
-        $response = $app->handle($request);
-        $this->assertInstanceOf('Symfony\\Component\\HttpFoundation\\Response', $response);
-        $this->assertSame(405, $response->getStatusCode());
-        $this->assertSame('Method Not Allowed', $response->getContent());
-    }
-
-    function testApplicationReturnsServerErrorResponseOnInvalidHandler() {
+    function testResolverErrorProperlyHandled() {
         $request = Request::create('http://www.labrador.dev');
 
         $this->router->expects($this->once())
@@ -68,16 +87,16 @@ class ApplicationTest extends UnitTestCase {
         $this->resolver->expects($this->once())
                        ->method('resolve')
                        ->with('handler#action')
-                       ->will($this->throwException(new InvalidHandlerException()));
+                       ->will($this->throwException(new InvalidHandlerException('Fatal error creating the requested handler')));
 
-        $app = new Application($this->router, $this->resolver);
+        $app = $this->createApplication();
         $response = $app->handle($request);
         $this->assertInstanceOf('Symfony\\Component\\HttpFoundation\\Response', $response);
         $this->assertSame(500, $response->getStatusCode());
         $this->assertSame('Fatal error creating the requested handler', $response->getContent());
     }
 
-    function testHandlerDoesNotReturnResponseServerErrorResponseReturned() {
+    function testControllerMustReturnResponse() {
         $request = Request::create('http://www.labrador.dev');
 
         $this->router->expects($this->once())
@@ -92,26 +111,11 @@ class ApplicationTest extends UnitTestCase {
                            return 'not a response';
                        }));
 
-        $app = new Application($this->router, $this->resolver);
+        $app = $this->createApplication();
         $response = $app->handle($request);
         $this->assertInstanceOf('Symfony\\Component\\HttpFoundation\\Response', $response);
         $this->assertSame(500, $response->getStatusCode());
         $this->assertSame('Controller actions MUST return an instance of Symfony\\Component\\HttpFoundation\\Response', $response->getContent());
-    }
-
-    function testThrowingGenericExceptionReturnsServerErrorResponse() {
-        $request = Request::create('http://www.labrador.dev');
-
-        $this->router->expects($this->once())
-                     ->method('match')
-                     ->with($request)
-                     ->will($this->throwException(new PhpException('Some error message')));
-
-        $app = new Application($this->router, $this->resolver);
-        $response = $app->handle($request);
-        $this->assertInstanceOf('Symfony\\Component\\HttpFoundation\\Response', $response);
-        $this->assertSame(500, $response->getStatusCode());
-        $this->assertSame('Some error message', $response->getContent());
     }
 
     function testThrowsHttpExceptionIfHandleCatchFalse() {
@@ -122,7 +126,7 @@ class ApplicationTest extends UnitTestCase {
                      ->with($request)
                      ->will($this->throwException(new ServerErrorException('Something bad done did happen')));
 
-        $app = new Application($this->router, $this->resolver);
+        $app = $this->createApplication();
         $this->setExpectedException(
             'Labrador\\Exception\\ServerErrorException',
             'Something bad done did happen'
@@ -130,25 +134,61 @@ class ApplicationTest extends UnitTestCase {
         $app->handle($request, Application::MASTER_REQUEST, Application::DO_NOT_CATCH_EXCEPTIONS);
     }
 
-    function testThrowsInvalidHandlerExceptionIfHandleCatchFalse() {
+    function testThrowsPhpExceptionIfHandleCatchFalse() {
         $request = Request::create('http://www.labrador.dev');
+
+        $this->router->expects($this->once())
+                     ->method('match')
+                     ->with($request)
+                     ->will($this->throwException(new PhpException('A fatal PHP error was encountered')));
+
+        $app = $this->createApplication();
+        $this->setExpectedException(
+            'Exception',
+            'A fatal PHP error was encountered'
+        );
+        $app->handle($request, Application::MASTER_REQUEST, Application::DO_NOT_CATCH_EXCEPTIONS);
+    }
+
+    function eventProvider() {
+        return [
+            [0, Events::APP_HANDLE_EVENT, 'Labrador\\Events\\ApplicationHandleEvent'],
+            [1, Events::ROUTE_FOUND_EVENT, 'Labrador\\Events\\RouteFoundEvent'],
+            [2, Events::APP_FINISHED_EVENT, 'Labrador\\Events\\ApplicationFinishedEvent']
+        ];
+    }
+
+    /**
+     * @param $triggerIndex
+     * @param $eventName
+     * @param $eventClass
+     * @dataProvider eventProvider
+     */
+    function testEventTriggered($triggerIndex, $eventName, $eventClass) {
+        $request = Request::create('http://labrador.dev');
 
         $this->router->expects($this->once())
                      ->method('match')
                      ->with($request)
                      ->will($this->returnValue('handler#action'));
 
+        $cb = function() { return new Response(''); };
         $this->resolver->expects($this->once())
                        ->method('resolve')
                        ->with('handler#action')
-                       ->will($this->throwException(new InvalidHandlerException('Handler could not be created')));
+                       ->will($this->returnValue($cb));
 
-        $app = new Application($this->router, $this->resolver);
-        $this->setExpectedException(
-            'Labrador\\Exception\\InvalidHandlerException',
-            'Handler could not be created'
-        );
-        $app->handle($request, Application::MASTER_REQUEST, Application::DO_NOT_CATCH_EXCEPTIONS);
+        $this->eventDispatcher->expects($this->at($triggerIndex))
+                              ->method('dispatch')
+                              ->with(
+                                    $eventName,
+                                    $this->callback(function($arg) use($eventClass) {
+                                        return $arg instanceof $eventClass;
+                                    })
+                               );
+
+        $app = $this->createApplication();
+        $app->handle($request);
     }
 
-} 
+}
