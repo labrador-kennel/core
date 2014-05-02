@@ -18,32 +18,32 @@ return function(Config $config) {
     // php.ini settings that should be set regardless of environment
     // prefix any ini settings you want to change at runtime with ini.
     $config['ini.date.timezone'] = 'America/New_York';
-    $config['ini.error_reporting'] = -1;
-
 
     // Ensure that you read the documentation for each configuration value to
     // understand what is impacted when you change these values
 
     /**
-     * 'labrador.environment'       string
+     * ConfigDirective::ENVIRONMENT       string
      *
      * Determines the config file that is ran for a given request; e.g. if the
      * value is set to 'development' than '/config/development/config.php' is
      * ran by default. Labrador is "aware" of the environment 'production'. If a
      * value is set here but is not available in the specified configuration directory
      * then the environment will default to 'production'.
+     *
+     * @todo We don't actually have a test case covering this
      */
     $config[ConfigDirective::ENVIRONMENT] = 'development';
 
     /**
-     * 'labrador.root_dir'          string
+     * ConfigDirective::ROOT_DIR          string
      *
      * The root directory that Labrador and app files live under.
      */
     $config[ConfigDirective::ROOT_DIR] = dirname(__DIR__);
 
     /**
-     * 'labrador.config_dir'            string
+     * ConfigDirective::CONFIG_DIR            string
      *
      * The configuration directory that Labrador and environment configurations
      * are stored.
@@ -51,7 +51,7 @@ return function(Config $config) {
     $config[ConfigDirective::CONFIG_DIR] = $config[ConfigDirective::ROOT_DIR] . '/config';
 
     /**
-     * 'labrador.routes_callback'       callable
+     * ConfigDirective::ROUTES_CALLBACK       callable
      *
      * A callback accepting a Labrador\Router\Router as the only argument. That
      * function should set the appropriate routes for the application.
@@ -59,7 +59,7 @@ return function(Config $config) {
     $config[ConfigDirective::ROUTES_CALLBACK] = include $config[ConfigDirective::CONFIG_DIR] . '/routes.php';
 
     /**
-     * 'labrador.service_registers_callback'            callable
+     * ConfigDirective::SERVICE_REGISTERS_CALLBACK            callable
      *
      * A callback accepting a Auryn\Provider as the only argument. The function
      * should set the appropriate dependencies and services needed by the application.
@@ -67,7 +67,7 @@ return function(Config $config) {
     $config[ConfigDirective::SERVICE_REGISTERS_CALLBACK] = include $config[ConfigDirective::CONFIG_DIR] . '/service_registers.php';
 
     /**
-     * 'labrador.bootstraps_callback'               callable
+     * ConfigDirective::BOOTSTRAPS_CALLBACK               callable
      *
      * A callback accepting a Auryn\Provider as the first argument and a Configlet\Config
      * as the second argument. It should perform actions that are needed at time of
