@@ -1,6 +1,8 @@
 <?php
 
 /**
+ * A bootstrap that will setup routes based on the callback stored in a
+ * ConfigDirective::ROUTES_CALLBACK config.
  * 
  * @license See LICENSE in source root
  * @version 1.0
