@@ -34,16 +34,16 @@ class FastRouteRouterTest extends UnitTestCase {
 
     function testDispatcherCallbackArgumentComesFromRouteCollector() {
         $collector = $this->getMockBuilder('FastRoute\\RouteCollector')
-            ->disableOriginalConstructor()
-            ->getMock();
+                          ->disableOriginalConstructor()
+                          ->getMock();
         $collector->expects($this->once())
-            ->method('getData')
-            ->will($this->returnValue(['routes', 'listed', 'here']));
+                  ->method('getData')
+                  ->will($this->returnValue(['routes', 'listed', 'here']));
         $actual = null;
         $dispatcher = $this->getMock('FastRoute\\Dispatcher');
         $dispatcher->expects($this->once())
-            ->method('dispatch')
-            ->will($this->returnValue([GcbDispatcher::FOUND, 'foo#bar', []]));
+                   ->method('dispatch')
+                   ->will($this->returnValue([GcbDispatcher::FOUND, 'foo#bar', []]));
         $cb = function($arg) use(&$actual, $dispatcher) {
             $actual = $arg;
             return $dispatcher;
@@ -57,7 +57,7 @@ class FastRouteRouterTest extends UnitTestCase {
     function testRouterNotFoundThrowsNotFoundException() {
         $router = new Router(
             new RouteCollector(new StdRouteParser(), new GcbDataGenerator()),
-            function($data) { return new GcbDispatcher($data); }
+                function($data) { return new GcbDispatcher($data); }
         );
 
         $expectedExc = 'Labrador\\Exception\\NotFoundException';
@@ -91,10 +91,10 @@ class FastRouteRouterTest extends UnitTestCase {
         );
 
         $request = $this->getMock('Symfony\\Component\\HttpFoundation\\Request');
-        $request->expects($this->once())->method('getMethod')->will($this->returnValue('GET'));
+        $request->expects($this->once())->method('getMethod')->will($this->returnValue('PUT'));
         $request->expects($this->once())->method('getPathInfo')->will($this->returnValue('/foo/bar'));
 
-        $router->get('/foo/bar', 'foo#bar');
+        $router->put('/foo/bar', 'foo#bar');
 
         $controllerAction = $router->match($request);
 
@@ -121,6 +121,5 @@ class FastRouteRouterTest extends UnitTestCase {
         $expected = ['name' => 'bar', 'id' => 'qux'];
         $this->assertSame($expected, $actual);
     }
-
 
 }
