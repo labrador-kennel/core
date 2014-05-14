@@ -51,10 +51,10 @@ class FrontControllerBootstrap implements Bootstrap {
     private function runServices(Injector $injector, Config $config) {
         $services = $config[ConfigDirective::SERVICE_REGISTERS_CALLBACK];
         if (!is_callable($services)) {
-            $msg = 'A %s MUST be a configured callback accepting an Auryn\\Injector as only argument';
+            $msg = 'A %s MUST be a callable type accepting an Auryn\\Injector and a Configlet\\Config';
             throw new BootupException(sprintf($msg, ConfigDirective::SERVICE_REGISTERS_CALLBACK));
         }
-        $services($injector);
+        $services($injector, $config);
     }
 
     private function runBootstrap(Injector $injector, Config $config) {

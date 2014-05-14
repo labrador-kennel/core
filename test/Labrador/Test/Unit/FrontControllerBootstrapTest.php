@@ -38,7 +38,7 @@ class FrontControllerBootstrapTest extends UnitTestCase {
     function testConfiguredServiceRegistersNotCallableThrowsBootupException() {
         $cb = function() {};
         $bootstrap = new FrontControllerBootstrap($cb);
-        $msg = 'A %s MUST be a configured callback accepting an Auryn\\Injector as only argument';
+        $msg = 'A %s MUST be a callable type accepting an Auryn\\Injector and a Configlet\\Config';
         $this->setExpectedException(
             'Labrador\\Exception\\BootupException',
             sprintf($msg, ConfigDirective::SERVICE_REGISTERS_CALLBACK)
