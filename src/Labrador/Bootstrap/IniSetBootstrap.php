@@ -1,7 +1,8 @@
 <?php
 
 /**
- * Will set ini values for the key/value pairs in the $config passed to constructor.
+ * Will set ini configurations for the key/value pairs in the $config passed to
+ * constructor.
  * 
  * @license See LICENSE in source root
  * @version 1.0

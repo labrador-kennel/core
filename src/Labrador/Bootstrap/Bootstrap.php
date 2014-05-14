@@ -13,8 +13,6 @@ namespace Labrador\Bootstrap;
 interface Bootstrap {
 
     /**
-     *
-     *
      * @return mixed
      */
     function run();

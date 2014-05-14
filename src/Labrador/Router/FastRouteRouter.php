@@ -29,7 +29,7 @@ class FastRouteRouter implements Router {
      *
      * We ask for a callback instead of the object itself to work around needing
      * the list of routes at dispatcher instantiation. The $dispatcherCb is
-     * invoked when a Request is matched and it should expect an array of data
+     * invoked when Router::match is called and it should expect an array of data
      * in the same format as $collector->getData().
      *
      * @param RouteCollector $collector
