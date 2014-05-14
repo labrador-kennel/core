@@ -10,14 +10,20 @@
  */
 
 use Labrador\Service\DefaultServicesRegister;
+use Labrador\ConfigDirective;
 use Auryn\Injector;
+use Configlet\Config;
 
 /**
  * This function should set services against the Auryn\Injector; it should not
  * actually preform any actions on services or do anything other than set an
  * object graph and its dependencies.
  */
-return function(Injector $injector) {
+return function(Injector $injector, Config $config) {
+
+    $demoTemplates = $config[ConfigDirective::ROOT_DIR] . '/src/LabradorDemo/_templates';
+    $docDir = $config[ConfigDirective::ROOT_DIR] . '/doc';
+    (new \LabradorDemo\Service\ControllerRegister($demoTemplates, $docDir))->register($injector);
 
     // This service register MUST be ran OR you MUST provide an instance of
     // Labrador\Application to the $provider with appropriate dependencies defined
