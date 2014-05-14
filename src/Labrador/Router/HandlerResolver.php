@@ -1,8 +1,8 @@
 <?php
 
 /**
- * Interface that should convert a routed handler into an appropriate callable
- * function that accepts a Request object as the only argument.
+ * Should convert a routed handler into an appropriate callable function that
+ * accepts a Request object as the only argument.
  * 
  * @license See LICENSE in source root
  * @version 1.0

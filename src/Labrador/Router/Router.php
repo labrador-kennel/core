@@ -1,8 +1,7 @@
 <?php
 
 /**
- * An interface that should determine the handling logic that should be executed
- * for a given HTTP request.
+ * Should determine the handling logic that should be executed for a given HTTP request.
  * 
  * @license See LICENSE in source root
  * @version 1.0
