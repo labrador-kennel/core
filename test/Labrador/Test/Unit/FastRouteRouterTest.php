@@ -19,10 +19,17 @@ use PHPUnit_Framework_TestCase as UnitTestCase;
 
 class FastRouteRouterTest extends UnitTestCase {
 
+    private function getRouter() {
+        return new Router(
+            new RouteCollector(new StdRouteParser(), new GcbDataGenerator()),
+            function($data) { return new GcbDispatcher($data); }
+        );
+    }
+
     function testFastRouteDispatcherCallbackReturnsImproperTypeThrowsException() {
         $router = new Router(
             new RouteCollector(new StdRouteParser(), new GcbDataGenerator()),
-            function() { return 'not a fast-route dispatcher'; }
+            function($data) { return 'not a dispatcher'; }
         );
 
         $expectedExc = 'Labrador\\Exception\\InvalidTypeException';
@@ -55,11 +62,7 @@ class FastRouteRouterTest extends UnitTestCase {
     }
 
     function testRouterNotFoundThrowsNotFoundException() {
-        $router = new Router(
-            new RouteCollector(new StdRouteParser(), new GcbDataGenerator()),
-                function($data) { return new GcbDispatcher($data); }
-        );
-
+        $router = $this->getRouter();
         $expectedExc = 'Labrador\\Exception\\NotFoundException';
         $expectedMsg = 'Resource Not Found';
         $this->setExpectedException($expectedExc, $expectedMsg);
@@ -67,10 +70,7 @@ class FastRouteRouterTest extends UnitTestCase {
     }
 
     function testRouterMethodNotAllowedThrowsMethodNotAllowedException() {
-        $router = new Router(
-            new RouteCollector(new StdRouteParser(), new GcbDataGenerator()),
-            function($data) { return new GcbDispatcher($data); }
-        );
+        $router = $this->getRouter();
 
         $request = $this->getMock('Symfony\\Component\\HttpFoundation\\Request');
         $request->expects($this->once())->method('getMethod')->will($this->returnValue('POST'));
@@ -85,14 +85,9 @@ class FastRouteRouterTest extends UnitTestCase {
     }
 
     function testRouteMethodFoundReturnsAppropriateControllerActionString() {
-        $router = new Router(
-            new RouteCollector(new StdRouteParser(), new GcbDataGenerator()),
-            function($data) { return new GcbDispatcher($data); }
-        );
+        $router = $this->getRouter();
 
-        $request = $this->getMock('Symfony\\Component\\HttpFoundation\\Request');
-        $request->expects($this->once())->method('getMethod')->will($this->returnValue('PUT'));
-        $request->expects($this->once())->method('getPathInfo')->will($this->returnValue('/foo/bar'));
+        $request = Request::create('http://labrador.dev/foo/bar', 'PUT');
 
         $router->put('/foo/bar', 'foo#bar');
 
@@ -102,10 +97,7 @@ class FastRouteRouterTest extends UnitTestCase {
     }
 
     function testRouteWithParametersSetOnRequestAttributes() {
-        $router = new Router(
-            new RouteCollector(new StdRouteParser(), new GcbDataGenerator()),
-            function($data) { return new GcbDispatcher($data); }
-        );
+        $router = $this->getRouter();
 
         $router->post('/foo/{name}/{id}', 'attr#action');
 
@@ -113,13 +105,19 @@ class FastRouteRouterTest extends UnitTestCase {
         $request = Request::create('http://www.sprog.dev/foo/bar/qux', 'POST');
         $router->match($request);
 
-        $actual = [];
-        foreach ($request->attributes as $k => $v) {
-            $actual[$k] = $v;
-        }
+        $this->assertSame('bar', $request->attributes->get('name'));
+        $this->assertSame('qux', $request->attributes->get('id'));
+    }
 
-        $expected = ['name' => 'bar', 'id' => 'qux'];
-        $this->assertSame($expected, $actual);
+    function testLabradorMetaRequestDataSetOnRequestAttributes() {
+        $router = $this->getRouter();
+
+        $router->post('/foo', 'controller#action');
+
+        $request = Request::create('http://labrador.dev/foo', 'POST');
+        $router->match($request);
+
+        $this->assertSame(['handler' => 'controller#action'], $request->attributes->get('_labrador'));
     }
 
 }
