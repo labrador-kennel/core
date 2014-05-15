@@ -18,6 +18,7 @@ use Labrador\Exception\MethodNotAllowedException;
 use Labrador\Exception\NotFoundException;
 use Labrador\Exception\ServerErrorException;
 use PHPUnit_Framework_TestCase as UnitTestCase;
+use Symfony\Component\EventDispatcher\EventDispatcher;
 use Symfony\Component\HttpFoundation\Request;
 use Exception as PhpException;
 use Symfony\Component\HttpFoundation\Response;
@@ -190,5 +191,56 @@ class ApplicationTest extends UnitTestCase {
         $app = $this->createApplication();
         $app->handle($request);
     }
+
+    function exceptionThrownEventProvider() {
+        return [
+            [new NotFoundException()],
+            [new PhpException()]
+        ];
+    }
+
+    /**
+     * @param $execption
+     * @dataProvider exceptionThrownEventProvider
+     */
+    function testExceptionThrownEventTriggered($execption) {
+        $request = Request::create('http://labrador.dev');
+
+        $this->router->expects($this->once())
+                     ->method('match')
+                     ->with($request)
+                     ->will($this->throwException($execption));
+
+        $this->resolver->expects($this->never())->method('resolve');
+        $this->eventDispatcher->expects($this->at(1))
+                              ->method('dispatch')
+                              ->with(
+                                  Events::EXCEPTION_THROWN,
+                                  $this->callback(function($arg) {
+                                      return $arg instanceof Events\ExceptionThrownEvent;
+                                  })
+                              );
+
+        $app = $this->createApplication();
+        $app->handle($request);
+    }
+
+    function testEventResponseReturnedOnAppHandleEvent() {
+        $request = Request::create('http://labrador.dev');
+
+        $this->router->expects($this->never())->method('match');
+        $this->resolver->expects($this->never())->method('resolve');
+
+        $eventDispatcher = new EventDispatcher();
+        $eventDispatcher->addListener(Events::APP_HANDLE_EVENT, function($event) {
+            $event->setResponse(new Response('Called from event'));
+        });
+
+        $app = new Application($this->router, $this->resolver, $eventDispatcher);
+        $response = $app->handle($request);
+        $this->assertSame('Called from event', $response->getContent());
+    }
+
+
 
 }
