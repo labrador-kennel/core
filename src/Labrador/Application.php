@@ -112,7 +112,9 @@ class Application implements HttpKernelInterface {
     private function executeController(Request $request, callable $cb) {
         $response = $cb($request);
         if (!$response instanceof Response) {
-            throw new ServerErrorException('Controller actions MUST return an instance of Symfony\\Component\\HttpFoundation\\Response');
+            $msg = 'Controllers MUST return an instance of Symfony\\Component\\HttpFoundation\\Response.';
+            $msg .= ' The "%s" handler returned type (%s).';
+            throw new ServerErrorException(sprintf($msg, $request->attributes->get('_labrador')['handler'], gettype($response)));
         }
 
         return $response;

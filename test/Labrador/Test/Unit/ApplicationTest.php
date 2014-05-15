@@ -99,15 +99,18 @@ class ApplicationTest extends UnitTestCase {
 
     function testControllerMustReturnResponse() {
         $request = Request::create('http://www.labrador.dev');
-
+        $handler = 'handler#action';
         $this->router->expects($this->once())
                      ->method('match')
                      ->with($request)
-                     ->will($this->returnValue('handler#action'));
+                     ->will($this->returnCallback(function() use($request, $handler) {
+                        $request->attributes->set('_labrador', ['handler' => $handler]);
+                        return $handler;
+                     }));
 
         $this->resolver->expects($this->once())
                        ->method('resolve')
-                       ->with('handler#action')
+                       ->with($handler)
                        ->will($this->returnValue(function() {
                            return 'not a response';
                        }));
@@ -116,7 +119,9 @@ class ApplicationTest extends UnitTestCase {
         $response = $app->handle($request);
         $this->assertInstanceOf('Symfony\\Component\\HttpFoundation\\Response', $response);
         $this->assertSame(500, $response->getStatusCode());
-        $this->assertSame('Controller actions MUST return an instance of Symfony\\Component\\HttpFoundation\\Response', $response->getContent());
+        $msg = 'Controllers MUST return an instance of Symfony\\Component\\HttpFoundation\\Response.';
+        $msg .= ' The "handler#action" handler returned type (string).';
+        $this->assertSame($msg, $response->getContent());
     }
 
     function testThrowsHttpExceptionIfHandleCatchFalse() {
