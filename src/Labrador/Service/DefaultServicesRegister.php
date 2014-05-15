@@ -32,13 +32,6 @@ class DefaultServicesRegister implements Register {
 
     private function registerLabradorServices(Injector $injector) {
         $injector->share('Labrador\\Application');
-        $injector->define(
-            'Labrador\\Application',
-            [
-                'router' => 'Labrador\\Router\\FastRouteRouter',
-                'resolver' => 'Labrador\\Router\\ProviderHandlerResolver'
-            ]
-        );
 
         $injector->share('Labrador\\Router\\FastRouteRouter');
         $injector->define(
@@ -50,14 +43,11 @@ class DefaultServicesRegister implements Register {
                 }
             ]
         );
+        $injector->alias('Labrador\\Router\\Router', 'Labrador\\Router\\FastRouteRouter');
 
-        $injector->share('Labrador\\Router\\ProviderHandlerResolver');
-        $injector->define(
-            'Labrador\\Router\\ProviderHandlerResolver',
-            [
-                ':injector' => $injector
-            ]
-        );
+        $injector->share('Labrador\\Router\\ServiceHandlerResolver');
+        $injector->define('Labrador\\Router\\ServiceHandlerResolver', [ ':injector' => $injector]);
+        $injector->alias('Labrador\\Router\\HandlerResolver', 'Labrador\\Router\\ServiceHandlerResolver');
     }
 
     /**
@@ -79,6 +69,10 @@ class DefaultServicesRegister implements Register {
     private function registerSymfonyServices(Injector $injector) {
         $injector->share(Request::createFromGlobals());
         $injector->share('Symfony\\Component\\EventDispatcher\\EventDispatcher');
+        $injector->alias(
+            'Symfony\\Component\\EventDispatcher\\EventDispatcherInterface',
+            'Symfony\\Component\\EventDispatcher\\EventDispatcher'
+        );
     }
 
 } 
