@@ -18,6 +18,7 @@ use Labrador\Exception\MethodNotAllowedException;
 use FastRoute\Dispatcher;
 use FastRoute\RouteCollector;
 use Symfony\Component\HttpFoundation\Request;
+use Symfony\Component\HttpFoundation\Response;
 
 class FastRouteRouter implements Router {
 
@@ -95,8 +96,9 @@ class FastRouteRouter implements Router {
     function match(Request $request) {
         $dispatcher = $this->getDispatcher();
         $route = $dispatcher->dispatch($request->getMethod(), $request->getPathInfo());
+        $status = array_shift($route);
 
-        if (!$route || ($status = array_shift($route)) === $dispatcher::NOT_FOUND) {
+        if (!$route || $status === $dispatcher::NOT_FOUND) {
             throw new NotFoundException('Resource Not Found');
         }
 
@@ -104,12 +106,13 @@ class FastRouteRouter implements Router {
             throw new MethodNotAllowedException('Method Not Allowed');
         }
 
-        list($controllerAction, $params) = $route;
+        list($handler, $params) = $route;
+        $request->attributes->set('_labrador', ['handler' => $handler]);
         foreach ($params as $k => $v) {
             $request->attributes->set($k, $v);
         }
 
-        return $controllerAction;
+        return $handler;
     }
 
     /**
