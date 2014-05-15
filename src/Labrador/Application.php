@@ -78,8 +78,8 @@ class Application implements HttpKernelInterface {
             if (!$response) {
                 $cb = $this->triggerRouteFoundEvent($request);
                 $response = $this->executeController($request, $cb);
-                $response = $this->triggerApplicationFinishedEvent($request, $response);
             }
+            $response = $this->triggerApplicationFinishedEvent($request, $response);
         } catch (HttpException $httpExc) {
             if (!$catch) { throw $httpExc; }
             $response = new Response($httpExc->getMessage(), $httpExc->getCode());

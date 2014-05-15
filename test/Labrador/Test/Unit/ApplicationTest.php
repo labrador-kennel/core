@@ -246,6 +246,28 @@ class ApplicationTest extends UnitTestCase {
         $this->assertSame('Called from event', $response->getContent());
     }
 
+    function testAppFinishedEventTriggeredWhenResponseReturnedOnAppHandleEvent() {
+        $request = Request::create('http://labrador.dev');
+
+        $this->router->expects($this->never())->method('match');
+        $this->resolver->expects($this->never())->method('resolve');
+
+        $eventDispatcher = new EventDispatcher();
+        $eventDispatcher->addListener(Events::APP_HANDLE_EVENT, function($event) {
+            $event->setResponse(new Response('called from event'));
+        });
+
+        $finishCalled = false;
+        $eventDispatcher->addListener(Events::APP_FINISHED_EVENT, function($event) use(&$finishCalled) {
+            $finishCalled = true;
+        });
+
+        $app = new Application($this->router, $this->resolver, $eventDispatcher);
+        $response = $app->handle($request);
+        $this->assertSame('called from event', $response->getContent());
+        $this->assertTrue($finishCalled);
+    }
+
 
 
 }
