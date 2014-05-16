@@ -12,9 +12,9 @@ namespace Labrador;
 
 abstract class Events {
 
-    const APP_HANDLE_EVENT = 'labrador.app_handle';
-    const ROUTE_FOUND_EVENT= 'labrador.route_found';
-    const APP_FINISHED_EVENT = 'labrador.app_finished';
+    const APP_HANDLE = 'labrador.app_handle';
+    const ROUTE_FOUND = 'labrador.route_found';
+    const APP_FINISHED = 'labrador.app_finished';
     const EXCEPTION_THROWN = 'labrador.exception_thrown';
 
 } 
