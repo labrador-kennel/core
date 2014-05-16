@@ -158,9 +158,9 @@ class ApplicationTest extends UnitTestCase {
 
     function eventProvider() {
         return [
-            [0, Events::APP_HANDLE_EVENT, 'Labrador\\Events\\ApplicationHandleEvent'],
-            [1, Events::ROUTE_FOUND_EVENT, 'Labrador\\Events\\RouteFoundEvent'],
-            [2, Events::APP_FINISHED_EVENT, 'Labrador\\Events\\ApplicationFinishedEvent']
+            [0, Events::APP_HANDLE, 'Labrador\\Events\\ApplicationHandleEvent'],
+            [1, Events::ROUTE_FOUND, 'Labrador\\Events\\RouteFoundEvent'],
+            [2, Events::APP_FINISHED, 'Labrador\\Events\\ApplicationFinishedEvent']
         ];
     }
 
@@ -237,7 +237,7 @@ class ApplicationTest extends UnitTestCase {
         $this->resolver->expects($this->never())->method('resolve');
 
         $eventDispatcher = new EventDispatcher();
-        $eventDispatcher->addListener(Events::APP_HANDLE_EVENT, function($event) {
+        $eventDispatcher->addListener(Events::APP_HANDLE, function($event) {
             $event->setResponse(new Response('Called from event'));
         });
 
@@ -253,12 +253,12 @@ class ApplicationTest extends UnitTestCase {
         $this->resolver->expects($this->never())->method('resolve');
 
         $eventDispatcher = new EventDispatcher();
-        $eventDispatcher->addListener(Events::APP_HANDLE_EVENT, function($event) {
+        $eventDispatcher->addListener(Events::APP_HANDLE, function($event) {
             $event->setResponse(new Response('called from event'));
         });
 
         $finishCalled = false;
-        $eventDispatcher->addListener(Events::APP_FINISHED_EVENT, function($event) use(&$finishCalled) {
+        $eventDispatcher->addListener(Events::APP_FINISHED, function($event) use(&$finishCalled) {
             $finishCalled = true;
         });
 
@@ -268,6 +268,31 @@ class ApplicationTest extends UnitTestCase {
         $this->assertTrue($finishCalled);
     }
 
+    function exceptionThrownResponseReturnedProvider() {
+        return [
+            [new PhpException('this is the message why something failed')],
+            [new NotFoundException('this is the resource not found')]
+        ];
+    }
 
+    /**
+     * @dataProvider exceptionThrownResponseReturnedProvider
+     */
+    function testResponseSetInPhpExceptionThrownEventIsReturned($exception) {
+        $request = Request::create('http://labrador.dev');
+        $this->router->expects($this->once())
+                     ->method('match')
+                     ->will($this->throwException($exception));
+        $this->resolver->expects($this->never())->method('resolve');
+
+        $eventDispatcher = new EventDispatcher();
+        $eventDispatcher->addListener(Events::EXCEPTION_THROWN, function($event) {
+            $event->setResponse(new Response('Called from exception thrown listener'));
+        });
+
+        $app = new Application($this->router, $this->resolver, $eventDispatcher);
+        $response = $app->handle($request);
+        $this->assertSame('Called from exception thrown listener', $response->getContent());
+    }
 
 }
