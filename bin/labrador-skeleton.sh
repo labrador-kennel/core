@@ -225,8 +225,8 @@ use Configlet\Config;
  */
 return function(Injector $injector, Config $config) {
 
-    $demoTemplates = $config[ConfigDirective::ROOT_DIR] . '/src/LabradorDemo/_templates';
-    $docDir = $config[ConfigDirective::ROOT_DIR] . '/doc';
+    $demoTemplates = $config[ConfigDirective::ROOT_DIR] . '/vendor/cspray/labrador/src/LabradorDemo/_templates';
+    $docDir = $config[ConfigDirective::ROOT_DIR] . '/vendor/cspray/labrador/doc';
     (new \LabradorDemo\Service\ControllerRegister($demoTemplates, $docDir))->register($injector);
 
     // This service register MUST be ran OR you MUST provide an instance of
