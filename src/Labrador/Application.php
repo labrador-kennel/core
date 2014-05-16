@@ -25,7 +25,47 @@ use Symfony\Component\HttpKernel\HttpKernelInterface;
 use Exception as PhpException;
 
 /**
+ * While this is the primary processing logic we have designed it in such a way
+ * that you should be able to easily replace dependencies and extend or change
+ * Labrador's behavior very easily in the vast majority of use cases.
  *
+ * This implementation primarily provides that flexibility in 1 of 2 ways; through
+ * interface driven dependencies and timely event triggering.
+ *
+ * All of the Application dependencies are requested as a particular interface.
+ * This allows you to change out implementations at will; assuming that each of
+ * those implementations adheres to the described interface.
+ *
+ * Events are a much more flexible, easy-to-use way to make Labrador do what you
+ * need it to do. By providing a few, strategically timed events you have the ability
+ * to do a lot of nifty things. We're gonna take a look at the events triggered
+ * when Application::handle is run.
+ *
+ * Events::APP_HANDLE = labrador.app_handle     Labrador\Events\ApplicationHandleEvent
+ * -----------------------------------------------------------------------------
+ * Triggered once every time Application::handle is called. If a Response is returned
+ * from ApplicationHandleEvent::getResponse then Labrador will short circuit
+ * normal processing; meaning no controller, if there would be one routed for the
+ * Request, will be created or invoked. Additionally, Events::ROUTE_FOUND will
+ * not be triggered.
+ *
+ * Events::ROUTE_FOUND = labrador.route_found   Labrador\Events\RouteFoundEvent
+ * -----------------------------------------------------------------------------
+ * Triggered if a Request was successfully routed and resolved into a callable
+ * function. The callback returned from RouteFoundEvent::getController will be
+ * the controller invoked for the given Request. By default the resolved controller
+ * is returned from this method; you would need to explicitly call RouteFoundEvent::setController.
+ *
+ * Events::APP_FINISHED = labrador.app_finished     Labrador\Events\ApplicationFinishedEvent
+ * -----------------------------------------------------------------------------
+ * Triggered when the Application is finished handling the Request. You can return a
+ * Response with ApplicaitonFinishedEvent::getResponse that will be used in place
+ * of the one returned from the controller.
+ *
+ * Events::EXCEPTION_THROWN = labrador.exception_thrown     Labrador\Events\ExceptionThrownEvent
+ * -----------------------------------------------------------------------------
+ * Triggered if an exception is caught by the Application. You can set a Response
+ * in this event to change the generic Response set by the Application.
  */
 class Application implements HttpKernelInterface {
 
@@ -82,14 +122,10 @@ class Application implements HttpKernelInterface {
             $response = $this->triggerApplicationFinishedEvent($request, $response);
         } catch (HttpException $httpExc) {
             if (!$catch) { throw $httpExc; }
-            $response = new Response($httpExc->getMessage(), $httpExc->getCode());
-            $event = new ExceptionThrownEvent($request, $response, $httpExc);
-            $this->eventDispatcher->dispatch(Events::EXCEPTION_THROWN, $event);
+            $response = $this->handleCaughtException($request, $httpExc, $httpExc->getCode());
         } catch (PhpException $phpExc) {
             if (!$catch) { throw $phpExc; }
-            $response = new Response($phpExc->getMessage(), Response::HTTP_INTERNAL_SERVER_ERROR);
-            $event = new ExceptionThrownEvent($request, $response, $phpExc);
-            $this->eventDispatcher->dispatch(Events::EXCEPTION_THROWN, $event);
+            $response = $this->handleCaughtException($request, $phpExc, Response::HTTP_INTERNAL_SERVER_ERROR);
         }
 
         return $response;
@@ -97,7 +133,7 @@ class Application implements HttpKernelInterface {
 
     private function triggerHandleEvent(Request $request) {
         $event = new ApplicationHandleEvent($request);
-        $this->eventDispatcher->dispatch(Events::APP_HANDLE_EVENT, $event);
+        $this->eventDispatcher->dispatch(Events::APP_HANDLE, $event);
         return $event->getResponse();
     }
 
@@ -105,7 +141,7 @@ class Application implements HttpKernelInterface {
         $handler = $this->router->match($request);
         $cb = $this->resolver->resolve($handler);
         $event = new RouteFoundEvent($request, $cb);
-        $this->eventDispatcher->dispatch(Events::ROUTE_FOUND_EVENT, $event);
+        $this->eventDispatcher->dispatch(Events::ROUTE_FOUND, $event);
         return $event->getController();
     }
 
@@ -122,9 +158,16 @@ class Application implements HttpKernelInterface {
 
     private function triggerApplicationFinishedEvent(Request $request, Response $response) {
         $event = new ApplicationFinishedEvent($request, $response);
-        $this->eventDispatcher->dispatch(Events::APP_FINISHED_EVENT, $event);
+        $this->eventDispatcher->dispatch(Events::APP_FINISHED, $event);
 
         return $response;
+    }
+
+    private function handleCaughtException(Request $request, PhpException $exception, $httpStatus) {
+        $response = new Response($exception->getMessage(), $httpStatus);
+        $event = new ExceptionThrownEvent($request, $response, $exception);
+        $this->eventDispatcher->dispatch(Events::EXCEPTION_THROWN, $event);
+        return $event->getResponse();
     }
 
 }
