@@ -31,7 +31,9 @@ HTML;
 
 require_once __DIR__ . '/vendor/autoload.php';
 
+use Labrador\Application;
 use Labrador\Bootstrap\FrontControllerBootstrap;
+use Symfony\Component\HttpFoundation\Request;
 
 $masterConfig = include __DIR__ . '/config/master_config.php';
 
@@ -39,7 +41,7 @@ $masterConfig = include __DIR__ . '/config/master_config.php';
 /** @var Labrador\Application $app */
 /** @var Symfony\Component\HttpFoundation\Request $request */
 $provider = (new FrontControllerBootstrap($masterConfig))->run();
-$app = $provider->make('Labrador\\Application');
-$request = $provider->make('Symfony\\Component\\HttpFoundation\\Request');
+$app = $provider->make(Application::class);
+$request = $provider->make(Request::class);
 
 $app->handle($request)->send();
