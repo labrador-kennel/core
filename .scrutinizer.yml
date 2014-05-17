@@ -1,6 +1,9 @@
 before_commands:
   - "composer update"
 
+filter:
+  excluded_paths: ["vendor/*"]
+
 tools:
   php_code_coverage:
     enabled: true
@@ -8,14 +11,19 @@ tools:
     filter:
       paths: ["src/*"]
       excluded_paths: ["tests/*", "vendor/*"]
-  php_cpd: true
+  php_cpd:
+    enabled: true
+    excluded_dirs: ["vendor"]
   php_loc:
     enabled: true
     command: phploc
     names:
       - '*.php'
+    excluded_dirs: ["vendor"]
   php_mess_detector: true
-  php_pdepend: true
+  php_pdepend:
+    enabled: true
+    excluded_dirs: ["vendor"]
   php_analyzer:
     enabled: true
     filter:
