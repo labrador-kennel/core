@@ -115,6 +115,5 @@ Vagrant.configure("2") do |config|
 
   config.vm.provision :shell, :path => "https://raw.githubusercontent.com/cspray/vagrant-provisioners/master/scripts/composer.sh"
 
-
 end
 
