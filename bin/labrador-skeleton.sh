@@ -47,20 +47,6 @@ else
     cp "$labPath/init.php" "$scriptPath/init.php"
 fi
 
-if [ -f "$scriptPath/LICENSE" ]
-then
-    echo "$scriptPath/LICENSE already exists ... skipping"
-else
-    cp "$labPath/LICENSE" "$scriptPath/LICENSE"
-fi
-
-if [ -f "$scriptPath/phpunit.xml.dist" ]
-then
-    echo "$scriptPath/phpunit.xml.dist already exists ... skipping"
-else
-   cp "$labPath/phpunit.xml.dist" "$scriptPath/phpunit.xml.dist"
-fi
-
 if [ -f "$scriptPath/config/master_config.php" ]
 then
     echo "$scriptPath/config/master_config.php already exists ... skipping"
