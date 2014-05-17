@@ -1,7 +1,7 @@
 # Labrador
 
 [![Build Status](https://travis-ci.org/cspray/labrador.svg?branch=master)]
-
+[![Scrutinizer Code Quality](https://scrutinizer-ci.com/g/cspray/labrador/badges/quality-score.png?b=master)](https://scrutinizer-ci.com/g/cspray/labrador/?branch=master)
 [![License](https://poser.pugx.org/cspray/labrador/license.png)](https://packagist.org/packages/cspray/labrador)
 
 A microframework wiring together high-quality libraries to route HTTP requests to specific controller objects.
