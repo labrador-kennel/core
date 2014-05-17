@@ -1,5 +1,7 @@
 # Labrador
 
+[![Build Status](https://travis-ci.org/cspray/labrador.svg?branch=master)]
+
 A microframework wiring together high-quality libraries to route HTTP requests to specific controller objects.
 
 ## Installation
