@@ -8,4 +8,7 @@ php:
 
 before_script:
   - composer update
-script: phpunit --configuration travis-phpunit.xml.dist
+script:
+  - phpunit --coverage-clover=coverage.clover --configuration travis-phpunit.xml.dist
+  - wget https://scrutinizer-ci.com/ocular.phar
+  - php ocular.phar code-coverage:upload --format=php-clover coverage.clover
