@@ -21,5 +21,4 @@ tools:
     filter:
       paths: ["src/", "tests/"]
   sensiolabs_security_checker: true
-  tools:
-    external_code_coverage: true
+  external_code_coverage: true
