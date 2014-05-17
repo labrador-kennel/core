@@ -11,8 +11,20 @@
 
 namespace Labrador\Service;
 
+use Labrador\Application;
+use Labrador\Router\FastRouteRouter;
+use Labrador\Router\Router;
+use Labrador\Router\HandlerResolver;
+use Labrador\Router\ServiceHandlerResolver;
 use Auryn\Injector;
+use Configlet\MasterConfig;
+use FastRoute\RouteCollector;
+use FastRoute\RouteParser\Std as StdRouteParser;
+use FastRoute\DataGenerator\GroupCountBased as GcbDataGenerator;
+use FastRoute\Dispatcher\GroupCountBased as GcbDispatcher;
 use Symfony\Component\HttpFoundation\Request;
+use Symfony\Component\EventDispatcher\EventDispatcher;
+use Symfony\Component\EventDispatcher\EventDispatcherInterface;
 
 /**
  * @codeCoverageIgnore
@@ -27,39 +39,39 @@ class DefaultServicesRegister implements Register {
         $this->registerLabradorServices($injector);
         $this->registerFastRouteServices($injector);
         $this->registerSymfonyServices($injector);
-        $injector->share('Configlet\\MasterConfig');
+        $injector->share(MasterConfig::class);
     }
 
     private function registerLabradorServices(Injector $injector) {
-        $injector->share('Labrador\\Application');
+        $injector->share(Application::class);
 
-        $injector->share('Labrador\\Router\\FastRouteRouter');
+        $injector->share(FastRouteRouter::class);
         $injector->define(
-            'Labrador\\Router\\FastRouteRouter',
+            FastRouteRouter::class,
             [
-                'collector' => 'FastRoute\\RouteCollector',
+                'collector' => RouteCollector::class,
                 ':dispatcherCb' => function(array $data) use($injector) {
-                    return $injector->make('FastRoute\\Dispatcher\\GroupCountBased', [':data' => $data]);
+                    return $injector->make(GcbDispatcher::class, [':data' => $data]);
                 }
             ]
         );
-        $injector->alias('Labrador\\Router\\Router', 'Labrador\\Router\\FastRouteRouter');
+        $injector->alias(Router::class, FastRouteRouter::class);
 
-        $injector->share('Labrador\\Router\\ServiceHandlerResolver');
-        $injector->define('Labrador\\Router\\ServiceHandlerResolver', [ ':injector' => $injector]);
-        $injector->alias('Labrador\\Router\\HandlerResolver', 'Labrador\\Router\\ServiceHandlerResolver');
+        $injector->share(ServiceHandlerResolver::class);
+        $injector->define(ServiceHandlerResolver::class, [ ':injector' => $injector]);
+        $injector->alias(HandlerResolver::class, ServiceHandlerResolver::class);
     }
 
     /**
      * @param Injector $injector
      */
     private function registerFastRouteServices(Injector $injector) {
-        $injector->share('FastRoute\\RouteCollector');
+        $injector->share(RouteCollector::class);
         $injector->define(
-            'FastRoute\\RouteCollector',
+            RouteCollector::class,
             [
-                'routeParser' => 'FastRoute\\RouteParser\\Std',
-                'dataGenerator' => 'FastRoute\\DataGenerator\\GroupCountBased'
+                'routeParser' => StdRouteParser::class,
+                'dataGenerator' => GcbDataGenerator::class
             ]
         );
 
@@ -68,10 +80,10 @@ class DefaultServicesRegister implements Register {
 
     private function registerSymfonyServices(Injector $injector) {
         $injector->share(Request::createFromGlobals());
-        $injector->share('Symfony\\Component\\EventDispatcher\\EventDispatcher');
+        $injector->share(EventDispatcher::class);
         $injector->alias(
-            'Symfony\\Component\\EventDispatcher\\EventDispatcherInterface',
-            'Symfony\\Component\\EventDispatcher\\EventDispatcher'
+            EventDispatcherInterface::class,
+            EventDispatcher::class
         );
     }
 
