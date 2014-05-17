@@ -1,5 +1,5 @@
 before_commands:
-  - "composer install"
+  - "composer update"
 
 tools:
   php_code_coverage:
