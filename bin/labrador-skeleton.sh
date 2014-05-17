@@ -38,12 +38,19 @@ for item in "${dirs[@]}"
         fi
     done
 
+echo "Copying over configuration and setup files..."
+
 cp "$labPath/init.php" "$scriptPath/init.php"
+cp "$labPath/LICENSE" "$scriptPath/LICENSE"
+cp "$labPath/phpunit.xml.dist" "$scriptPath/phpunit.xml.dist"
 cp "$labPath/config/master_config.php" "$scriptPath/config/master_config.php"
 cp "$labPath/config/bootstraps.php" "$scriptPath/config/bootstraps.php"
 cp "$labPath/config/services.php" "$scriptPath/config/services.php"
 cp "$labPath/config/routes.php" "$scriptPath/config/routes.php"
 cp "$labPath/public/index.php" "$scriptPath/public/index.php"
+
+echo
+echo "Finished creating your project!"
 
 
 
