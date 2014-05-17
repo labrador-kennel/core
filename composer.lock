@@ -3,7 +3,7 @@
         "This file locks the dependencies of your project to a known state",
         "Read more about it at http://getcomposer.org/doc/01-basic-usage.md#composer-lock-the-lock-file"
     ],
-    "hash": "d3cff237e820c4770fec99cf133137bf",
+    "hash": "e63728d1106a12587a2ce2ad17b497d2",
     "packages": [
         {
             "name": "cspray/configlet",
@@ -51,16 +51,16 @@
         },
         {
             "name": "nikic/fast-route",
-            "version": "dev-master",
+            "version": "v0.1.0",
             "source": {
                 "type": "git",
                 "url": "https://github.com/nikic/FastRoute.git",
-                "reference": "bb016fd62e8410a65ab21daebc24b058a24a90eb"
+                "reference": "29c5bf70254d8ce59414646de3e9e43aafc9735e"
             },
             "dist": {
                 "type": "zip",
-                "url": "https://api.github.com/repos/nikic/FastRoute/zipball/bb016fd62e8410a65ab21daebc24b058a24a90eb",
-                "reference": "bb016fd62e8410a65ab21daebc24b058a24a90eb",
+                "url": "https://api.github.com/repos/nikic/FastRoute/zipball/29c5bf70254d8ce59414646de3e9e43aafc9735e",
+                "reference": "29c5bf70254d8ce59414646de3e9e43aafc9735e",
                 "shasum": ""
             },
             "require": {
@@ -68,11 +68,8 @@
             },
             "type": "library",
             "autoload": {
-                "psr-4": {
-                    "FastRoute\\": "src/"
-                },
                 "files": [
-                    "src/functions.php"
+                    "src/bootstrap.php"
                 ]
             },
             "notification-url": "https://packagist.org/downloads/",
@@ -90,7 +87,7 @@
                 "router",
                 "routing"
             ],
-            "time": "2014-04-29 05:20:49"
+            "time": "2014-03-04 15:05:38"
         },
         {
             "name": "psr/log",
@@ -427,19 +424,17 @@
             "time": "2014-04-27 13:39:18"
         }
     ],
-    "packages-dev": [
-
-    ],
+    "packages-dev": null,
     "aliases": [
 
     ],
     "minimum-stability": "stable",
-    "stability-flags": {
-        "nikic/fast-route": 20
-    },
-    "platform": [
+    "stability-flags": [
 
     ],
+    "platform": {
+        "php": "~5.5"
+    },
     "platform-dev": [
 
     ]
