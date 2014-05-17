@@ -13,7 +13,7 @@ fi
 
 if [ ! -d "$labPath" ]
 then
-    echo "Labrador could not be found at ./vendor/cspray/labrador...ABORTING!"
+    echo "Labrador could not be found at ./vendor/cspray/labrador ... ABORTING!"
     exit 255
 fi
 
@@ -40,17 +40,61 @@ for item in "${dirs[@]}"
 
 echo "Copying over configuration and setup files..."
 
-cp "$labPath/init.php" "$scriptPath/init.php"
-cp "$labPath/LICENSE" "$scriptPath/LICENSE"
-cp "$labPath/phpunit.xml.dist" "$scriptPath/phpunit.xml.dist"
-cp "$labPath/config/master_config.php" "$scriptPath/config/master_config.php"
-cp "$labPath/config/bootstraps.php" "$scriptPath/config/bootstraps.php"
-cp "$labPath/config/services.php" "$scriptPath/config/services.php"
-cp "$labPath/config/routes.php" "$scriptPath/config/routes.php"
-cp "$labPath/public/index.php" "$scriptPath/public/index.php"
+if [ -f "$scriptPath/init.php" ]
+then
+    echo "$scriptPath/init.php already exists ... skipping"
+else
+    cp "$labPath/init.php" "$scriptPath/init.php"
+fi
+
+if [ -f "$scriptPath/LICENSE" ]
+then
+    echo "$scriptPath/LICENSE already exists ... skipping"
+else
+    cp "$labPath/LICENSE" "$scriptPath/LICENSE"
+fi
+
+if [ -f "$scriptPath/phpunit.xml.dist" ]
+then
+    echo "$scriptPath/phpunit.xml.dist already exists ... skipping"
+else
+   cp "$labPath/phpunit.xml.dist" "$scriptPath/phpunit.xml.dist"
+fi
+
+if [ -f "$scriptPath/config/master_config.php" ]
+then
+    echo "$scriptPath/config/master_config.php already exists ... skipping"
+else
+    cp "$labPath/config/master_config.php" "$scriptPath/config/master_config.php"
+fi
+
+if [ -f "$scriptPath/config/bootstraps.php" ]
+then
+    echo "$scriptPath/config/bootstraps.php already exists ... skipping"
+else
+    cp "$labPath/config/bootstraps.php" "$scriptPath/config/bootstraps.php"
+fi
+
+if [ -f "$scriptPath/config/services.php" ]
+then
+    echo "$scriptPath/config/services.php already exists ... skipping"
+else
+    cp "$labPath/config/services.php" "$scriptPath/config/services.php"
+fi
+
+if [ -f "$scriptPath/config/routes.php" ]
+then
+    echo "$scriptPath/config/routes.php already exists ... skipping"
+else
+    cp "$labPath/config/routes.php" "$scriptPath/config/routes.php"
+fi
+
+if [ -f "$scriptPath/public/index.php" ]
+then
+    echo "$scriptPath/public/inxed.php already exists ... skipping"
+else
+    cp "$labPath/public/index.php" "$scriptPath/public/index.php"
+fi
 
 echo
 echo "Finished creating your project!"
-
-
-
