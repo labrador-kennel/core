@@ -113,5 +113,8 @@ Vagrant.configure("2") do |config|
     config.vagrant.host = data['vagrant']['host'].gsub(":", "").intern
   end
 
+  config.vm.provision :shell, :path => "bin/vagrant/composer-provisioner.sh"
+
+
 end
 
