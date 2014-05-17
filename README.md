@@ -1,6 +1,6 @@
 # Labrador
 
-[![Build Status](https://travis-ci.org/cspray/labrador.svg?branch=master)]
+[![Build Status](https://travis-ci.org/cspray/labrador.svg?branch=master)](https://travis-ci.org/cspray/labrador.svg?branch=master)
 [![Scrutinizer Code Quality](https://scrutinizer-ci.com/g/cspray/labrador/badges/quality-score.png?b=master)](https://scrutinizer-ci.com/g/cspray/labrador/?branch=master)
 [![License](https://poser.pugx.org/cspray/labrador/license.png)](https://packagist.org/packages/cspray/labrador)
 
@@ -22,3 +22,6 @@ if (!$usingComposer) {
 }
 ```
 
+## Quick Setup
+
+I want Labrador to be really easy for you to get started with.
