@@ -13,7 +13,7 @@ fi
 
 if [ ! -d "$labPath" ]
 then
-    echo "Labrador could not be found at $labPath...ABORTING!"
+    echo "Labrador could not be found at ./vendor/cspray/labrador...ABORTING!"
     exit 255
 fi
 
