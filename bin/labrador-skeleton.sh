@@ -3,13 +3,7 @@
 scriptPath=$(pwd)
 labPath="$scriptPath/vendor/cspray/labrador"
 projectName=$1
-
-# Check to make sure that there is at least some project name given
-if [ -z "$projectName" ]
-then
-    echo "You must provide a valid project name to get started"
-    exit 255
-fi
+includeSrc=0
 
 if [ ! -d "$labPath" ]
 then
@@ -17,23 +11,29 @@ then
     exit 255
 fi
 
+if [ -z "$projectName" ]
+then
+    echo "No project name was given for creation of /src directory ... SKIPPING!"
+    dirs=("$scriptPath/public" "$scriptPath/config")
+else
+    dirs=("$scriptPath/src/$projectName" "$scriptPath/public" "$scriptPath/config")
+fi
+
 echo "Creating new Labrador project named $projectName"
 echo
-
-dirs=("$scriptPath/src/$projectName" "$scriptPath/public" "$scriptPath/config")
 
 for item in "${dirs[@]}"
     do
         if [ -d "$item" ]
         then
-            echo "$item already exists ... skipping"
+            echo "$item already exists ... SKIPPING!"
         else
             if [ -w "$item" ]
             then
-                echo "WARNING! $item is not writable ... skipping"
+                echo "WARNING! $item is not writable ... SKIPPING!"
             else
-                echo "Creating $item ... "
-                mkdir -p "$item"
+                echo "Creating $item ... \c"
+                mkdir -p "$item" || echo "FAILED!"
             fi
         fi
     done
