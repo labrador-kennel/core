@@ -1,4 +1,4 @@
-#!/bin/sh
+#!/bin/bash
 
 scriptPath=$(pwd)
 labPath="$scriptPath/vendor/cspray/labrador"
