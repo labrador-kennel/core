@@ -130,4 +130,8 @@ class FastRouteRouter implements Router {
         return $dispatcher;
     }
 
+    function getRoutes() {
+
+    }
+
 } 
