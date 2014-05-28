@@ -7,7 +7,7 @@
  * @since   1.0
  */
 
-namespace LabradorDemo\Controller;
+namespace LabradorGuide\Controller;
 
 use Symfony\Component\HttpFoundation\Response;
 
@@ -21,23 +21,9 @@ class HomeController {
         $this->docDir = $docDir;
     }
 
-
     function index() {
         $response = file_get_contents($this->templatesDir . '/home.php');
         return new Response($response);
-    }
-
-    function userGuide() {
-        $guide = $this->getUserGuide();
-        if (!$guide) {
-            $guide = 'There were problems rendering the Labrador User Guide.';
-        }
-
-        return new Response($guide);
-    }
-
-    private function getUserGuide() {
-
     }
 
 } 
