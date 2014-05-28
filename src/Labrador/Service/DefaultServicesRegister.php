@@ -74,8 +74,6 @@ class DefaultServicesRegister implements Register {
                 'dataGenerator' => GcbDataGenerator::class
             ]
         );
-
-
     }
 
     private function registerSymfonyServices(Injector $injector) {
