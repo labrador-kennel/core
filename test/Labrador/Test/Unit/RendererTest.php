@@ -29,9 +29,8 @@ class RendererTest extends UnitTestCase {
         $renderer = $this->getRenderer();
         $expected = <<<TEXT
 partial
-
 TEXT;
-        $actual = $renderer->renderPartial('partial');
+        $actual = trim($renderer->renderPartial('partial'), PHP_EOL);
         $this->assertSame($expected, $actual);
     }
 
@@ -42,7 +41,7 @@ layout
 foobar
 TEXT;
 
-        $actual = $renderer->renderPartial('layout', ['_content' => 'foobar']);
+        $actual = trim($renderer->renderPartial('layout', ['_content' => 'foobar']), PHP_EOL);
         $this->assertSame($expected, $actual);
     }
 
@@ -54,7 +53,7 @@ layout
 partial
 TEXT;
 
-        $actual = $renderer->render('partial');
+        $actual = trim($renderer->render('partial'), PHP_EOL);
         $this->assertSame($expected, $actual);
     }
 
