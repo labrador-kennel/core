@@ -7,9 +7,11 @@
  * @since   1.0
  */
 
-namespace LabradorDemo\Service;
+namespace LabradorGuide\Service;
 
+use LabradorGuide\Controller\HomeController;
 use Auryn\Injector;
+use Labrador\Renderer;
 use Labrador\Service\Register;
 
 class ControllerRegister implements Register {
@@ -23,11 +25,11 @@ class ControllerRegister implements Register {
     }
 
     function register(Injector $injector) {
-        $injector->share('LabradorDemo\\Controller\\HomeController');
-        $injector->define('LabradorDemo\\Controller\\HomeController', [
-            ':templatesDir' => $this->templatesDir,
-            ':docDir' => $this->docDir
+        $injector->share(Renderer::class);
+        $injector->define(Renderer::class, [
+           ':templatesDir' => $this->templatesDir
         ]);
+        $injector->share(HomeController::class);
     }
 
 } 

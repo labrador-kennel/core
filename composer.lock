@@ -4,7 +4,7 @@
         "Read more about it at http://getcomposer.org/doc/01-basic-usage.md#composer-lock-the-lock-file",
         "This file is @generated automatically"
     ],
-    "hash": "8168b5db43959ff93fff986435964ad0",
+    "hash": "f58e83827492fb9300314324d67449d6",
     "packages": [
         {
             "name": "cspray/configlet",
