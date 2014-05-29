@@ -21,7 +21,7 @@ class Renderer {
     function __construct(Escaper $escaper, $templatesDir, $layout = null) {
         $this->escaper = $escaper;
         $this->templates = rtrim($templatesDir, '/ ');
-        $this->layout = (string) $layout;
+        $this->setLayout($layout);
     }
 
     function getTemplatesDir() {
@@ -29,7 +29,7 @@ class Renderer {
     }
 
     function setLayout($layout) {
-        $this->layout = (string) $layout;
+        $this->layout = trim($layout, '/ ');
     }
 
     function getLayout() {
