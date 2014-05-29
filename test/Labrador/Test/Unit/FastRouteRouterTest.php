@@ -72,10 +72,7 @@ class FastRouteRouterTest extends UnitTestCase {
     function testRouterMethodNotAllowedThrowsMethodNotAllowedException() {
         $router = $this->getRouter();
 
-        $request = $this->getMock('Symfony\\Component\\HttpFoundation\\Request');
-        $request->expects($this->once())->method('getMethod')->will($this->returnValue('POST'));
-        $request->expects($this->once())->method('getPathInfo')->will($this->returnValue('/foo'));
-
+        $request = Request::create('http://labrador.dev/foo', 'POST');
         $router->get('/foo', 'foo#bar');
 
         $expectedExc = 'Labrador\\Exception\\MethodNotAllowedException';
@@ -88,7 +85,6 @@ class FastRouteRouterTest extends UnitTestCase {
         $router = $this->getRouter();
 
         $request = Request::create('http://labrador.dev/foo/bar', 'PUT');
-
         $router->put('/foo/bar', 'foo#bar');
 
         $controllerAction = $router->match($request);
