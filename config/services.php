@@ -21,9 +21,9 @@ use Configlet\Config;
  */
 return function(Injector $injector, Config $config) {
 
-    $demoTemplates = $config[ConfigDirective::ROOT_DIR] . '/src/LabradorDemo/_templates';
+    $demoTemplates = $config[ConfigDirective::ROOT_DIR] . '/src/LabradorGuide/_templates';
     $docDir = $config[ConfigDirective::ROOT_DIR] . '/doc';
-    (new \LabradorDemo\Service\ControllerRegister($demoTemplates, $docDir))->register($injector);
+    (new \LabradorGuide\Service\ControllerRegister($demoTemplates, $docDir))->register($injector);
 
     // This service register MUST be ran OR you MUST provide an instance of
     // Labrador\Application to the $provider with appropriate dependencies defined
