@@ -9,20 +9,19 @@
 
 namespace LabradorGuide\Controller;
 
+use Labrador\Renderer;
 use Symfony\Component\HttpFoundation\Response;
 
 class HomeController {
 
-    private $templatesDir;
-    private $docDir;
+    private $renderer;
 
-    function __construct($templatesDir, $docDir) {
-        $this->templatesDir = $templatesDir;
-        $this->docDir = $docDir;
+    function __construct(Renderer $renderer) {
+        $this->renderer = $renderer;
     }
 
     function index() {
-        $response = file_get_contents($this->templatesDir . '/home.php');
+        $response = $this->renderer->renderPartial('home');
         return new Response($response);
     }
 
