@@ -44,6 +44,18 @@ class Route {
             return 'closure{}';
         }
 
+        if (is_object($handler)) {
+            return get_class($handler);
+        }
+
+        if (is_array($handler)) {
+            if (is_callable($handler)) {
+                return get_class($handler[0]) . '::' . $handler[1];
+            }
+
+            return 'Array(' . count($handler) . ')';
+        }
+
         return $handler;
     }
 
