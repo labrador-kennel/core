@@ -24,6 +24,7 @@ class FastRouteRouter implements Router {
 
     private $dispatcherCb;
     private $collector;
+    private $routes = [];
 
     /**
      * Pass a FastRoute\RouteCollector and a callback that returns a FastRoute\Dispatcher.
@@ -43,48 +44,53 @@ class FastRouteRouter implements Router {
 
     /**
      * @param string $pattern
-     * @param mixed $controllerAction
+     * @param mixed $handler
      * @return $this|void
      */
-    function get($pattern, $controllerAction) {
-        $this->collector->addRoute('GET', $pattern, $controllerAction);
+    function get($pattern, $handler) {
+        $this->addRoute('GET', $pattern, $handler);
     }
 
     /**
      * @param string $pattern
-     * @param mixed $controllerAction
+     * @param mixed $handler
      * @return $this|void
      */
-    function post($pattern, $controllerAction) {
-        $this->collector->addRoute('POST', $pattern, $controllerAction);
+    function post($pattern, $handler) {
+        $this->addRoute('POST', $pattern, $handler);
     }
 
     /**
      * @param string $pattern
-     * @param mixed $controllerAction
+     * @param mixed $handler
      * @return $this|void
      */
-    function put($pattern, $controllerAction) {
-        $this->collector->addRoute('PUT', $pattern, $controllerAction);
+    function put($pattern, $handler) {
+        $this->addRoute('PUT', $pattern, $handler);
     }
 
     /**
      * @param string $pattern
-     * @param mixed $controllerAction
+     * @param mixed $handler
      * @return $this|void
      */
-    function delete($pattern, $controllerAction) {
-        $this->collector->addRoute('DELETE', $pattern, $controllerAction);
+    function delete($pattern, $handler) {
+        $this->addRoute('DELETE', $pattern, $handler);
     }
 
     /**
      * @param string $httpMethod
      * @param string $pattern
-     * @param mixed $controllerAction
+     * @param mixed $handler
      * @return $this|void
      */
-    function custom($httpMethod, $pattern, $controllerAction) {
-        $this->collector->addRoute($httpMethod, $pattern, $controllerAction);
+    function custom($httpMethod, $pattern, $handler) {
+        $this->addRoute($httpMethod, $pattern, $handler);
+    }
+
+    private function addRoute($method, $pattern, $handler) {
+        $this->routes[] = new Route($pattern, $method, $handler);
+        $this->collector->addRoute($method, $pattern, $handler);
     }
 
     /**
@@ -131,7 +137,7 @@ class FastRouteRouter implements Router {
     }
 
     function getRoutes() {
-
+        return $this->routes;
     }
 
 } 
