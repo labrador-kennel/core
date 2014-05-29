@@ -9,6 +9,7 @@
 
 namespace Labrador;
 
+use Labrador\Exception\FileNotFoundException;
 use Zend\Escaper\Escaper;
 
 class Renderer {
@@ -36,11 +37,18 @@ class Renderer {
     }
 
     function render($template, array $data = []) {
-        return $this->renderPartial($this->getLayout(), ['_content' => $this->renderPartial($template, $data)]);
+        // @todo Need to make the _content $data attribute configurable
+        $data['_content'] = $this->renderPartial($template, $data);
+        return $this->renderPartial($this->getLayout(), $data);
     }
 
     function renderPartial($_template, array $_data = []) {
         $_template = $this->getTemplatePath($_template);
+        if (!file_exists($_template)) {
+            $msg = 'The file %s could not be found.';
+            throw new FileNotFoundException(sprintf($msg, $_template));
+        }
+
         extract($_data, EXTR_SKIP);
         ob_start();
         include $_template;

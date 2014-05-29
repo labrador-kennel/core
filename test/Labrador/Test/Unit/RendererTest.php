@@ -57,6 +57,29 @@ TEXT;
         $this->assertSame($expected, $actual);
     }
 
+    function testRenderWithData() {
+        $renderer = $this->getRenderer();
+        $renderer->setLayout('layout');
+        $expected = <<<TEXT
+layout
+controller_name#action
+labrador
+TEXT;
+
+        $actual = trim($renderer->render('controller_name/action', ['foobar' => 'labrador']), PHP_EOL);
+        $this->assertSame($expected, $actual);
+    }
+
+    function testRenderWithInvalidFile() {
+        $renderer = $this->getRenderer();
+        $renderer->setLayout('layout');
+
+        $expectedException = 'Labrador\\Exception\\FileNotFoundException';
+        $expectedMsg = 'The file ' . $this->templates . '/' . 'not_found.php could not be found.';
+        $this->setExpectedException($expectedException, $expectedMsg);
+        $renderer->render('not_found');
+    }
+
 
 
 } 
