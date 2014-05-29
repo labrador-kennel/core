@@ -1,0 +1,55 @@
+h1,h2,h3,h4,h5,h6 {
+    margin: 0;
+    font-size: 100%;
+}
+
+h1 { font-size: 250%; }
+h2 { font-size: 200%; }
+h3 { font-size: 175%; }
+h4 { font-size: 150%; }
+h5 { font-size: 125%; }
+h6 { font-size: 110%; }
+
+header {
+    background-color: rgb(61, 45, 45);
+    color: white;
+    height: 60px;
+}
+
+header h1 {
+    line-height: 60px;
+    height: 60px;
+    margin-left: .25em;
+}
+
+
+#main-content {
+    padding: 0 .75em;
+    width: 70%;
+    float: left;
+}
+
+article h1 {
+    font-size: 200%;
+}
+
+aside {
+    width: 25%;
+    float: right;
+    margin-top: .75em;
+    margin-right: .75em;
+}
+
+aside h1 {
+    font-size: 150%;
+}
+
+aside ul {
+    list-style: square;
+    padding: 1em;
+    margin: 0;
+}
+
+aside ul li {
+    margin-bottom: .75em;
+}
