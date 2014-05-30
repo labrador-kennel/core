@@ -159,8 +159,7 @@ class Application implements HttpKernelInterface {
     private function triggerApplicationFinishedEvent(Request $request, Response $response) {
         $event = new ApplicationFinishedEvent($request, $response);
         $this->eventDispatcher->dispatch(Events::APP_FINISHED, $event);
-
-        return $response;
+        return $event->getResponse();
     }
 
     private function handleCaughtException(Request $request, PhpException $exception, $httpStatus) {
