@@ -64,22 +64,20 @@ class FastRouteRouterTest extends UnitTestCase {
     function testRouterNotFoundThrowsNotFoundException() {
         $router = $this->getRouter();
         $expectedExc = 'Labrador\\Exception\\NotFoundException';
-        $expectedMsg = 'Resource Not Found';
+        $expectedMsg = 'The route GET /foo/bar could not be found.';
         $this->setExpectedException($expectedExc, $expectedMsg);
-        $router->match(new Request());
+        $router->match(Request::create('http://labrador.dev/foo/bar'));
     }
 
     function testRouterMethodNotAllowedThrowsMethodNotAllowedException() {
         $router = $this->getRouter();
 
-        $request = $this->getMock('Symfony\\Component\\HttpFoundation\\Request');
-        $request->expects($this->once())->method('getMethod')->will($this->returnValue('POST'));
-        $request->expects($this->once())->method('getPathInfo')->will($this->returnValue('/foo'));
-
+        $request = Request::create('http://labrador.dev/foo', 'POST');
         $router->get('/foo', 'foo#bar');
+        $router->put('/foo', 'foo#baz');
 
         $expectedExc = 'Labrador\\Exception\\MethodNotAllowedException';
-        $expectedMsg = 'Method Not Allowed';
+        $expectedMsg = 'The method POST is not allowed for route matching /foo. Available methods include [GET, PUT]';
         $this->setExpectedException($expectedExc, $expectedMsg);
         $router->match($request);
     }
@@ -88,7 +86,6 @@ class FastRouteRouterTest extends UnitTestCase {
         $router = $this->getRouter();
 
         $request = Request::create('http://labrador.dev/foo/bar', 'PUT');
-
         $router->put('/foo/bar', 'foo#bar');
 
         $controllerAction = $router->match($request);
