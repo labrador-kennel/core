@@ -295,4 +295,20 @@ class ApplicationTest extends UnitTestCase {
         $this->assertSame('Called from exception thrown listener', $response->getContent());
     }
 
+    function testResponseSetInAppFinishedEventIsReturned() {
+        $request = Request::create('http://labrador.dev');
+        $this->resolver->expects($this->once())
+                       ->method('resolve')
+                       ->will($this->returnValue(function() { return new Response('from handler'); }));
+
+        $eventDispatcher = new EventDispatcher();
+        $eventDispatcher->addListener(Events::APP_FINISHED, function($event) {
+            $event->setResponse(new Response('called from the app_finished listener'));
+        });
+
+        $app = new Application($this->router, $this->resolver, $eventDispatcher);
+        $response = $app->handle($request);
+        $this->assertSame('called from the app_finished listener', $response->getContent());
+    }
+
 }
