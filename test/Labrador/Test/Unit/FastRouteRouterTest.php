@@ -120,4 +120,60 @@ class FastRouteRouterTest extends UnitTestCase {
         $this->assertSame(['handler' => 'controller#action'], $request->attributes->get('_labrador'));
     }
 
+    function testGetRoutesWithJustOne() {
+        $router = $this->getRouter();
+        $router->get('/foo', 'handler');
+
+        $routes = $router->getRoutes();
+        $this->assertCount(1, $routes);
+        $this->assertInstanceOf('Labrador\\Router\\Route', $routes[0]);
+        $this->assertSame('/foo', $routes[0]->getPattern());
+        $this->assertSame('GET', $routes[0]->getMethod());
+        $this->assertSame('handler', $routes[0]->getHandler());
+    }
+
+    function testGetRoutesWithOnePatternSupportingMultipleMethods() {
+        $router = $this->getRouter();
+        $router->get('/foo/bar', 'foo_bar_get');
+        $router->post('/foo/bar', 'foo_bar_post');
+        $router->put('/foo/bar', 'foo_bar_put');
+
+        $expected = [
+            ['GET', '/foo/bar', 'foo_bar_get'],
+            ['POST', '/foo/bar', 'foo_bar_post'],
+            ['PUT', '/foo/bar', 'foo_bar_put']
+        ];
+        $actual = [];
+        $routes = $router->getRoutes();
+        foreach ($routes as $route) {
+            $this->assertInstanceOf('Labrador\\Router\\Route', $route);
+            $actual[] = [$route->getMethod(), $route->getPattern(), $route->getHandler()];
+        }
+
+        $this->assertSame($expected, $actual);
+    }
+
+    function testGetRoutesWithStaticAndVariable() {
+        $router = $this->getRouter();
+        $router->get('/foo/bar/{id}', 'foo_bar_id');
+        $router->get('/foo/baz/{name}', 'foo_baz_name');
+        $router->post('/foo/baz', 'foo_baz_post');
+        $router->put('/foo/quz', 'foo_quz_put');
+
+        $expected = [
+            ['GET', '/foo/bar/{id}', 'foo_bar_id'],
+            ['GET', '/foo/baz/{name}', 'foo_baz_name'],
+            ['POST', '/foo/baz', 'foo_baz_post'],
+            ['PUT', '/foo/quz', 'foo_quz_put']
+        ];
+        $actual = [];
+        $routes = $router->getRoutes();
+        foreach ($routes as $route) {
+            $this->assertInstanceOf('Labrador\\Router\\Route', $route);
+            $actual[] = [$route->getMethod(), $route->getPattern(), $route->getHandler()];
+        }
+
+        $this->assertSame($expected, $actual);
+    }
+
 }

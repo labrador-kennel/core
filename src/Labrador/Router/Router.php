@@ -65,4 +65,9 @@ interface Router {
      */
     function match(Request $request);
 
+    /**
+     * @return Route[]
+     */
+    function getRoutes();
+
 } 
