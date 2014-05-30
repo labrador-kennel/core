@@ -101,15 +101,19 @@ class FastRouteRouter implements Router {
      */
     function match(Request $request) {
         $dispatcher = $this->getDispatcher();
-        $route = $dispatcher->dispatch($request->getMethod(), $request->getPathInfo());
+        $method = $request->getMethod();
+        $path = $request->getPathInfo();
+        $route = $dispatcher->dispatch($method, $path);
         $status = array_shift($route);
 
         if (!$route || $status === $dispatcher::NOT_FOUND) {
-            throw new NotFoundException('Resource Not Found');
+            $msg = 'The route %s %s could not be found.';
+            throw new NotFoundException(sprintf($msg, $method, $path));
         }
 
         if ($status === $dispatcher::METHOD_NOT_ALLOWED) {
-            throw new MethodNotAllowedException('Method Not Allowed');
+            $msg = 'The method %s is not allowed for route matching %s. Available methods include [%s]';
+            throw new MethodNotAllowedException(sprintf($msg, $method, $path, implode(', ', $route[0])));
         }
 
         list($handler, $params) = $route;

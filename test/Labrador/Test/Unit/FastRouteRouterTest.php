@@ -64,9 +64,9 @@ class FastRouteRouterTest extends UnitTestCase {
     function testRouterNotFoundThrowsNotFoundException() {
         $router = $this->getRouter();
         $expectedExc = 'Labrador\\Exception\\NotFoundException';
-        $expectedMsg = 'Resource Not Found';
+        $expectedMsg = 'The route GET /foo/bar could not be found.';
         $this->setExpectedException($expectedExc, $expectedMsg);
-        $router->match(new Request());
+        $router->match(Request::create('http://labrador.dev/foo/bar'));
     }
 
     function testRouterMethodNotAllowedThrowsMethodNotAllowedException() {
@@ -74,9 +74,10 @@ class FastRouteRouterTest extends UnitTestCase {
 
         $request = Request::create('http://labrador.dev/foo', 'POST');
         $router->get('/foo', 'foo#bar');
+        $router->put('/foo', 'foo#baz');
 
         $expectedExc = 'Labrador\\Exception\\MethodNotAllowedException';
-        $expectedMsg = 'Method Not Allowed';
+        $expectedMsg = 'The method POST is not allowed for route matching /foo. Available methods include [GET, PUT]';
         $this->setExpectedException($expectedExc, $expectedMsg);
         $router->match($request);
     }
