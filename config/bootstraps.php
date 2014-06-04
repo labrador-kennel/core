@@ -25,4 +25,6 @@ return function(Injector $injector, Config $config) {
     $router = $injector->make('Labrador\\Router\\FastRouteRouter');
     (new ConfigRoutesBootstrap($config, $router))->run();
 
+    $injector->make('Labrador\\Development\\HtmlToolbar')->registerEventListeners();
+
 };
