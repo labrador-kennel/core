@@ -11,15 +11,20 @@ namespace Labrador\Service;
 
 use Auryn\Injector;
 use Labrador\Service\Register;
-use Labrador\Development\Runtimes;
+use Labrador\Development\GitBranch;
 
 class DevelopmentServiceRegister implements Register {
 
+    private $gitDir;
+
+    function __construct($gitDir) {
+        $this->gitDir = $gitDir;
+    }
+
     function register(Injector $injector) {
-        $requestTime = $_SERVER['REQUEST_TIME_FLOAT'];
-        $injector->share(Runtimes::class);
-        $injector->define(Runtimes::class, [
-            ':requestTime' => $requestTime
+        $injector->share(GitBranch::class);
+        $injector->define(GitBranch::class, [
+            ':gitDir' => $this->gitDir
         ]);
     }
 

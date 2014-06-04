@@ -21,11 +21,13 @@ abstract class Toolbar {
     private $eventDispatcher;
     protected $runtimeProfiler;
     protected $request;
+    protected $gitBranch;
 
-    function __construct(EventDispatcherInterface $eventDispatcher, RuntimeProfiler $runtimeProfiler, Request $request) {
+    function __construct(EventDispatcherInterface $eventDispatcher, RuntimeProfiler $runtimeProfiler, Request $request, GitBranch $gitBranch) {
         $this->eventDispatcher = $eventDispatcher;
         $this->runtimeProfiler = $runtimeProfiler;
         $this->request = $request;
+        $this->gitBranch = $gitBranch;
     }
 
     function registerEventListeners() {
