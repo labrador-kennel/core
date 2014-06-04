@@ -85,6 +85,7 @@ CSS;
         $memory = $this->runtimeProfiler->getPeakMemoryUsage();
         $totalTime = number_format($this->runtimeProfiler->getTotalTimeElapsed(), 3);
         $handler = $this->request->attributes->get('_labrador')['handler'];
+        $branch = $this->gitBranch->getBranchName();
         return <<<HTML
 <section id="labrador-dev-toolbar">
     <h1>Labrador Dev Bar</h1>
@@ -92,6 +93,7 @@ CSS;
         <li><b>Memory</b>: {$memory}MB</li>
         <li><b>Time</b>: {$totalTime}</li>
         <li><b>Handler</b>: {$handler}</li>
+        <li><b>Git</b>: {$branch}</li>
     </ul>
 </section>
 HTML;

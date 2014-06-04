@@ -10,6 +10,7 @@
  */
 
 use Labrador\Service\DefaultServicesRegister;
+use Labrador\Service\DevelopmentServiceRegister;
 use Labrador\ConfigDirective;
 use Auryn\Injector;
 use Configlet\Config;
@@ -28,7 +29,7 @@ return function(Injector $injector, Config $config) {
     // This service register MUST be ran OR you MUST provide an instance of
     // Labrador\Application to the $provider with appropriate dependencies defined
     (new DefaultServicesRegister())->register($injector);
-    (new \Labrador\Service\DevelopmentServiceRegister())->register($injector);
+    (new DevelopmentServiceRegister($config[ConfigDirective::ROOT_DIR]  . '/.git'))->register($injector);
 
 };
 
