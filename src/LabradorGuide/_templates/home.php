@@ -3,7 +3,7 @@
     <head>
         <title>Labrador Demo</title>
         <meta charset="utf-8" />
-        <link href="/css/labrador_guide/normalize.css" type="text/css" rel="stylesheet" />
+        <link href="/css/normalize.css" type="text/css" rel="stylesheet" />
         <link href="/css/labrador_guide/prism.css" type="text/css" rel="stylesheet" />
         <link href="/css/labrador_guide/main.css" type="text/css" rel="stylesheet" />
         <script src="/js/labrador_guide/prism.js"></script>
