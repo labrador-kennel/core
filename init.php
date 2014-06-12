@@ -35,12 +35,12 @@ use Labrador\Application;
 use Labrador\Bootstrap\FrontControllerBootstrap;
 use Symfony\Component\HttpFoundation\Request;
 
-$masterConfig = include __DIR__ . '/config/master_config.php';
+$appConfig = include __DIR__ . '/config/application.php';
 
-/** @var Auryn\Provider $provider */
+/** @var Auryn\Injector $provider */
 /** @var Labrador\Application $app */
 /** @var Symfony\Component\HttpFoundation\Request $request */
-$provider = (new FrontControllerBootstrap($masterConfig))->run();
+$provider = (new FrontControllerBootstrap($appConfig))->run();
 $app = $provider->make(Application::class);
 $request = $provider->make(Request::class);
 
