@@ -9,15 +9,14 @@
  * @since   1.0
  */
 
-namespace Labrador\Service;
+namespace Labrador;
 
-use Labrador\Application;
+use Labrador\Service\Register;
 use Labrador\Router\FastRouteRouter;
 use Labrador\Router\Router;
 use Labrador\Router\HandlerResolver;
 use Labrador\Router\ServiceHandlerResolver;
 use Auryn\Injector;
-use Configlet\MasterConfig;
 use FastRoute\RouteCollector;
 use FastRoute\RouteParser\Std as StdRouteParser;
 use FastRoute\DataGenerator\GroupCountBased as GcbDataGenerator;
@@ -29,7 +28,7 @@ use Symfony\Component\EventDispatcher\EventDispatcherInterface;
 /**
  * @codeCoverageIgnore
  */
-class DefaultServicesRegister implements Register {
+class Services implements Register {
 
     /**
      * @param Injector $injector

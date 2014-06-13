@@ -8,9 +8,7 @@
  * @since   1.0
  */
 
-use Labrador\ConfigDirective;
-use Labrador\Service\DefaultServicesRegister;
-use Labrador\Service\DevelopmentServiceRegister;
+use Labrador\Services as LabradorServices;
 use Labrador\Bootstrap\IniSetBootstrap;
 use Configlet\Config;
 use Auryn\Injector;
@@ -19,7 +17,7 @@ return function(Injector $injector, Config $config) {
 
     // This service register MUST be ran OR you MUST provide an instance of
     // Labrador\Application to the $provider with appropriate dependencies defined
-    (new DefaultServicesRegister())->register($injector);
+    (new LabradorServices())->register($injector);
 
     if ($config['ini'] instanceof Config) {
         (new IniSetBootstrap($config['ini']))->run();

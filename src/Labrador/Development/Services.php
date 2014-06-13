@@ -7,13 +7,12 @@
  * @since   1.0
  */
 
-namespace Labrador\Service;
+namespace Labrador\Development;
 
 use Auryn\Injector;
 use Labrador\Service\Register;
-use Labrador\Development\GitBranch;
 
-class DevelopmentServiceRegister implements Register {
+class Services implements Register {
 
     private $gitDir;
 

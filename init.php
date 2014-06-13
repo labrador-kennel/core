@@ -34,7 +34,7 @@ require_once __DIR__ . '/vendor/autoload.php';
 use Labrador\Application;
 use Labrador\ConfigDirective;
 use Labrador\Bootstrap\FrontControllerBootstrap;
-use Labrador\Service\DevelopmentServiceRegister as LabradorDeveloperServices;
+use Labrador\Development\Services as DevelopmentServices;
 use LabradorGuide\Service\ControllerRegister as LabradorGuideServices;
 use Symfony\Component\HttpFoundation\Request;
 use Configlet\MasterConfig;
@@ -54,7 +54,7 @@ $app->onHandle(function() use($config, $injector) {
 
 $app->onHandle(function() use($config, $injector) {
     if ($config[ConfigDirective::ENVIRONMENT] === 'development') {
-        (new LabradorDeveloperServices($config[ConfigDirective::ROOT_DIR]  . '/.git'))->register($injector);
+        (new DevelopmentServices($config[ConfigDirective::ROOT_DIR]  . '/.git'))->register($injector);
         $injector->make('Labrador\\Development\\HtmlToolbar')->registerEventListeners();
     }
 });
