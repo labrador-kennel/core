@@ -1,7 +1,7 @@
 <?php
 
 /**
- * A bootstrap that will register all services and run all other bootstraps.
+ * Creates the Auryn Injector, primary configuration and boots up the application.
  * 
  * @license See LICENSE in source root
  * @version 1.0
@@ -32,7 +32,7 @@ class FrontControllerBootstrap implements Bootstrap {
     }
 
     /**
-     * @return Provider|mixed
+     * @return Provider
      * @throws \Labrador\Exception\BootupException
      */
     function run() {
@@ -42,15 +42,16 @@ class FrontControllerBootstrap implements Bootstrap {
         $configCb = $this->configCb;
         $configCb($config);
 
+        $injector->share($config);
         $this->runBootstrap($injector, $config);
 
         return $injector;
     }
 
     private function runBootstrap(Injector $injector, Config $config) {
-        $bootstraps = $config[ConfigDirective::BOOTSTRAP_CALLBACK];
-        if (is_callable($bootstraps)) {
-            $bootstraps($injector, $config);
+        $bootstrap = $config[ConfigDirective::BOOTSTRAP_CALLBACK];
+        if (is_callable($bootstrap)) {
+            $bootstrap($injector, $config);
         }
     }
 

@@ -32,16 +32,33 @@ HTML;
 require_once __DIR__ . '/vendor/autoload.php';
 
 use Labrador\Application;
+use Labrador\ConfigDirective;
 use Labrador\Bootstrap\FrontControllerBootstrap;
+use Labrador\Service\DevelopmentServiceRegister as LabradorDeveloperServices;
+use LabradorGuide\Service\ControllerRegister as LabradorGuideServices;
 use Symfony\Component\HttpFoundation\Request;
+use Configlet\MasterConfig;
 
 $appConfig = include __DIR__ . '/config/application.php';
 
-/** @var Auryn\Injector $provider */
+/** @var Auryn\Injector $injector */
 /** @var Labrador\Application $app */
 /** @var Symfony\Component\HttpFoundation\Request $request */
-$provider = (new FrontControllerBootstrap($appConfig))->run();
-$app = $provider->make(Application::class);
+$injector = (new FrontControllerBootstrap($appConfig))->run();
+$config = $injector->make(MasterConfig::class);
+$app = $injector->make(Application::class);
+
+$app->onHandle(function() use($config, $injector) {
+    (new LabradorGuideServices($config))->register($injector);
+});
+
+$app->onHandle(function() use($config, $injector) {
+    if ($config[ConfigDirective::ENVIRONMENT] === 'development') {
+        (new LabradorDeveloperServices($config[ConfigDirective::ROOT_DIR]  . '/.git'))->register($injector);
+        $injector->make('Labrador\\Development\\HtmlToolbar')->registerEventListeners();
+    }
+});
 
 $app->getRouter()->get('/', 'LabradorGuide\\Controller\\HomeController#index');
-$app->handle($provider->make(Request::class))->send();
+
+$app->handle($injector->make(Request::class))->send();

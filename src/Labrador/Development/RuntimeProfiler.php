@@ -40,8 +40,4 @@ class RuntimeProfiler {
         return $memory / 1024 / 1024;
     }
 
-
-
-
-
-} 
+}

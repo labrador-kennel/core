@@ -39,7 +39,6 @@ class DefaultServicesRegister implements Register {
         $this->registerLabradorServices($injector);
         $this->registerFastRouteServices($injector);
         $this->registerSymfonyServices($injector);
-        $injector->share(MasterConfig::class);
     }
 
     private function registerLabradorServices(Injector $injector) {
