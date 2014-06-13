@@ -9,27 +9,27 @@
 
 namespace LabradorGuide\Service;
 
+use Configlet\Config;
+use Labrador\ConfigDirective;
 use LabradorGuide\Controller\HomeController;
-use Auryn\Injector;
 use Labrador\Renderer;
 use Labrador\Service\Register;
+use Auryn\Injector;
 
 class ControllerRegister implements Register {
 
-    private $docDir;
     private $templatesDir;
 
-    function __construct($templatesDir, $docDir) {
-        $this->templatesDir = $templatesDir;
-        $this->docDir = $docDir;
+    function __construct(Config $config) {
+        $this->templatesDir = $config[ConfigDirective::ROOT_DIR] . '/src/LabradorGuide/_templates';
     }
 
     function register(Injector $injector) {
         $injector->share(Renderer::class);
         $injector->define(Renderer::class, [
-           ':templatesDir' => $this->templatesDir
+            ':templatesDir' => $this->templatesDir
         ]);
         $injector->share(HomeController::class);
     }
 
-} 
+}
