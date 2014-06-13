@@ -1,25 +1,20 @@
 <?php
 
 /**
- * Return a callable that accepts a Auryn\Injector as the only argument and will
- * set appropriate services for ALL possible environments.
+ * Setup or run the appropriate actions at application startup time.
  * 
  * @license See LICENSE in source root
  * @version 1.0
  * @since   1.0
  */
 
+use Labrador\ConfigDirective;
 use Labrador\Service\DefaultServicesRegister;
 use Labrador\Service\DevelopmentServiceRegister;
-use Labrador\ConfigDirective;
-use Auryn\Injector;
+use Labrador\Bootstrap\IniSetBootstrap;
 use Configlet\Config;
+use Auryn\Injector;
 
-/**
- * This function should set services against the Auryn\Injector; it should not
- * actually preform any actions on services or do anything other than set an
- * object graph and its dependencies.
- */
 return function(Injector $injector, Config $config) {
 
     $demoTemplates = $config[ConfigDirective::ROOT_DIR] . '/src/LabradorGuide/_templates';
@@ -33,5 +28,12 @@ return function(Injector $injector, Config $config) {
     if ($config[ConfigDirective::ENVIRONMENT] === 'development') {
         (new DevelopmentServiceRegister($config[ConfigDirective::ROOT_DIR]  . '/.git'))->register($injector);
     }
-};
 
+    if ($config['ini'] instanceof Config) {
+        (new IniSetBootstrap($config['ini']))->run();
+    }
+
+    if ($config[\Labrador\ConfigDirective::ENVIRONMENT] === 'development') {
+        $injector->make('Labrador\\Development\\HtmlToolbar')->registerEventListeners();
+    }
+};

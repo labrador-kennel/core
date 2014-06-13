@@ -46,29 +46,13 @@ return function(Config $config) {
     $config[ConfigDirective::CONFIG_DIR] = $config[ConfigDirective::ROOT_DIR] . '/config';
 
     /**
-     * ConfigDirective::ROUTES_CALLBACK       callable
-     *
-     * A callback accepting a Labrador\Router\Router as the only argument. That
-     * function should set the appropriate routes for the application.
-     */
-    $config[ConfigDirective::ROUTES_CALLBACK] = include $config[ConfigDirective::CONFIG_DIR] . '/routes.php';
-
-    /**
-     * ConfigDirective::SERVICE_REGISTERS_CALLBACK            callable
-     *
-     * A callback accepting a Auryn\Provider as the only argument. The function
-     * should set the appropriate dependencies and services needed by the application.
-     */
-    $config[ConfigDirective::SERVICE_REGISTERS_CALLBACK] = include $config[ConfigDirective::CONFIG_DIR] . '/services.php';
-
-    /**
-     * ConfigDirective::BOOTSTRAPS_CALLBACK               callable
+     * ConfigDirective::BOOTSTRAP_CALLBACK               callable
      *
      * A callback accepting a Auryn\Provider as the first argument and a Configlet\Config
      * as the second argument. It should perform actions that are needed at time of
      * request startup after all configuration values have been written and all
      * services provided.
      */
-    $config[ConfigDirective::BOOTSTRAPS_CALLBACK] = include $config[ConfigDirective::CONFIG_DIR] . '/bootstraps.php';
+    $config[ConfigDirective::BOOTSTRAP_CALLBACK] = include $config[ConfigDirective::CONFIG_DIR] . '/bootstrap.php';
 
 };

@@ -42,6 +42,6 @@ $appConfig = include __DIR__ . '/config/application.php';
 /** @var Symfony\Component\HttpFoundation\Request $request */
 $provider = (new FrontControllerBootstrap($appConfig))->run();
 $app = $provider->make(Application::class);
-$request = $provider->make(Request::class);
 
-$app->handle($request)->send();
+$app->getRouter()->get('/', 'LabradorGuide\\Controller\\HomeController#index');
+$app->handle($provider->make(Request::class))->send();
