@@ -1,5 +1,12 @@
 #!/bin/bash
 
+# A shell script that will generate appropriate directories and files to get
+# Labrador up and running from a fresh Composer install.
+
+# This script is safe to run on an already existing installation and setup. If
+# there are any conflicts creating or copying over the appropriate files we
+# will skip that file and your existing code will not be changed.
+
 scriptPath=$(pwd)
 labPath="$scriptPath/vendor/cspray/labrador"
 projectName=$1
@@ -11,76 +18,49 @@ then
     exit 255
 fi
 
-if [ -z "$projectName" ]
-then
-    echo "No project name was given for creation of /src directory ... SKIPPING!"
-    dirs=("$scriptPath/public" "$scriptPath/config")
-else
-    dirs=("$scriptPath/src/$projectName" "$scriptPath/public" "$scriptPath/config")
-fi
-
 echo "Creating new Labrador project named $projectName"
 echo
 
-for item in "${dirs[@]}"
+dirs=("src" "public" "public/css" "public/img" "public/js" "public/css/labrador_guide" "public/js/labrador_guide" "config")
+for dir in "${dirs[@]}"
     do
-        if [ -d "$item" ]
+        fullItem="$scriptPath/$dir"
+        if [ -d "$fullItem" ]
         then
-            echo "$item already exists ... SKIPPING!"
+            echo "$fullItem already exists ... SKIPPING!"
         else
-            if [ -w "$item" ]
+            if [ -w "$fullItem" ]
             then
                 echo "WARNING! $item is not writable ... SKIPPING!"
             else
-                echo "Creating $item ... \c"
-                mkdir -p "$item" || echo "FAILED!"
+                printf "Creating $fullItem ... "
+                mkdir -p "$fullItem"; echo "SUCCESS!" || echo "FAILED!"
             fi
         fi
     done
 
+echo
 echo "Copying over configuration and setup files..."
+echo
 
-if [ -f "$scriptPath/init.php" ]
-then
-    echo "$scriptPath/init.php already exists ... skipping"
-else
-    cp "$labPath/init.php" "$scriptPath/init.php"
-fi
-
-if [ -f "$scriptPath/config/master_config.php" ]
-then
-    echo "$scriptPath/config/master_config.php already exists ... skipping"
-else
-    cp "$labPath/config/master_config.php" "$scriptPath/config/master_config.php"
-fi
-
-if [ -f "$scriptPath/config/bootstraps.php" ]
-then
-    echo "$scriptPath/config/bootstraps.php already exists ... skipping"
-else
-    cp "$labPath/config/bootstraps.php" "$scriptPath/config/bootstraps.php"
-fi
-
-if [ -f "$scriptPath/config/services.php" ]
-then
-    echo "$scriptPath/config/services.php already exists ... skipping"
-else
-    cp "$labPath/config/services.php" "$scriptPath/config/services.php"
-fi
-
-if [ -f "$scriptPath/config/routes.php" ]
-then
-    echo "$scriptPath/config/routes.php already exists ... skipping"
-else
-    cp "$labPath/config/routes.php" "$scriptPath/config/routes.php"
-fi
-
-if [ -f "$scriptPath/public/index.php" ]
-then
-    echo "$scriptPath/public/inxed.php already exists ... skipping"
-else
-    cp "$labPath/public/index.php" "$scriptPath/public/index.php"
-fi
+files=("init.php" "public/index.php" "public/css/normalize.css" "public/css/prism.css" "public/css/labrador_guide/main.css" "public/js/zepto.min.js" "public/js/prism.js")
+for file in "${files[@]}"
+    do
+        appItem="$scriptPath/$file"
+        labItem="$labPath/$file"
+        if [ -f "$appItem" ]
+        then
+            echo "$appItem already exists ... SKIPPING!"
+        else
+            if [ -f "$labItem" ]
+            then
+                printf "Creating $appItem ... "
+                cp "$labItem" "$appItem"; echo "SUCCESS!" || echo "FAILED!"
+            else
+                echo "$labItem does not exist ... SKIPPING!"
+            fi
+        fi
+    done
 
 echo
 echo "Finished creating your project!"
