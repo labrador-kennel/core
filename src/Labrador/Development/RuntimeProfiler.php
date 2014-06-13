@@ -36,7 +36,7 @@ class RuntimeProfiler {
     }
 
     function getPeakMemoryUsage() {
-        $memory = memory_get_peak_usage(true);
+        $memory = memory_get_peak_usage(false);
         return $memory / 1024 / 1024;
     }
 

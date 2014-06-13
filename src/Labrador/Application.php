@@ -95,6 +95,31 @@ class Application implements HttpKernelInterface {
         $this->eventDispatcher = $eventDispatcher;
     }
 
+    function getRouter() {
+        return $this->router;
+    }
+
+    function onHandle(callable $function, $priority = 0) {
+        $this->eventDispatcher->addListener(Events::APP_HANDLE, $function, $priority);
+        return $this;
+    }
+
+    function onFinished(callable $function, $priority = 0) {
+        $this->eventDispatcher->addListener(Events::APP_FINISHED, $function, $priority);
+        return $this;
+    }
+
+    function onRouteFound(callable $function, $priority = 0) {
+        $this->eventDispatcher->addListener(Events::ROUTE_FOUND, $function, $priority);
+        return $this;
+    }
+
+    function onException(callable $function, $priority = 0) {
+        $this->eventDispatcher->addListener(Events::EXCEPTION_THROWN, $function, $priority);
+        return $this;
+    }
+
+
     /**
      * Handles a Request to convert it to a Response.
      *

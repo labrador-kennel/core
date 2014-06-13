@@ -82,7 +82,7 @@ CSS;
     }
 
     private function getToolbarTemplate() {
-        $memory = $this->runtimeProfiler->getPeakMemoryUsage();
+        $memory = number_format($this->runtimeProfiler->getPeakMemoryUsage(), 3);
         $totalTime = number_format($this->runtimeProfiler->getTotalTimeElapsed(), 3);
         $handler = $this->request->attributes->get('_labrador')['handler'];
         $branch = $this->gitBranch->getBranchName();
