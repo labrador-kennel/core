@@ -28,18 +28,20 @@ class ApplicationTest extends UnitTestCase {
     private $eventDispatcher;
     private $router;
     private $resolver;
+    private $requestStack;
 
     function setUp() {
         $this->router = $this->getMock('Labrador\\Router\\Router');
         $this->resolver = $this->getMock('Labrador\\Router\\HandlerResolver');
         $this->eventDispatcher = $this->getMock('Symfony\\Component\\EventDispatcher\\EventDispatcherInterface');
+        $this->requestStack = $this->getMock('Symfony\\Component\\HttpFoundation\\RequestStack');
     }
 
     /**
      * @return Application
      */
     private function createApplication() {
-        return new Application($this->router, $this->resolver, $this->eventDispatcher);
+        return new Application($this->router, $this->resolver, $this->eventDispatcher, $this->requestStack);
     }
 
     /**
@@ -197,24 +199,24 @@ class ApplicationTest extends UnitTestCase {
         $app->handle($request);
     }
 
-    function exceptionThrownEventProvider() {
+    function exceptionThrownProvider() {
         return [
-            [new NotFoundException()],
-            [new PhpException()]
+            [new PhpException('this is the message why something failed')],
+            [new NotFoundException('this is the resource not found')]
         ];
     }
 
     /**
-     * @param $execption
-     * @dataProvider exceptionThrownEventProvider
+     * @param $exception
+     * @dataProvider exceptionThrownProvider
      */
-    function testExceptionThrownEventTriggered($execption) {
+    function testExceptionThrownEventTriggered($exception) {
         $request = Request::create('http://labrador.dev');
 
         $this->router->expects($this->once())
                      ->method('match')
                      ->with($request)
-                     ->will($this->throwException($execption));
+                     ->will($this->throwException($exception));
 
         $this->resolver->expects($this->never())->method('resolve');
         $this->eventDispatcher->expects($this->at(1))
@@ -241,7 +243,7 @@ class ApplicationTest extends UnitTestCase {
             $event->setResponse(new Response('Called from event'));
         });
 
-        $app = new Application($this->router, $this->resolver, $eventDispatcher);
+        $app = new Application($this->router, $this->resolver, $eventDispatcher, $this->requestStack);
         $response = $app->handle($request);
         $this->assertSame('Called from event', $response->getContent());
     }
@@ -262,21 +264,14 @@ class ApplicationTest extends UnitTestCase {
             $finishCalled = true;
         });
 
-        $app = new Application($this->router, $this->resolver, $eventDispatcher);
+        $app = new Application($this->router, $this->resolver, $eventDispatcher, $this->requestStack);
         $response = $app->handle($request);
         $this->assertSame('called from event', $response->getContent());
         $this->assertTrue($finishCalled);
     }
 
-    function exceptionThrownResponseReturnedProvider() {
-        return [
-            [new PhpException('this is the message why something failed')],
-            [new NotFoundException('this is the resource not found')]
-        ];
-    }
-
     /**
-     * @dataProvider exceptionThrownResponseReturnedProvider
+     * @dataProvider exceptionThrownProvider
      */
     function testResponseSetInPhpExceptionThrownEventIsReturned($exception) {
         $request = Request::create('http://labrador.dev');
@@ -290,7 +285,7 @@ class ApplicationTest extends UnitTestCase {
             $event->setResponse(new Response('Called from exception thrown listener'));
         });
 
-        $app = new Application($this->router, $this->resolver, $eventDispatcher);
+        $app = new Application($this->router, $this->resolver, $eventDispatcher, $this->requestStack);
         $response = $app->handle($request);
         $this->assertSame('Called from exception thrown listener', $response->getContent());
     }
@@ -306,9 +301,70 @@ class ApplicationTest extends UnitTestCase {
             $event->setResponse(new Response('called from the app_finished listener'));
         });
 
-        $app = new Application($this->router, $this->resolver, $eventDispatcher);
+        $app = new Application($this->router, $this->resolver, $eventDispatcher, $this->requestStack);
         $response = $app->handle($request);
         $this->assertSame('called from the app_finished listener', $response->getContent());
+    }
+
+    /**
+     * @dataProvider exceptionThrownProvider
+     */
+    function testAppFinishedEventTriggeredWhenExceptionCaught($exception) {
+        $request = Request::create('http://labrador.dev');
+        $this->router->expects($this->once())
+                     ->method('match')
+                     ->will($this->throwException($exception));
+        $this->resolver->expects($this->never())->method('resolve');
+
+        // The 0 call is AppHandleEvent
+        $this->eventDispatcher->expects($this->at(1))
+                              ->method('dispatch')
+                              ->with(
+                                    Events::EXCEPTION_THROWN,
+                                    $this->callback(function($arg) {
+                                        return $arg instanceof Events\ExceptionThrownEvent;
+                                    })
+                                );
+
+        $this->eventDispatcher->expects($this->at(2))
+                              ->method('dispatch')
+                              ->with(
+                                  Events::APP_FINISHED,
+                                  $this->callback(function($arg) {
+                                      return $arg instanceof Events\ApplicationFinishedEvent;
+                                  })
+                                );
+
+        $app = $this->createApplication();
+        $app->handle($request);
+    }
+
+    /**
+     * @dataProvider exceptionThrownProvider
+     */
+    function testAppFinishedEventTriggerWhenAppNotCatchingException($exception) {
+        $request = Request::create('http://labrador.dev');
+        $this->router->expects($this->once())
+            ->method('match')
+            ->will($this->throwException($exception));
+        $this->resolver->expects($this->never())->method('resolve');
+
+        // The 0 call is AppHandleEvent
+        $this->eventDispatcher->expects($this->at(1))
+                              ->method('dispatch')
+                              ->with(
+                                  Events::APP_FINISHED,
+                                  $this->callback(function($arg) {
+                                      return $arg instanceof Events\ApplicationFinishedEvent;
+                                  })
+                                );
+
+        $app = $this->createApplication();
+        try {
+            $app->handle($request, Application::MASTER_REQUEST, Application::DO_NOT_CATCH_EXCEPTIONS);
+        } catch(PhpException $exc) {
+            // don't want tests to fail because we know the application will throw an exception
+        }
     }
 
 }

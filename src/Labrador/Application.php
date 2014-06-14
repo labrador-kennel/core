@@ -20,6 +20,7 @@ use Labrador\Exception\HttpException;
 use Labrador\Exception\ServerErrorException;
 use Symfony\Component\EventDispatcher\EventDispatcherInterface;
 use Symfony\Component\HttpFoundation\Request;
+use Symfony\Component\HttpFoundation\RequestStack;
 use Symfony\Component\HttpFoundation\Response;
 use Symfony\Component\HttpKernel\HttpKernelInterface;
 use Exception as PhpException;
@@ -84,15 +85,19 @@ class Application implements HttpKernelInterface {
      */
     private $router;
 
+    private $requestStack;
+
     /**
      * @param Router $router
      * @param HandlerResolver $resolver
      * @param EventDispatcherInterface $eventDispatcher
+     * @param RequestStack $requestStack
      */
-    function __construct(Router $router, HandlerResolver $resolver, EventDispatcherInterface $eventDispatcher) {
+    function __construct(Router $router, HandlerResolver $resolver, EventDispatcherInterface $eventDispatcher, RequestStack $requestStack) {
         $this->router = $router;
         $this->resolver = $resolver;
         $this->eventDispatcher = $eventDispatcher;
+        $this->requestStack = $requestStack;
     }
 
     function getRouter() {
@@ -119,7 +124,6 @@ class Application implements HttpKernelInterface {
         return $this;
     }
 
-
     /**
      * Handles a Request to convert it to a Response.
      *
@@ -139,20 +143,24 @@ class Application implements HttpKernelInterface {
      */
     function handle(Request $request, $type = self::MASTER_REQUEST, $catch = self::CATCH_EXCEPTIONS) {
         try {
+            $this->requestStack->push($request);
             $response = $this->triggerHandleEvent($request);
             if (!$response) {
                 $cb = $this->triggerRouteFoundEvent($request);
                 $response = $this->executeController($request, $cb);
             }
-            $response = $this->triggerApplicationFinishedEvent($request, $response);
-        } catch (HttpException $httpExc) {
-            if (!$catch) { throw $httpExc; }
-            $response = $this->handleCaughtException($request, $httpExc, $httpExc->getCode());
-        } catch (PhpException $phpExc) {
-            if (!$catch) { throw $phpExc; }
-            $response = $this->handleCaughtException($request, $phpExc, Response::HTTP_INTERNAL_SERVER_ERROR);
+        } catch (PhpException $exc) {
+            $code = ($exc instanceof HttpException) ? $exc->getCode() : Response::HTTP_INTERNAL_SERVER_ERROR;
+
+            if (!$catch) {
+                $response = isset($response) ? $response : null;
+                $this->triggerApplicationFinishedEvent($request, $response);
+                throw $exc;
+            }
+            $response = $this->handleCaughtException($request, $exc, $code);
         }
 
+        $response = $this->triggerApplicationFinishedEvent($request, $response);
         return $response;
     }
 
@@ -181,10 +189,12 @@ class Application implements HttpKernelInterface {
         return $response;
     }
 
-    private function triggerApplicationFinishedEvent(Request $request, Response $response) {
+    private function triggerApplicationFinishedEvent(Request $request, Response $response = null) {
         $event = new ApplicationFinishedEvent($request, $response);
         $this->eventDispatcher->dispatch(Events::APP_FINISHED, $event);
-        return $event->getResponse();
+        $response = $event->getResponse();
+        $this->requestStack->pop();
+        return $response;
     }
 
     private function handleCaughtException(Request $request, PhpException $exception, $httpStatus) {

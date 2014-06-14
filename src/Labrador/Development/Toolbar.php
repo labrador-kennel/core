@@ -10,23 +10,21 @@
 namespace Labrador\Development;
 
 use Labrador\Events\ApplicationFinishedEvent;
-use Labrador\Events\ApplicationHandleEvent;
-use Labrador\Events\RouteFoundEvent;
 use Labrador\Events;
 use Symfony\Component\EventDispatcher\EventDispatcherInterface;
-use Symfony\Component\HttpFoundation\Request;
+use Symfony\Component\HttpFoundation\RequestStack;
 
 abstract class Toolbar {
 
     private $eventDispatcher;
     protected $runtimeProfiler;
-    protected $request;
+    protected $requestStack;
     protected $gitBranch;
 
-    function __construct(EventDispatcherInterface $eventDispatcher, RuntimeProfiler $runtimeProfiler, Request $request, GitBranch $gitBranch) {
+    function __construct(EventDispatcherInterface $eventDispatcher, RuntimeProfiler $runtimeProfiler, RequestStack $requestStack, GitBranch $gitBranch) {
         $this->eventDispatcher = $eventDispatcher;
         $this->runtimeProfiler = $runtimeProfiler;
-        $this->request = $request;
+        $this->requestStack = $requestStack;
         $this->gitBranch = $gitBranch;
     }
 

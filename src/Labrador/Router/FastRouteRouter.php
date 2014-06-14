@@ -18,7 +18,6 @@ use Labrador\Exception\MethodNotAllowedException;
 use FastRoute\Dispatcher;
 use FastRoute\RouteCollector;
 use Symfony\Component\HttpFoundation\Request;
-use Symfony\Component\HttpFoundation\Response;
 
 class FastRouteRouter implements Router {
 

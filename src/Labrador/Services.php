@@ -9,27 +9,26 @@
  * @since   1.0
  */
 
-namespace Labrador\Service;
+namespace Labrador;
 
-use Labrador\Application;
+use Labrador\Service\Register;
 use Labrador\Router\FastRouteRouter;
 use Labrador\Router\Router;
 use Labrador\Router\HandlerResolver;
 use Labrador\Router\ServiceHandlerResolver;
 use Auryn\Injector;
-use Configlet\MasterConfig;
 use FastRoute\RouteCollector;
 use FastRoute\RouteParser\Std as StdRouteParser;
 use FastRoute\DataGenerator\GroupCountBased as GcbDataGenerator;
 use FastRoute\Dispatcher\GroupCountBased as GcbDispatcher;
-use Symfony\Component\HttpFoundation\Request;
+use Symfony\Component\HttpFoundation\RequestStack;
 use Symfony\Component\EventDispatcher\EventDispatcher;
 use Symfony\Component\EventDispatcher\EventDispatcherInterface;
 
 /**
  * @codeCoverageIgnore
  */
-class DefaultServicesRegister implements Register {
+class Services implements Register {
 
     /**
      * @param Injector $injector
@@ -76,7 +75,7 @@ class DefaultServicesRegister implements Register {
     }
 
     private function registerSymfonyServices(Injector $injector) {
-        $injector->share(Request::createFromGlobals());
+        $injector->share(RequestStack::class);
         $injector->share(EventDispatcher::class);
         $injector->alias(
             EventDispatcherInterface::class,

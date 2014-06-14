@@ -28,7 +28,7 @@ vagrantfile-local:
         synced_folder:
             xIn3FL8oLAC6:
                 source: ./
-                target: /var/www
+                target: /vagrant
                 nfs: 'false'
         usable_port_range: 2200..2250
     ssh:
@@ -76,13 +76,13 @@ apache:
             servername: labrador.dev
             serveraliases:
                 - www.labrador.dev
-            docroot: /var/www/public
+            docroot: /vagrant/public
             port: '80'
             setenv:
                 - 'APP_ENV dev'
             override:
                 - All
-            custom_fragment: ''
+            custom_fragment: "FallbackResource /index.php\r\nDirectoryIndex index.php"
             ssl_cert: ''
             ssl_key: ''
             ssl_chain: ''
