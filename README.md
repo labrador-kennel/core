@@ -16,13 +16,13 @@ We recommend you use Composer to install Labrador.
 ```php
 <?php
 
-if (!$usingComposer) {
+if (!$you->usingComposer()) {
     $me->assumesCompetentDeveloper();
     $you->downloadLibrary();
-    $you->setupPsr0Autoloader('Labrador', '/your/install/path/src');
+    $you->setupPsr0Autoloader(['Labrador', 'LabradorGuide'], '/your/install/path/src');
 }
 ```
 
-## Quick Setup
+## Quick Start
 
-I want Labrador to be really easy for you to get started with.
+

@@ -35,7 +35,7 @@ use Labrador\Application;
 use Labrador\ConfigDirective;
 use Labrador\Bootstrap\FrontControllerBootstrap;
 use Labrador\Development\Services as DevelopmentServices;
-use LabradorGuide\Service\ControllerRegister as LabradorGuideServices;
+use LabradorGuide\Services as GuideServices;
 use Symfony\Component\HttpFoundation\Request;
 use Configlet\MasterConfig;
 
@@ -49,7 +49,7 @@ $config = $injector->make(MasterConfig::class);
 $app = $injector->make(Application::class);
 
 $app->onHandle(function() use($config, $injector) {
-    (new LabradorGuideServices($config))->register($injector);
+    (new GuideServices())->register($injector);
 });
 
 $app->onHandle(function() use($config, $injector) {
