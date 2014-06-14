@@ -35,7 +35,6 @@ use Labrador\Application;
 use Labrador\ConfigDirective;
 use Labrador\Bootstrap\FrontControllerBootstrap;
 use Labrador\Development\Services as DevelopmentServices;
-use LabradorGuide\Services as GuideServices;
 use Symfony\Component\HttpFoundation\Request;
 use Configlet\MasterConfig;
 
@@ -47,10 +46,6 @@ $appConfig = include __DIR__ . '/config/application.php';
 $injector = (new FrontControllerBootstrap($appConfig))->run();
 $config = $injector->make(MasterConfig::class);
 $app = $injector->make(Application::class);
-
-$app->onHandle(function() use($config, $injector) {
-    (new GuideServices())->register($injector);
-});
 
 $app->onHandle(function() use($config, $injector) {
     if ($config[ConfigDirective::ENVIRONMENT] === 'development') {

@@ -11,7 +11,7 @@
 namespace Labrador\Bootstrap;
 
 use Labrador\ConfigDirective;
-use Labrador\Exception\BootupException;
+use Labrador\Services as LabradorServices;
 use Auryn\Injector;
 use Auryn\Provider;
 use Configlet\Config;
@@ -49,6 +49,7 @@ class FrontControllerBootstrap implements Bootstrap {
     }
 
     private function runBootstrap(Injector $injector, Config $config) {
+        (new LabradorServices())->register($injector);
         $bootstrap = $config[ConfigDirective::BOOTSTRAP_CALLBACK];
         if (is_callable($bootstrap)) {
             $bootstrap($injector, $config);
