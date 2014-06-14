@@ -19,7 +19,7 @@ abstract class LabradorEvent extends Event {
     private $request;
 
     function __construct(Request $request) {
-        $this->request;
+        $this->request = $request;
     }
 
     function getRequest() {
