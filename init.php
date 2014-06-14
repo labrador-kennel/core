@@ -61,4 +61,5 @@ $app->onHandle(function() use($config, $injector) {
 
 $app->getRouter()->get('/', 'LabradorGuide\\Controller\\HomeController#index');
 
-$app->handle($injector->make(Request::class))->send();
+$request = Request::createFromGlobals();
+$app->handle($request)->send();

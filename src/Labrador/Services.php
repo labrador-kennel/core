@@ -21,7 +21,7 @@ use FastRoute\RouteCollector;
 use FastRoute\RouteParser\Std as StdRouteParser;
 use FastRoute\DataGenerator\GroupCountBased as GcbDataGenerator;
 use FastRoute\Dispatcher\GroupCountBased as GcbDispatcher;
-use Symfony\Component\HttpFoundation\Request;
+use Symfony\Component\HttpFoundation\RequestStack;
 use Symfony\Component\EventDispatcher\EventDispatcher;
 use Symfony\Component\EventDispatcher\EventDispatcherInterface;
 
@@ -75,7 +75,7 @@ class Services implements Register {
     }
 
     private function registerSymfonyServices(Injector $injector) {
-        $injector->share(Request::createFromGlobals());
+        $injector->share(RequestStack::class);
         $injector->share(EventDispatcher::class);
         $injector->alias(
             EventDispatcherInterface::class,
