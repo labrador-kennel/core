@@ -18,15 +18,28 @@ class ApplicationFinishedEvent extends LabradorEvent {
 
     private $response;
 
-    function __construct(Request $request, Response $response) {
+    /**
+     * The $response may be null if this event is triggered when the Application
+     * is configured to throw exceptions raised during processing.
+     *
+     * @param Request $request
+     * @param Response $response
+     */
+    function __construct(Request $request, Response $response = null) {
         parent::__construct($request);
         $this->response = $response;
     }
 
+    /**
+     * @return Response
+     */
     function getResponse() {
         return $this->response;
     }
 
+    /**
+     * @param Response $response
+     */
     function setResponse(Response $response) {
         $this->response = $response;
     }
