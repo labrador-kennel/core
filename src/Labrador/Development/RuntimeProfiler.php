@@ -9,30 +9,29 @@
 
 namespace Labrador\Development;
 
-use Symfony\Component\HttpFoundation\Request;
+use Symfony\Component\HttpFoundation\RequestStack;
 
 class RuntimeProfiler {
 
-    private $request;
-    private $requestStartTime;
+    private $requestStack;
     private $appFinishTime;
 
 
-    function __construct(Request $request) {
-        $this->request = $request;
-        $this->requestStartTime = $request->server->get('REQUEST_TIME_FLOAT');
+    function __construct(RequestStack $requestStack) {
+        $this->requestStack = $requestStack;
+
     }
 
     function setAppFinished() {
         $this->appFinishTime = microtime(true);
     }
 
-    function getRequest() {
-        return $this->request;
+    function getMasterRequest() {
+        return $this->requestStack->getMasterRequest();
     }
 
     function getTotalTimeElapsed() {
-        return $this->appFinishTime - $this->requestStartTime;
+        return $this->appFinishTime - $this->getMasterRequest()->server->get('REQUEST_TIME_FLOAT');
     }
 
     function getPeakMemoryUsage() {
