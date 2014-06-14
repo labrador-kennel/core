@@ -199,24 +199,24 @@ class ApplicationTest extends UnitTestCase {
         $app->handle($request);
     }
 
-    function exceptionThrownEventProvider() {
+    function exceptionThrownProvider() {
         return [
-            [new NotFoundException()],
-            [new PhpException()]
+            [new PhpException('this is the message why something failed')],
+            [new NotFoundException('this is the resource not found')]
         ];
     }
 
     /**
-     * @param $execption
-     * @dataProvider exceptionThrownEventProvider
+     * @param $exception
+     * @dataProvider exceptionThrownProvider
      */
-    function testExceptionThrownEventTriggered($execption) {
+    function testExceptionThrownEventTriggered($exception) {
         $request = Request::create('http://labrador.dev');
 
         $this->router->expects($this->once())
                      ->method('match')
                      ->with($request)
-                     ->will($this->throwException($execption));
+                     ->will($this->throwException($exception));
 
         $this->resolver->expects($this->never())->method('resolve');
         $this->eventDispatcher->expects($this->at(1))
@@ -270,15 +270,8 @@ class ApplicationTest extends UnitTestCase {
         $this->assertTrue($finishCalled);
     }
 
-    function exceptionThrownResponseReturnedProvider() {
-        return [
-            [new PhpException('this is the message why something failed')],
-            [new NotFoundException('this is the resource not found')]
-        ];
-    }
-
     /**
-     * @dataProvider exceptionThrownResponseReturnedProvider
+     * @dataProvider exceptionThrownProvider
      */
     function testResponseSetInPhpExceptionThrownEventIsReturned($exception) {
         $request = Request::create('http://labrador.dev');
@@ -311,6 +304,67 @@ class ApplicationTest extends UnitTestCase {
         $app = new Application($this->router, $this->resolver, $eventDispatcher, $this->requestStack);
         $response = $app->handle($request);
         $this->assertSame('called from the app_finished listener', $response->getContent());
+    }
+
+    /**
+     * @dataProvider exceptionThrownProvider
+     */
+    function testAppFinishedEventTriggeredWhenExceptionCaught($exception) {
+        $request = Request::create('http://labrador.dev');
+        $this->router->expects($this->once())
+                     ->method('match')
+                     ->will($this->throwException($exception));
+        $this->resolver->expects($this->never())->method('resolve');
+
+        // The 0 call is AppHandleEvent
+        $this->eventDispatcher->expects($this->at(1))
+                              ->method('dispatch')
+                              ->with(
+                                    Events::EXCEPTION_THROWN,
+                                    $this->callback(function($arg) {
+                                        return $arg instanceof Events\ExceptionThrownEvent;
+                                    })
+                                );
+
+        $this->eventDispatcher->expects($this->at(2))
+                              ->method('dispatch')
+                              ->with(
+                                  Events::APP_FINISHED,
+                                  $this->callback(function($arg) {
+                                      return $arg instanceof Events\ApplicationFinishedEvent;
+                                  })
+                                );
+
+        $app = $this->createApplication();
+        $app->handle($request);
+    }
+
+    /**
+     * @dataProvider exceptionThrownProvider
+     */
+    function testAppFinishedEventTriggerWhenAppNotCatchingException($exception) {
+        $request = Request::create('http://labrador.dev');
+        $this->router->expects($this->once())
+            ->method('match')
+            ->will($this->throwException($exception));
+        $this->resolver->expects($this->never())->method('resolve');
+
+        // The 0 call is AppHandleEvent
+        $this->eventDispatcher->expects($this->at(1))
+                              ->method('dispatch')
+                              ->with(
+                                  Events::APP_FINISHED,
+                                  $this->callback(function($arg) {
+                                      return $arg instanceof Events\ApplicationFinishedEvent;
+                                  })
+                                );
+
+        $app = $this->createApplication();
+        try {
+            $app->handle($request, Application::MASTER_REQUEST, Application::DO_NOT_CATCH_EXCEPTIONS);
+        } catch(PhpException $exc) {
+            // don't want tests to fail because we know the application will throw an exception
+        }
     }
 
 }
