@@ -20,6 +20,7 @@ use Labrador\Exception\HttpException;
 use Labrador\Exception\ServerErrorException;
 use Symfony\Component\EventDispatcher\EventDispatcherInterface;
 use Symfony\Component\HttpFoundation\Request;
+use Symfony\Component\HttpFoundation\RequestStack;
 use Symfony\Component\HttpFoundation\Response;
 use Symfony\Component\HttpKernel\HttpKernelInterface;
 use Exception as PhpException;
@@ -84,15 +85,19 @@ class Application implements HttpKernelInterface {
      */
     private $router;
 
+    private $requestStack;
+
     /**
      * @param Router $router
      * @param HandlerResolver $resolver
      * @param EventDispatcherInterface $eventDispatcher
+     * @param RequestStack $requestStack
      */
-    function __construct(Router $router, HandlerResolver $resolver, EventDispatcherInterface $eventDispatcher) {
+    function __construct(Router $router, HandlerResolver $resolver, EventDispatcherInterface $eventDispatcher, RequestStack $requestStack) {
         $this->router = $router;
         $this->resolver = $resolver;
         $this->eventDispatcher = $eventDispatcher;
+        $this->requestStack = $requestStack;
     }
 
     function getRouter() {
@@ -139,6 +144,7 @@ class Application implements HttpKernelInterface {
      */
     function handle(Request $request, $type = self::MASTER_REQUEST, $catch = self::CATCH_EXCEPTIONS) {
         try {
+            $this->requestStack->push($request);
             $response = $this->triggerHandleEvent($request);
             if (!$response) {
                 $cb = $this->triggerRouteFoundEvent($request);

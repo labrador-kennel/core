@@ -28,18 +28,20 @@ class ApplicationTest extends UnitTestCase {
     private $eventDispatcher;
     private $router;
     private $resolver;
+    private $requestStack;
 
     function setUp() {
         $this->router = $this->getMock('Labrador\\Router\\Router');
         $this->resolver = $this->getMock('Labrador\\Router\\HandlerResolver');
         $this->eventDispatcher = $this->getMock('Symfony\\Component\\EventDispatcher\\EventDispatcherInterface');
+        $this->requestStack = $this->getMock('Symfony\\Component\\HttpFoundation\\RequestStack');
     }
 
     /**
      * @return Application
      */
     private function createApplication() {
-        return new Application($this->router, $this->resolver, $this->eventDispatcher);
+        return new Application($this->router, $this->resolver, $this->eventDispatcher, $this->requestStack);
     }
 
     /**
@@ -241,7 +243,7 @@ class ApplicationTest extends UnitTestCase {
             $event->setResponse(new Response('Called from event'));
         });
 
-        $app = new Application($this->router, $this->resolver, $eventDispatcher);
+        $app = new Application($this->router, $this->resolver, $eventDispatcher, $this->requestStack);
         $response = $app->handle($request);
         $this->assertSame('Called from event', $response->getContent());
     }
@@ -262,7 +264,7 @@ class ApplicationTest extends UnitTestCase {
             $finishCalled = true;
         });
 
-        $app = new Application($this->router, $this->resolver, $eventDispatcher);
+        $app = new Application($this->router, $this->resolver, $eventDispatcher, $this->requestStack);
         $response = $app->handle($request);
         $this->assertSame('called from event', $response->getContent());
         $this->assertTrue($finishCalled);
@@ -290,7 +292,7 @@ class ApplicationTest extends UnitTestCase {
             $event->setResponse(new Response('Called from exception thrown listener'));
         });
 
-        $app = new Application($this->router, $this->resolver, $eventDispatcher);
+        $app = new Application($this->router, $this->resolver, $eventDispatcher, $this->requestStack);
         $response = $app->handle($request);
         $this->assertSame('Called from exception thrown listener', $response->getContent());
     }
@@ -306,7 +308,7 @@ class ApplicationTest extends UnitTestCase {
             $event->setResponse(new Response('called from the app_finished listener'));
         });
 
-        $app = new Application($this->router, $this->resolver, $eventDispatcher);
+        $app = new Application($this->router, $this->resolver, $eventDispatcher, $this->requestStack);
         $response = $app->handle($request);
         $this->assertSame('called from the app_finished listener', $response->getContent());
     }
