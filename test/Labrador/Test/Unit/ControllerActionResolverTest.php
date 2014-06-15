@@ -9,16 +9,16 @@
 
 namespace Labrador\Test\Unit;
 
-use Labrador\Router\ServiceHandlerResolver;
+use Labrador\Router\Resolver\ControllerActionResolver;
 use Auryn\Provider;
 use PHPUnit_Framework_TestCase as UnitTestCase;
 
-class ServiceHandlerResolverTest extends UnitTestCase {
+class ControllerActionResolverTest extends UnitTestCase {
 
     function testNoHashTagInHandlerReturnsFalse() {
         $handler = 'something_no_hashtag';
         $provider = new Provider();
-        $resolver = new ServiceHandlerResolver($provider);
+        $resolver = new ControllerActionResolver($provider);
 
         $this->assertFalse($resolver->resolve($handler));
     }
@@ -26,7 +26,7 @@ class ServiceHandlerResolverTest extends UnitTestCase {
     function testNoClassThrowsException() {
         $handler = 'Not_Found_Class#action';
         $provider = new Provider();
-        $resolver = new ServiceHandlerResolver($provider);
+        $resolver = new ControllerActionResolver($provider);
 
         $this->setExpectedException(
             'Labrador\\Exception\\InvalidHandlerException',
@@ -38,7 +38,7 @@ class ServiceHandlerResolverTest extends UnitTestCase {
     function testNoMethodOnControllerThrowsException() {
         $handler = 'Labrador\\Test\\Stub\\HandlerWithoutMethod#action';
         $provider = new Provider();
-        $resolver = new ServiceHandlerResolver($provider);
+        $resolver = new ControllerActionResolver($provider);
 
         $this->setExpectedException(
             'Labrador\\Exception\\InvalidHandlerException',
@@ -53,7 +53,7 @@ class ServiceHandlerResolverTest extends UnitTestCase {
         $val->action = null;
         $provider = new Provider();
         $provider->define('Labrador\\Test\\Stub\\HandlerWithMethod', [':val' => $val]);
-        $resolver = new ServiceHandlerResolver($provider);
+        $resolver = new ControllerActionResolver($provider);
 
         $cb = $resolver->resolve($handler);
         $cb($this->getMock('Symfony\\Component\\HttpFoundation\\Request'));

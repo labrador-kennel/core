@@ -9,7 +9,7 @@
 
 namespace Labrador\Test\Unit;
 
-use Labrador\Router\ResolverChain;
+use Labrador\Router\Resolver\ResolverChain;
 use PHPUnit_Framework_TestCase as UnitTestCase;
 
 class ResolverChainTest extends UnitTestCase {

@@ -9,20 +9,20 @@
 
 namespace Labrador\Test\Unit;
 
-use Labrador\Router\CallableHandlerResolver;
+use Labrador\Router\Resolver\CallableResolver;
 use PHPUnit_Framework_TestCase as UnitTestCase;
 
 class CallableHandlerResolverTest extends UnitTestCase {
 
     function testHandlerIsCallableReturnsHandler() {
-        $resolver = new CallableHandlerResolver();
+        $resolver = new CallableResolver();
         $closure = function() {};
 
         $this->assertSame($closure, $resolver->resolve($closure));
     }
 
     function testHandlerIsNotCallableReturnsFalse() {
-        $resolver = new CallableHandlerResolver();
+        $resolver = new CallableResolver();
 
         $this->assertFalse($resolver->resolve('not_callable#action'));
     }

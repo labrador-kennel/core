@@ -7,10 +7,11 @@
  * @since   1.0
  */
 
-namespace Labrador\Router;
+namespace Labrador\Router\Resolver;
 
+use Labrador\Router\HandlerResolver;
 
-class CallableHandlerResolver implements HandlerResolver {
+class CallableResolver implements HandlerResolver {
 
     function resolve($handler) {
         if (is_callable($handler)) {
