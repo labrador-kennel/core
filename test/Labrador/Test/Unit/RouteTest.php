@@ -10,6 +10,8 @@
 namespace Labrador\Test\Unit;
 
 use Labrador\Router\Route;
+use Labrador\Test\Stub\ToStringHandlerObject;
+use Labrador\Test\Stub\ToStringHandlerObjectWithMethod;
 use PHPUnit_Framework_TestCase as UnitTestCase;
 
 class RouteTest extends UnitTestCase {
@@ -28,13 +30,13 @@ class RouteTest extends UnitTestCase {
 
     function testToStringHandlerIsObject() {
         $route = new Route('/handler-object', 'GET', new ToStringHandlerObject());
-        $expected = "GET\t/handler-object\t\tLabrador\\Test\\Unit\\ToStringHandlerObject";
+        $expected = "GET\t/handler-object\t\tLabrador\\Test\\Stub\\ToStringHandlerObject";
         $this->assertEquals($expected, (string) $route);
     }
 
     function testToStringHandlerIsCallableArray() {
         $route = new Route('/handler-callable-array', 'GET', [new ToStringHandlerObjectWithMethod(), 'doIt']);
-        $expected = "GET\t/handler-callable-array\t\tLabrador\\Test\\Unit\\ToStringHandlerObjectWithMethod::doIt";
+        $expected = "GET\t/handler-callable-array\t\tLabrador\\Test\\Stub\\ToStringHandlerObjectWithMethod::doIt";
         $this->assertEquals($expected, (string) $route);
     }
 
@@ -43,12 +45,5 @@ class RouteTest extends UnitTestCase {
         $expected = "GET\t/handler-plain-array\t\tArray(4)";
         $this->assertEquals($expected, (string) $route);
     }
-
-}
-
-class ToStringHandlerObject {}
-class ToStringHandlerObjectWithMethod {
-
-    function doIt() {}
 
 }
