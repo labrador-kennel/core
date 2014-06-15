@@ -11,7 +11,7 @@
 
 namespace Labrador\Events;
 
-use Symfony\Component\HttpFoundation\Request;
+use Symfony\Component\HttpFoundation\RequestStack;
 use Symfony\Component\HttpFoundation\Response;
 
 class ApplicationFinishedEvent extends LabradorEvent {
@@ -22,11 +22,11 @@ class ApplicationFinishedEvent extends LabradorEvent {
      * The $response may be null if this event is triggered when the Application
      * is configured to throw exceptions raised during processing.
      *
-     * @param Request $request
+     * @param RequestStack $requestStack
      * @param Response $response
      */
-    function __construct(Request $request, Response $response = null) {
-        parent::__construct($request);
+    function __construct(RequestStack $requestStack, Response $response = null) {
+        parent::__construct($requestStack);
         $this->response = $response;
     }
 

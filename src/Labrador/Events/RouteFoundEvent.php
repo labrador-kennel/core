@@ -10,14 +10,14 @@
 
 namespace Labrador\Events;
 
-use Symfony\Component\HttpFoundation\Request;
+use Symfony\Component\HttpFoundation\RequestStack;
 
 class RouteFoundEvent extends LabradorEvent {
 
     private $controllerCb;
 
-    function __construct(Request $request, callable $controllerCb) {
-        parent::__construct($request);
+    function __construct(RequestStack $requestStack, callable $controllerCb) {
+        parent::__construct($requestStack);
         $this->controllerCb = $controllerCb;
     }
 

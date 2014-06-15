@@ -9,7 +9,7 @@
 
 namespace Labrador\Events;
 
-use Symfony\Component\HttpFoundation\Request;
+use Symfony\Component\HttpFoundation\RequestStack;
 use Exception as PhpException;
 use Symfony\Component\HttpFoundation\Response;
 
@@ -18,10 +18,10 @@ class ExceptionThrownEvent extends LabradorEvent {
     private $exception;
     private $response;
 
-    function __construct(Request $request, Response $response, PhpException $exception) {
-        parent::__construct($request);
-        $this->exception = $exception;
+    function __construct(RequestStack $requestStack, Response $response, PhpException $exception) {
+        parent::__construct($requestStack);
         $this->response = $response;
+        $this->exception = $exception;
     }
 
     function getException() {
