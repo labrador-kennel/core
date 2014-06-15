@@ -144,29 +144,29 @@ class Application implements HttpKernelInterface {
     function handle(Request $request, $type = self::MASTER_REQUEST, $catch = self::CATCH_EXCEPTIONS) {
         try {
             $this->requestStack->push($request);
-            $response = $this->triggerHandleEvent($request);
+            $response = $this->triggerHandleEvent();
             if (!$response) {
                 $cb = $this->triggerRouteFoundEvent($request);
                 $response = $this->executeController($request, $cb);
             }
-            $response = $this->triggerApplicationFinishedEvent($request, $response);
+            $response = $this->triggerApplicationFinishedEvent($response);
         } catch (PhpException $exc) {
             $code = ($exc instanceof HttpException) ? $exc->getCode() : Response::HTTP_INTERNAL_SERVER_ERROR;
 
             if (!$catch) {
                 $response = isset($response) ? $response : null;
-                $this->triggerApplicationFinishedEvent($request, $response);
+                $this->triggerApplicationFinishedEvent($response);
                 throw $exc;
             }
-            $response = $this->handleCaughtException($request, $exc, $code);
-            $response = $this->triggerApplicationFinishedEvent($request, $response);
+            $response = $this->handleCaughtException($exc, $code);
+            $response = $this->triggerApplicationFinishedEvent($response);
         }
 
         return $response;
     }
 
-    private function triggerHandleEvent(Request $request) {
-        $event = new ApplicationHandleEvent($request);
+    private function triggerHandleEvent() {
+        $event = new ApplicationHandleEvent($this->requestStack);
         $this->eventDispatcher->dispatch(Events::APP_HANDLE, $event);
         return $event->getResponse();
     }
@@ -178,7 +178,7 @@ class Application implements HttpKernelInterface {
             $msg = 'An error was encountered resolving a found handler matching %s %s';
             throw new ServerErrorException(sprintf($msg, $request->getMethod(), $request->getPathInfo()));
         }
-        $event = new RouteFoundEvent($request, $cb);
+        $event = new RouteFoundEvent($this->requestStack, $cb);
         $this->eventDispatcher->dispatch(Events::ROUTE_FOUND, $event);
         return $event->getController();
     }
@@ -194,17 +194,17 @@ class Application implements HttpKernelInterface {
         return $response;
     }
 
-    private function triggerApplicationFinishedEvent(Request $request, Response $response = null) {
-        $event = new ApplicationFinishedEvent($request, $response);
+    private function triggerApplicationFinishedEvent(Response $response = null) {
+        $event = new ApplicationFinishedEvent($this->requestStack, $response);
         $this->eventDispatcher->dispatch(Events::APP_FINISHED, $event);
         $response = $event->getResponse();
         $this->requestStack->pop();
         return $response;
     }
 
-    private function handleCaughtException(Request $request, PhpException $exception, $httpStatus) {
+    private function handleCaughtException(PhpException $exception, $httpStatus) {
         $response = new Response($exception->getMessage(), $httpStatus);
-        $event = new ExceptionThrownEvent($request, $response, $exception);
+        $event = new ExceptionThrownEvent($this->requestStack, $response, $exception);
         $this->eventDispatcher->dispatch(Events::EXCEPTION_THROWN, $event);
         return $event->getResponse();
     }
