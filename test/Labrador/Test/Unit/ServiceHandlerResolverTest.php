@@ -9,22 +9,18 @@
 
 namespace Labrador\Test\Unit;
 
-use Auryn\Provider;
 use Labrador\Router\ServiceHandlerResolver;
+use Auryn\Provider;
 use PHPUnit_Framework_TestCase as UnitTestCase;
 
 class ServiceHandlerResolverTest extends UnitTestCase {
 
-    function testNoHashTagInHandlerThrowsException() {
+    function testNoHashTagInHandlerReturnsFalse() {
         $handler = 'something_no_hashtag';
         $provider = new Provider();
         $resolver = new ServiceHandlerResolver($provider);
 
-        $this->setExpectedException(
-            'Labrador\\Exception\\InvalidHandlerException',
-            'The handler, something_no_hashtag, is invalid; all handlers must have 1 hashtag delimiting the controller and action.'
-        );
-        $resolver->resolve($handler);
+        $this->assertFalse($resolver->resolve($handler));
     }
 
     function testNoClassThrowsException() {

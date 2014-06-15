@@ -149,6 +149,7 @@ class Application implements HttpKernelInterface {
                 $cb = $this->triggerRouteFoundEvent($request);
                 $response = $this->executeController($request, $cb);
             }
+            $response = $this->triggerApplicationFinishedEvent($request, $response);
         } catch (PhpException $exc) {
             $code = ($exc instanceof HttpException) ? $exc->getCode() : Response::HTTP_INTERNAL_SERVER_ERROR;
 
@@ -158,9 +159,10 @@ class Application implements HttpKernelInterface {
                 throw $exc;
             }
             $response = $this->handleCaughtException($request, $exc, $code);
+            $response = $this->triggerApplicationFinishedEvent($request, $response);
         }
 
-        $response = $this->triggerApplicationFinishedEvent($request, $response);
+
         return $response;
     }
 

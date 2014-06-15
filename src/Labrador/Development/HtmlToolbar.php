@@ -84,7 +84,7 @@ CSS;
     private function getToolbarTemplate() {
         $memory = number_format($this->runtimeProfiler->getPeakMemoryUsage(), 3);
         $totalTime = number_format($this->runtimeProfiler->getTotalTimeElapsed(), 3);
-        $handler = $this->requestStack->getMasterRequest()->attributes->get('_labrador')['handler'];
+        $handler = var_export($this->requestStack->getMasterRequest()->attributes->get('_labrador')['handler'], true);
         $branch = $this->gitBranch->getBranchName();
         return <<<HTML
 <section id="labrador-dev-toolbar">

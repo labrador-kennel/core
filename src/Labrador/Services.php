@@ -15,6 +15,8 @@ use Labrador\Service\Register;
 use Labrador\Router\FastRouteRouter;
 use Labrador\Router\Router;
 use Labrador\Router\HandlerResolver;
+use Labrador\Router\ResolverChain;
+use Labrador\Router\CallableHandlerResolver;
 use Labrador\Router\ServiceHandlerResolver;
 use Auryn\Injector;
 use FastRoute\RouteCollector;
@@ -55,9 +57,12 @@ class Services implements Register {
         );
         $injector->alias(Router::class, FastRouteRouter::class);
 
-        $injector->share(ServiceHandlerResolver::class);
-        $injector->define(ServiceHandlerResolver::class, [ ':injector' => $injector]);
-        $injector->alias(HandlerResolver::class, ServiceHandlerResolver::class);
+        $injector->share(ResolverChain::class);
+        $injector->prepare(ResolverChain::class, function(ResolverChain $chain, Injector $injector) {
+            $chain->add($injector->make(CallableHandlerResolver::class))
+                  ->add($injector->make(ServiceHandlerResolver::class, [ ':injector' => $injector]));
+        });
+        $injector->alias(HandlerResolver::class, ResolverChain::class);
     }
 
     /**
