@@ -174,6 +174,10 @@ class Application implements HttpKernelInterface {
     private function triggerRouteFoundEvent(Request $request) {
         $handler = $this->router->match($request);
         $cb = $this->resolver->resolve($handler);
+        if (!is_callable($cb)) {
+            $msg = 'An error was encountered resolving a found handler matching %s %s';
+            throw new ServerErrorException(sprintf($msg, $request->getMethod(), $request->getPathInfo()));
+        }
         $event = new RouteFoundEvent($request, $cb);
         $this->eventDispatcher->dispatch(Events::ROUTE_FOUND, $event);
         return $event->getController();
