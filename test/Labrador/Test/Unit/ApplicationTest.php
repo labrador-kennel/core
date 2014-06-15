@@ -99,6 +99,27 @@ class ApplicationTest extends UnitTestCase {
         $this->assertSame('Fatal error creating the requested handler', $response->getContent());
     }
 
+    function testResolverReturnsFalseIsServerErrorResponse() {
+        $request = Request::create('http://www.lbardor.dev');
+
+        $this->router->expects($this->once())
+                     ->method('match')
+                     ->with($request)
+                     ->will($this->returnValue('handler#action'));
+
+        $this->resolver->expects($this->once())
+                       ->method('resolve')
+                       ->with('handler#action')
+                       ->will($this->returnValue(false));
+
+        $app = $this->createApplication();
+        $response = $app->handle($request);
+        $this->assertInstanceOf('Symfony\\Component\\HttpFoundation\\Response', $response);
+        $this->assertSame(500, $response->getStatusCode());
+        $this->assertSame('An error was encountered resolving a found handler matching GET /', $response->getContent());
+
+    }
+
     function testControllerMustReturnResponse() {
         $request = Request::create('http://www.labrador.dev');
         $handler = 'handler#action';
