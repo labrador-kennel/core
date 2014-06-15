@@ -7,7 +7,9 @@
  * @since   1.0
  */
 
-namespace Labrador\Router;
+namespace Labrador\Router\Resolver;
+
+use Labrador\Router\HandlerResolver;
 
 class ResolverChain implements HandlerResolver {
 

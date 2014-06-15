@@ -9,13 +9,15 @@
  * @since   1.0
  */
 
-namespace Labrador\Router;
+namespace Labrador\Router\Resolver;
 
+use Labrador\Router\HandlerResolver;
+use Labrador\Exception\InvalidHandlerException;
 use Auryn\Injector;
 use Auryn\InjectionException;
-use Labrador\Exception\InvalidHandlerException;
 
-class ServiceHandlerResolver implements HandlerResolver {
+
+class ControllerActionResolver implements HandlerResolver {
 
     /**
      * @property Injector
