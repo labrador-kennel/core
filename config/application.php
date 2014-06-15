@@ -38,14 +38,6 @@ return function(Config $config) {
     $config[ConfigDirective::ROOT_DIR] = dirname(__DIR__);
 
     /**
-     * ConfigDirective::CONFIG_DIR            string
-     *
-     * The configuration directory that Labrador and environment configurations
-     * are stored.
-     */
-    $config[ConfigDirective::CONFIG_DIR] = $config[ConfigDirective::ROOT_DIR] . '/config';
-
-    /**
      * ConfigDirective::BOOTSTRAP_CALLBACK               callable
      *
      * A callback accepting a Auryn\Provider as the first argument and a Configlet\Config
@@ -53,6 +45,6 @@ return function(Config $config) {
      * request startup after all configuration values have been written and all
      * services provided.
      */
-    $config[ConfigDirective::BOOTSTRAP_CALLBACK] = include $config[ConfigDirective::CONFIG_DIR] . '/bootstrap.php';
+    $config[ConfigDirective::BOOTSTRAP_CALLBACK] = include $config[ConfigDirective::ROOT_DIR] . '/config/bootstrap.php';
 
 };

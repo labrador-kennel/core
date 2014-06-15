@@ -37,8 +37,8 @@ class FastRouteRouter implements Router {
      * @param callable $dispatcherCb
      */
     function __construct(RouteCollector $collector, callable $dispatcherCb) {
-        $this->dispatcherCb = $dispatcherCb;
         $this->collector = $collector;
+        $this->dispatcherCb = $dispatcherCb;
     }
 
     /**
@@ -47,7 +47,7 @@ class FastRouteRouter implements Router {
      * @return $this|void
      */
     function get($pattern, $handler) {
-        $this->addRoute('GET', $pattern, $handler);
+        return $this->addRoute('GET', $pattern, $handler);
     }
 
     /**
@@ -56,7 +56,7 @@ class FastRouteRouter implements Router {
      * @return $this|void
      */
     function post($pattern, $handler) {
-        $this->addRoute('POST', $pattern, $handler);
+        return $this->addRoute('POST', $pattern, $handler);
     }
 
     /**
@@ -65,7 +65,7 @@ class FastRouteRouter implements Router {
      * @return $this|void
      */
     function put($pattern, $handler) {
-        $this->addRoute('PUT', $pattern, $handler);
+        return $this->addRoute('PUT', $pattern, $handler);
     }
 
     /**
@@ -74,7 +74,7 @@ class FastRouteRouter implements Router {
      * @return $this|void
      */
     function delete($pattern, $handler) {
-        $this->addRoute('DELETE', $pattern, $handler);
+        return $this->addRoute('DELETE', $pattern, $handler);
     }
 
     /**
@@ -84,12 +84,14 @@ class FastRouteRouter implements Router {
      * @return $this|void
      */
     function custom($httpMethod, $pattern, $handler) {
-        $this->addRoute($httpMethod, $pattern, $handler);
+        return $this->addRoute($httpMethod, $pattern, $handler);
     }
 
     private function addRoute($method, $pattern, $handler) {
+        // @todo implement FastRouterRouteCollector and parse required data from Route objects
         $this->routes[] = new Route($pattern, $method, $handler);
         $this->collector->addRoute($method, $pattern, $handler);
+        return $this;
     }
 
     /**

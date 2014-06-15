@@ -71,7 +71,7 @@ use Exception as PhpException;
 class Application implements HttpKernelInterface {
 
     const CATCH_EXCEPTIONS = true;
-    const DO_NOT_CATCH_EXCEPTIONS = false;
+    const THROW_EXCEPTIONS = false;
 
     private $eventDispatcher;
 
@@ -161,7 +161,6 @@ class Application implements HttpKernelInterface {
             $response = $this->handleCaughtException($request, $exc, $code);
             $response = $this->triggerApplicationFinishedEvent($request, $response);
         }
-
 
         return $response;
     }
