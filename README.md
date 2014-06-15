@@ -52,7 +52,7 @@ One drawback to installing via Composer is that all of the yummy goodness Labrad
 
 This command will copy over the `/public/*`, '/config/*' and `/init.php` files from Labrador's root directory structure into the directory that the command was executed. Included with this is setting up the included LabradorGuide to be available. This is a built-in documentation that you can access through your browser and learn all kinds of intricate details on how Labrador works. This is also a safe command; if the file already exists the copy or creation will be aborted and your existing code stays intact.
 
-If you don't want to use the automated method, and really why wouldn't you?, you'll need to manually setup the following directory structure yourself. This is the absolute bare minimum you'll need to get Labrador properly executing your requests. This will not setup the LabradorGuide and requires you to properly
+If you don't want to use the automated method, and really why wouldn't you?, you'll need to manually setup the following directory structure yourself. This is the **absolute bare minimum you'll need** to get Labrador properly executing your requests. This will not setup the LabradorGuide and requires you to properly wire up the Labrador\Application.
 
 ```plain
 /public             # your webroot, all publicly accessible files should be stored here (i.e. css, js, images)
@@ -60,11 +60,9 @@ If you don't want to use the automated method, and really why wouldn't you?, you
 /init.php           # is where you wire up your application
 ```
 
-Note that you don't need to setup your directory structure this way and there's a variety of ways to architect the physical file system; Labrador doesn't lock you into any one system and it is very easy to modify. However, to get out-of-the-box behavior up and running it is recommended that this is the directory structure you start off with. As your knowledge of Labrador increases it will be easy to change the physical directory structure when the need arises.
-
 ### Server Setup
 
-Labrador has been developed on a VM running Apache. In theory there's nothing that would require you to use Apache and any web server capable of running PHP 5.5 should suffice. But for now the only configurations that we provie examples for is Apache because we haven't confirmed other server's configurations work.
+Labrador has been developed on a VM running Apache. In theory there's nothing that would require you to use Apache and any web server capable of running PHP 5.5 should suffice. But for now the only configurations that we provide examples for is Apache because we haven't confirmed other server's configurations work.
 
 ## Apache Configuration
 
