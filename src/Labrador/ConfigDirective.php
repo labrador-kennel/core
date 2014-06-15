@@ -13,7 +13,6 @@ namespace Labrador;
 abstract class ConfigDirective {
 
     const ENVIRONMENT = 'labrador.environment';
-    const CONFIG_DIR = 'labrador.config_dir';
     const ROOT_DIR = 'labrador.root_dir';
     const BOOTSTRAP_CALLBACK = 'labrador.bootstraps_callback';
 
