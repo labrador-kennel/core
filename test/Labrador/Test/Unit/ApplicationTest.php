@@ -139,7 +139,7 @@ class ApplicationTest extends UnitTestCase {
             'Labrador\\Exception\\ServerErrorException',
             'Something bad done did happen'
         );
-        $app->handle($request, Application::MASTER_REQUEST, Application::DO_NOT_CATCH_EXCEPTIONS);
+        $app->handle($request, Application::MASTER_REQUEST, Application::THROW_EXCEPTIONS);
     }
 
     function testThrowsPhpExceptionIfHandleCatchFalse() {
@@ -155,7 +155,7 @@ class ApplicationTest extends UnitTestCase {
             'Exception',
             'A fatal PHP error was encountered'
         );
-        $app->handle($request, Application::MASTER_REQUEST, Application::DO_NOT_CATCH_EXCEPTIONS);
+        $app->handle($request, Application::MASTER_REQUEST, Application::THROW_EXCEPTIONS);
     }
 
     function eventProvider() {
@@ -361,7 +361,7 @@ class ApplicationTest extends UnitTestCase {
 
         $app = $this->createApplication();
         try {
-            $app->handle($request, Application::MASTER_REQUEST, Application::DO_NOT_CATCH_EXCEPTIONS);
+            $app->handle($request, Application::MASTER_REQUEST, Application::THROW_EXCEPTIONS);
         } catch(PhpException $exc) {
             // don't want tests to fail because we know the application will throw an exception
         }
