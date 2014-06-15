@@ -40,7 +40,9 @@ class ServiceHandlerResolver implements HandlerResolver {
      * @throws InvalidHandlerException
      */
     function resolve($handler) {
-        $this->verifyFormat($handler);
+        if (!$this->verifyFormat($handler)) {
+            return false;
+        }
         list($controllerName, $action) = explode('#', $handler);
         try {
             $controller = $this->injector->make($controllerName);
@@ -62,9 +64,10 @@ class ServiceHandlerResolver implements HandlerResolver {
         // intentionally not checking for strict boolean false
         // we don't want to accept handlers that begin with #
         if (!strpos($handler, '#')) {
-            $msg = $this->errorMsg['invalid_handler_format'];
-            throw new InvalidHandlerException(sprintf($msg, $handler));
+            return false;
         }
+
+        return true;
     }
 
 } 
