@@ -59,9 +59,7 @@ interface Router {
      * either NotFoundException or MethodNotAllowedException.
      *
      * @param Request $request
-     * @return string
-     * @throws \Labrador\Exception\NotFoundException
-     * @throws \Labrador\Exception\MethodNotAllowedException
+     * @return ResolvedRoute
      */
     function match(Request $request);
 
@@ -69,5 +67,9 @@ interface Router {
      * @return Route[]
      */
     function getRoutes();
+
+    function setNotFoundHandler(callable $handler);
+
+    function setMethodNotAllowedHandler(callable $handler);
 
 } 

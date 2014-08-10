@@ -9,25 +9,34 @@
 
 namespace Labrador\Test\Unit;
 
+use Labrador\Router\HandlerResolver;
+use Labrador\Router\ResolvedRoute;
 use Labrador\Router\FastRouteRouter as Router;
 use FastRoute\DataGenerator\GroupCountBased as GcbDataGenerator;
 use FastRoute\Dispatcher\GroupCountBased as GcbDispatcher;
 use FastRoute\RouteCollector;
 use FastRoute\RouteParser\Std as StdRouteParser;
 use Symfony\Component\HttpFoundation\Request;
+use Symfony\Component\HttpFoundation\Response;
 use PHPUnit_Framework_TestCase as UnitTestCase;
 
 class FastRouteRouterTest extends UnitTestCase {
 
+    private $mockResolver;
+
     private function getRouter() {
+        $this->mockResolver = $this->getMock(HandlerResolver::class);
         return new Router(
+            $this->mockResolver,
             new RouteCollector(new StdRouteParser(), new GcbDataGenerator()),
             function($data) { return new GcbDispatcher($data); }
         );
     }
 
     function testFastRouteDispatcherCallbackReturnsImproperTypeThrowsException() {
+        $mockResolver = $this->getMock(HandlerResolver::class);
         $router = new Router(
+            $mockResolver,
             new RouteCollector(new StdRouteParser(), new GcbDataGenerator()),
             function($data) { return 'not a dispatcher'; }
         );
@@ -39,64 +48,53 @@ class FastRouteRouterTest extends UnitTestCase {
         $router->match(new Request());
     }
 
-    function testDispatcherCallbackArgumentComesFromRouteCollector() {
-        $collector = $this->getMockBuilder('FastRoute\\RouteCollector')
-                          ->disableOriginalConstructor()
-                          ->getMock();
-        $collector->expects($this->once())
-                  ->method('getData')
-                  ->will($this->returnValue(['routes', 'listed', 'here']));
-        $actual = null;
-        $dispatcher = $this->getMock('FastRoute\\Dispatcher');
-        $dispatcher->expects($this->once())
-                   ->method('dispatch')
-                   ->will($this->returnValue([GcbDispatcher::FOUND, 'foo#bar', []]));
-        $cb = function($arg) use(&$actual, $dispatcher) {
-            $actual = $arg;
-            return $dispatcher;
-        };
-        $router = new Router($collector, $cb);
-        $router->match(new Request());
-
-        $this->assertEquals(['routes', 'listed', 'here'], $actual);
+    function testRouterNotFoundReturnsCorrectResolvedRoute() {
+        $router = $this->getRouter();
+        $resolved = $router->match(new Request());
+        $this->assertInstanceOf(ResolvedRoute::class, $resolved);
+        $this->assertTrue($resolved->isNotFound());
+        $handler = $resolved->getHandler();
+        /** @var Response $response */
+        $response = $handler(new Request());
+        $this->assertSame(Response::HTTP_NOT_FOUND, $response->getStatusCode());
+        $this->assertSame('Not Found', $response->getContent());
     }
 
-    function testRouterNotFoundThrowsNotFoundException() {
+    function testRouterMethodNotAllowedReturnsCorrectResolvedRoute() {
         $router = $this->getRouter();
-        $expectedExc = 'Labrador\\Exception\\NotFoundException';
-        $expectedMsg = 'The route GET /foo/bar could not be found.';
-        $this->setExpectedException($expectedExc, $expectedMsg);
-        $router->match(Request::create('http://labrador.dev/foo/bar'));
-    }
-
-    function testRouterMethodNotAllowedThrowsMethodNotAllowedException() {
-        $router = $this->getRouter();
-
         $request = Request::create('http://labrador.dev/foo', 'POST');
         $router->get('/foo', 'foo#bar');
         $router->put('/foo', 'foo#baz');
 
-        $expectedExc = 'Labrador\\Exception\\MethodNotAllowedException';
-        $expectedMsg = 'The method POST is not allowed for route matching /foo. Available methods include [GET, PUT]';
-        $this->setExpectedException($expectedExc, $expectedMsg);
-        $router->match($request);
+        $resolved = $router->match($request);
+        $this->assertInstanceOf(ResolvedRoute::class, $resolved);
+        $this->assertTrue($resolved->isMethodNotAllowed());
+        $this->assertSame(['GET', 'PUT'], $resolved->getAvailableMethods());
+        $handler = $resolved->getHandler();
+        /** @var Response $response */
+        $response = $handler($request);
+        $this->assertSame(Response::HTTP_METHOD_NOT_ALLOWED, $response->getStatusCode());
+        $this->assertSame('Method Not Allowed', $response->getContent());
     }
 
-    function testRouteMethodFoundReturnsAppropriateControllerActionString() {
+    function testRouterIsOkReturnsCorrectResolvedRoute() {
         $router = $this->getRouter();
+        $request = Request::create('http://labrador.dev/foo', 'GET');
+        $router->get('/foo', 'handler');
+        $this->mockResolver->expects($this->once())->method('resolve')->with('handler')->will($this->returnValue(function() { return 'OK'; }));
 
-        $request = Request::create('http://labrador.dev/foo/bar', 'PUT');
-        $router->put('/foo/bar', 'foo#bar');
-
-        $controllerAction = $router->match($request);
-
-        $this->assertSame('foo#bar', $controllerAction);
+        $resolved = $router->match($request);
+        $this->assertInstanceOf(ResolvedRoute::class, $resolved);
+        $this->assertTrue($resolved->isOk());
+        $handler = $resolved->getHandler();
+        $this->assertSame('OK', $handler());
     }
 
     function testRouteWithParametersSetOnRequestAttributes() {
         $router = $this->getRouter();
 
         $router->post('/foo/{name}/{id}', 'attr#action');
+        $this->mockResolver->expects($this->once())->method('resolve')->with('attr#action')->will($this->returnValue(function() { return 'OK'; }));
 
         /** @var \Symfony\Component\HttpFoundation\Request $request */
         $request = Request::create('http://www.sprog.dev/foo/bar/qux', 'POST');
@@ -110,6 +108,7 @@ class FastRouteRouterTest extends UnitTestCase {
         $router = $this->getRouter();
 
         $router->post('/foo', 'controller#action');
+        $this->mockResolver->expects($this->once())->method('resolve')->with('controller#action')->will($this->returnValue(function() { return 'OK'; }));
 
         $request = Request::create('http://labrador.dev/foo', 'POST');
         $router->match($request);

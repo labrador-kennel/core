@@ -18,12 +18,16 @@ use Labrador\Exception\MethodNotAllowedException;
 use FastRoute\Dispatcher;
 use FastRoute\RouteCollector;
 use Symfony\Component\HttpFoundation\Request;
+use Symfony\Component\HttpFoundation\Response;
 
 class FastRouteRouter implements Router {
 
+    private $resolver;
     private $dispatcherCb;
     private $collector;
     private $routes = [];
+    private $notFoundHandler;
+    private $methodNotFoundHandler;
 
     /**
      * Pass a FastRoute\RouteCollector and a callback that returns a FastRoute\Dispatcher.
@@ -33,10 +37,12 @@ class FastRouteRouter implements Router {
      * invoked when Router::match is called and it should expect an array of data
      * in the same format as $collector->getData().
      *
+     * @param HandlerResolver $resolver
      * @param RouteCollector $collector
      * @param callable $dispatcherCb
      */
-    function __construct(RouteCollector $collector, callable $dispatcherCb) {
+    function __construct(HandlerResolver $resolver, RouteCollector $collector, callable $dispatcherCb) {
+        $this->resolver = $resolver;
         $this->collector = $collector;
         $this->dispatcherCb = $dispatcherCb;
     }
@@ -96,9 +102,7 @@ class FastRouteRouter implements Router {
 
     /**
      * @param Request $request
-     * @return string
-     * @throws NotFoundException
-     * @throws MethodNotAllowedException
+     * @return ResolvedRoute
      */
     function match(Request $request) {
         $dispatcher = $this->getDispatcher();
@@ -108,13 +112,11 @@ class FastRouteRouter implements Router {
         $status = array_shift($route);
 
         if (!$route || $status === $dispatcher::NOT_FOUND) {
-            $msg = 'The route %s %s could not be found.';
-            throw new NotFoundException(sprintf($msg, $method, $path));
+            return new ResolvedRoute($request, $this->getNotFoundHandler(), Response::HTTP_NOT_FOUND);
         }
 
         if ($status === $dispatcher::METHOD_NOT_ALLOWED) {
-            $msg = 'The method %s is not allowed for route matching %s. Available methods include [%s]';
-            throw new MethodNotAllowedException(sprintf($msg, $method, $path, implode(', ', $route[0])));
+            return new ResolvedRoute($request, $this->getMethodNotAllowedHandler(), Response::HTTP_METHOD_NOT_ALLOWED, $route[0]);
         }
 
         list($handler, $params) = $route;
@@ -123,7 +125,8 @@ class FastRouteRouter implements Router {
             $request->attributes->set($k, $v);
         }
 
-        return $handler;
+        $handler = $this->resolver->resolve($handler);
+        return new ResolvedRoute($request, $handler, Response::HTTP_OK);
     }
 
     /**
@@ -143,6 +146,34 @@ class FastRouteRouter implements Router {
 
     function getRoutes() {
         return $this->routes;
+    }
+
+    function getNotFoundHandler() {
+        if (!$this->notFoundHandler) {
+            return function(Request $request) {
+                return new Response('Not Found', Response::HTTP_NOT_FOUND);
+            };
+        }
+
+        return $this->notFoundHandler;
+    }
+
+    function getMethodNotAllowedHandler() {
+        if (!$this->methodNotFoundHandler) {
+            return function(Request $request) {
+                return new Response('Method Not Allowed', Response::HTTP_METHOD_NOT_ALLOWED);
+            };
+        }
+
+        return $this->methodNotFoundHandler;
+    }
+
+    function setNotFoundHandler(callable $handler) {
+        $this->notFoundHandler = $handler;
+    }
+
+    function setMethodNotAllowedHandler(callable $handler) {
+        $this->methodNotFoundHandler = $handler;
     }
 
 } 

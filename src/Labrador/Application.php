@@ -76,11 +76,6 @@ class Application implements HttpKernelInterface {
     private $eventDispatcher;
 
     /**
-     * @property HandlerResolver
-     */
-    private $resolver;
-
-    /**
      * @property Router
      */
     private $router;
@@ -89,13 +84,11 @@ class Application implements HttpKernelInterface {
 
     /**
      * @param Router $router
-     * @param HandlerResolver $resolver
      * @param EventDispatcherInterface $eventDispatcher
      * @param RequestStack $requestStack
      */
-    function __construct(Router $router, HandlerResolver $resolver, EventDispatcherInterface $eventDispatcher, RequestStack $requestStack) {
+    function __construct(Router $router, EventDispatcherInterface $eventDispatcher, RequestStack $requestStack) {
         $this->router = $router;
-        $this->resolver = $resolver;
         $this->eventDispatcher = $eventDispatcher;
         $this->requestStack = $requestStack;
     }
@@ -146,8 +139,15 @@ class Application implements HttpKernelInterface {
             $this->requestStack->push($request);
             $response = $this->triggerHandleEvent();
             if (!$response) {
-                $cb = $this->triggerRouteFoundEvent($request);
-                $response = $this->executeController($request, $cb);
+                $resolved = $this->router->match($request);
+                if ($resolved->isOk()) {
+                    $handler = $resolved->getHandler();
+                    $cb = $this->triggerRouteFoundEvent($request, $handler);
+                    $response = $this->executeController($request, $cb);
+                } else {
+                    $handler = $resolved->getHandler();
+                    return $handler($request);
+                }
             }
             $response = $this->triggerApplicationFinishedEvent($response);
         } catch (PhpException $exc) {
@@ -171,13 +171,7 @@ class Application implements HttpKernelInterface {
         return $event->getResponse();
     }
 
-    private function triggerRouteFoundEvent(Request $request) {
-        $handler = $this->router->match($request);
-        $cb = $this->resolver->resolve($handler);
-        if (!is_callable($cb)) {
-            $msg = 'An error was encountered resolving a found handler matching %s %s';
-            throw new ServerErrorException(sprintf($msg, $request->getMethod(), $request->getPathInfo()));
-        }
+    private function triggerRouteFoundEvent(Request $request, callable $cb) {
         $event = new RouteFoundEvent($this->requestStack, $cb);
         $this->eventDispatcher->dispatch(Events::ROUTE_FOUND, $event);
         return $event->getController();
@@ -187,8 +181,8 @@ class Application implements HttpKernelInterface {
         $response = $cb($request);
         if (!$response instanceof Response) {
             $msg = 'Controllers MUST return an instance of Symfony\\Component\\HttpFoundation\\Response.';
-            $msg .= ' The "%s" handler returned type (%s).';
-            throw new ServerErrorException(sprintf($msg, $request->attributes->get('_labrador')['handler'], gettype($response)));
+            $msg .= ' The handler returned type (%s).';
+            throw new ServerErrorException(sprintf($msg, gettype($response)));
         }
 
         return $response;
