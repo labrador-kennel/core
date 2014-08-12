@@ -43,21 +43,25 @@ Getting started with Labrador is really simple whether you clone the repo direct
 
 ### Directory Setup
 
-One drawback to installing via Composer is that all of the yummy goodness Labrador provides out-of-the-box is buried deep inside a `/vendor` directory. After installing via Composer we need to do a little bit more work to get the required directory structure up and running. Labrador provides a shell script to create the appropriate directory structure and copy over the appropriate files from Labrador's root directory. If you wanna take advantage of this just execute the following commands in your terminal. We assume you're executing this command from the directory where you installed your project's dependencies with Composer.
+#### Bare Bones
 
-```plain
-./vendor/bin/labrador-skeleton
-```
-
-This command will copy over the `/public/*`, '/config/*' and `/init.php` files from Labrador's root directory structure into the directory that the command was executed. Included with this is setting up the included LabradorGuide to be available. This is a built-in documentation that you can access through your browser and learn all kinds of intricate details on how Labrador works. This is also a safe command; if the file already exists the copy or creation will be aborted and your existing code stays intact.
-
-If you don't want to use the automated method, and really why wouldn't you?, you'll need to manually setup the following directory structure yourself. This is the **absolute bare minimum you'll need** to get Labrador properly executing your requests. This will not setup the LabradorGuide and requires you to properly wire up the Labrador\Application.
+This is the **absolute bare minimum you'll need** to get Labrador properly executing your requests. This will not setup the LabradorGuide and requires you to properly wire up the Labrador\Application. Take a look at the repository's `/init.php` for an example of a working implementation.
 
 ```plain
 /public             # your webroot, all publicly accessible files should be stored here (i.e. css, js, images)
     |_index.php     # should only require ../init.php
 /init.php           # is where you wire up your application
 ```
+
+#### Automated with Labrador Guide
+
+Labrador provides a shell script to automatically setup the appropriate directory structure and wiring. Execute the following command in your terminal:
+
+```plain
+./vendor/bin/labrador-skeleton
+```
+
+This command will copy over the `/public/*`, `/config/*` and `/init.php` files from Labrador's root directory structure into the directory that the command was executed. Included with this is setting up the included LabradorGuide to be available. This is a built-in documentation that you can access through your browser and learn all kinds of intricate details on how Labrador works. This is also a safe command; if the file already exists the copy or creation will be aborted and your existing code stays intact.
 
 ### Server Setup
 
