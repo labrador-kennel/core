@@ -23,8 +23,7 @@
     "bin": ["bin/labrador-skeleton.sh"],
     "autoload": {
         "psr-0": {
-            "Labrador\\": ["src/", "test/"],
-            "LabradorGuide\\": ["src/"]
+            "Labrador\\": ["src/", "test/"]
         }
     }
 }
