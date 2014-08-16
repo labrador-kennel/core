@@ -11,10 +11,12 @@
 namespace Labrador\Events;
 
 use Symfony\Component\HttpFoundation\RequestStack;
+use Symfony\Component\HttpFoundation\Response;
 
 class BeforeControllerEvent extends LabradorEvent {
 
     private $controllerCb;
+    private $response;
 
     function __construct(RequestStack $requestStack, callable $controllerCb) {
         parent::__construct($requestStack);
@@ -27,6 +29,14 @@ class BeforeControllerEvent extends LabradorEvent {
 
     function setController(callable $controllerCb) {
         $this->controllerCb = $controllerCb;
+    }
+
+    function getResponse() {
+        return $this->response;
+    }
+
+    function setResponse(Response $response) {
+        $this->response = $response;
     }
 
 } 
