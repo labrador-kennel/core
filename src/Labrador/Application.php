@@ -139,16 +139,7 @@ class Application implements HttpKernelInterface {
             $this->requestStack->push($request);
             $response = $this->triggerHandleEvent();
             if (!$response) {
-                $resolved = $this->router->match($request);
-                if ($resolved->isOk()) {
-                    $handler = $resolved->getHandler();
-                    $cb = $this->triggerBeforeControllerEvent($handler);
-                    $response = $this->executeController($request, $cb);
-                    $this->triggerAfterControllerEvent($response);
-                } else {
-                    $handler = $resolved->getHandler();
-                    return $handler($request);
-                }
+                $response = $this->executeControllerProcessing($request);
             }
             $response = $this->triggerApplicationFinishedEvent($response);
         } catch (PhpException $exc) {
@@ -166,6 +157,26 @@ class Application implements HttpKernelInterface {
         return $response;
     }
 
+    private function executeControllerProcessing(Request $request) {
+        $resolved = $this->router->match($request);
+        if ($resolved->isOk()) {
+            $handler = $resolved->getHandler();
+            $controllerOrResponse = $this->triggerBeforeControllerEvent($handler);
+            if ($controllerOrResponse instanceof Response) {
+                $response = $controllerOrResponse;
+            } else {
+                $controller = $controllerOrResponse;
+                $response = $this->executeController($request, $controller);
+                $this->triggerAfterControllerEvent($response);
+            }
+        } else {
+            $handler = $resolved->getHandler();
+            $response = $handler($request);
+        }
+
+        return $response;
+    }
+
     private function triggerHandleEvent() {
         $event = new ApplicationHandleEvent($this->requestStack);
         $this->eventDispatcher->dispatch(Events::APP_HANDLE, $event);
@@ -175,6 +186,11 @@ class Application implements HttpKernelInterface {
     private function triggerBeforeControllerEvent(callable $cb) {
         $event = new BeforeControllerEvent($this->requestStack, $cb);
         $this->eventDispatcher->dispatch(Events::BEFORE_CONTROLLER, $event);
+        $response = $event->getResponse();
+        if ($response) {
+            return $response;
+        }
+
         return $event->getController();
     }
 
