@@ -10,12 +10,12 @@
 
 namespace Labrador;
 
+use Labrador\Events\AfterControllerEvent;
 use Labrador\Events\ApplicationFinishedEvent;
 use Labrador\Events\ApplicationHandleEvent;
 use Labrador\Events\ExceptionThrownEvent;
-use Labrador\Events\RouteFoundEvent;
+use Labrador\Events\BeforeControllerEvent;
 use Labrador\Router\Router;
-use Labrador\Router\HandlerResolver;
 use Labrador\Exception\HttpException;
 use Labrador\Exception\ServerErrorException;
 use Symfony\Component\EventDispatcher\EventDispatcherInterface;
@@ -50,12 +50,12 @@ use Exception as PhpException;
  * Request, will be created or invoked. Additionally, Events::ROUTE_FOUND will
  * not be triggered.
  *
- * Events::ROUTE_FOUND = labrador.route_found   Labrador\Events\RouteFoundEvent
+ * Events::BEFORE_CONTROLLER = labrador.before_controller   Labrador\Events\BeforeControllerEvent
  * -----------------------------------------------------------------------------
- * Triggered if a Request was successfully routed and resolved into a callable
- * function. The callback returned from RouteFoundEvent::getController will be
- * the controller invoked for the given Request. By default the resolved controller
- * is returned from this method; you would need to explicitly call RouteFoundEvent::setController.
+ * Triggered if a Request was successfully routed. The callback returned from
+ * BeforeControllerEvent::getController will be the controller invoked for the given
+ * Request. By default the resolved controller is returned from this method; you
+ * would need to explicitly call BeforeControllerEvent::setController.
  *
  * Events::APP_FINISHED = labrador.app_finished     Labrador\Events\ApplicationFinishedEvent
  * -----------------------------------------------------------------------------
@@ -107,8 +107,8 @@ class Application implements HttpKernelInterface {
         return $this;
     }
 
-    function onRouteFound(callable $function, $priority = 0) {
-        $this->eventDispatcher->addListener(Events::ROUTE_FOUND, $function, $priority);
+    function onBeforeController(callable $function, $priority = 0) {
+        $this->eventDispatcher->addListener(Events::BEFORE_CONTROLLER, $function, $priority);
         return $this;
     }
 
@@ -142,8 +142,9 @@ class Application implements HttpKernelInterface {
                 $resolved = $this->router->match($request);
                 if ($resolved->isOk()) {
                     $handler = $resolved->getHandler();
-                    $cb = $this->triggerRouteFoundEvent($request, $handler);
+                    $cb = $this->triggerBeforeControllerEvent($handler);
                     $response = $this->executeController($request, $cb);
+                    $this->triggerAfterControllerEvent($response);
                 } else {
                     $handler = $resolved->getHandler();
                     return $handler($request);
@@ -171,9 +172,9 @@ class Application implements HttpKernelInterface {
         return $event->getResponse();
     }
 
-    private function triggerRouteFoundEvent(Request $request, callable $cb) {
-        $event = new RouteFoundEvent($this->requestStack, $cb);
-        $this->eventDispatcher->dispatch(Events::ROUTE_FOUND, $event);
+    private function triggerBeforeControllerEvent(callable $cb) {
+        $event = new BeforeControllerEvent($this->requestStack, $cb);
+        $this->eventDispatcher->dispatch(Events::BEFORE_CONTROLLER, $event);
         return $event->getController();
     }
 
@@ -186,6 +187,12 @@ class Application implements HttpKernelInterface {
         }
 
         return $response;
+    }
+
+    private function triggerAfterControllerEvent(Response $response) {
+        $event = new AfterControllerEvent($this->requestStack, $response);
+        $this->eventDispatcher->dispatch(Events::AFTER_CONTROLLER, $event);
+
     }
 
     private function triggerApplicationFinishedEvent(Response $response = null) {

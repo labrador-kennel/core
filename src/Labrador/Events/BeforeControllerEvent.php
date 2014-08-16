@@ -12,7 +12,7 @@ namespace Labrador\Events;
 
 use Symfony\Component\HttpFoundation\RequestStack;
 
-class RouteFoundEvent extends LabradorEvent {
+class BeforeControllerEvent extends LabradorEvent {
 
     private $controllerCb;
 
