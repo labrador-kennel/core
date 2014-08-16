@@ -47,14 +47,9 @@ $injector = (new FrontControllerBootstrap($appConfig))->run();
 $config = $injector->make(MasterConfig::class);
 $app = $injector->make(Application::class);
 
-$app->onHandle(function() use($config, $injector) {
-    if ($config[ConfigDirective::ENVIRONMENT] === 'development') {
-        (new DevelopmentServices($config[ConfigDirective::ROOT_DIR]  . '/.git'))->register($injector);
-        $injector->make('Labrador\\Development\\HtmlToolbar')->registerEventListeners();
-    }
+$app->getRouter()->get('/', function() {
+    return new \Symfony\Component\HttpFoundation\Response('Welcome to Labrador!');
 });
-
-$app->getRouter()->get('/', 'LabradorGuide\\Controller\\HomeController#index');
 
 $request = Request::createFromGlobals();
 $app->handle($request)->send();
