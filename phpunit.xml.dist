@@ -35,7 +35,6 @@
     <filter>
         <blacklist>
             <directory suffix=".php">./vendor</directory>
-            <directory suffix=".php">/Users/charlessprayberry/.composer</directory>
         </blacklist>
         <whitelist processUncoveredFilesFromWhitelist="true">
             <directory suffix=".php">./src/Labrador</directory>
