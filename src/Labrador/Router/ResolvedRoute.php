@@ -17,12 +17,12 @@ class ResolvedRoute {
 
     private $httpStatus;
     private $request;
-    private $handler;
+    private $controller;
     private $availableMethods;
 
-    function __construct(Request $requet, callable $handler, $httpStatus, array $availableMethods = []) {
+    function __construct(Request $requet, callable $controller, $httpStatus, array $availableMethods = []) {
         $this->request = $requet;
-        $this->handler = $handler;
+        $this->controller = $controller;
         $this->httpStatus = $httpStatus;
         $this->availableMethods = $availableMethods;
     }
@@ -31,8 +31,8 @@ class ResolvedRoute {
         return $this->request;
     }
 
-    function getHandler() {
-        return $this->handler;
+    function getController() {
+        return $this->controller;
     }
 
     function isOk() {
