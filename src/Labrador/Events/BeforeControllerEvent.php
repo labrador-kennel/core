@@ -10,25 +10,22 @@
 
 namespace Labrador\Events;
 
+use Labrador\Router\ResolvedRoute;
 use Symfony\Component\HttpFoundation\RequestStack;
 use Symfony\Component\HttpFoundation\Response;
 
 class BeforeControllerEvent extends LabradorEvent {
 
-    private $controllerCb;
+    private $resolvedRoute;
     private $response;
 
-    function __construct(RequestStack $requestStack, callable $controllerCb) {
+    function __construct(RequestStack $requestStack, ResolvedRoute $resolvedRoute) {
         parent::__construct($requestStack);
-        $this->controllerCb = $controllerCb;
+        $this->resolvedRoute = $resolvedRoute;
     }
 
-    function getController() {
-        return $this->controllerCb;
-    }
-
-    function setController(callable $controllerCb) {
-        $this->controllerCb = $controllerCb;
+    function getResolvedRoute() {
+        return $this->resolvedRoute;
     }
 
     function getResponse() {
