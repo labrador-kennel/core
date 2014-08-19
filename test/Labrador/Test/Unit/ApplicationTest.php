@@ -13,6 +13,7 @@ namespace Labrador\Test\Unit;
 
 use Labrador\Application;
 use Labrador\Events;
+use Labrador\Exception\InvalidHandlerException;
 use Labrador\Exception\NotFoundException;
 use Labrador\Exception\ServerErrorException;
 use Labrador\Router\ResolvedRoute;
@@ -41,6 +42,11 @@ class ApplicationTest extends UnitTestCase {
         return new Application($this->router, $this->eventDispatcher, $this->requestStack);
     }
 
+    function testGettingRouter() {
+        $app = $this->createApplication();
+        $this->assertSame($this->router, $app->getRouter());
+    }
+
     function testControllerMustReturnResponse() {
         $request = Request::create('http://www.labrador.dev');
         $resolvedRoute = new ResolvedRoute($request, function() { return 'handler#action'; }, Response::HTTP_OK);
@@ -54,7 +60,7 @@ class ApplicationTest extends UnitTestCase {
         $this->assertInstanceOf('Symfony\\Component\\HttpFoundation\\Response', $response);
         $this->assertSame(500, $response->getStatusCode());
         $msg = 'Controllers MUST return an instance of Symfony\\Component\\HttpFoundation\\Response.';
-        $msg .= ' The handler returned type (string).';
+        $msg .= ' The controller returned type (string).';
         $this->assertSame($msg, $response->getContent());
     }
 
@@ -100,11 +106,11 @@ class ApplicationTest extends UnitTestCase {
         $this->router->expects($this->never())->method('match');
 
         $eventDispatcher = new EventDispatcher();
-        $eventDispatcher->addListener(Events::APP_HANDLE, function(Events\ApplicationHandleEvent $event) {
+        $app = new Application($this->router, $eventDispatcher, $this->requestStack);
+        $app->onHandle(function(Events\ApplicationHandleEvent $event) {
             $event->setResponse(new Response('Called from event'));
         });
 
-        $app = new Application($this->router, $eventDispatcher, $this->requestStack);
         $response = $app->handle($request);
         $this->assertSame('Called from event', $response->getContent());
     }
@@ -112,40 +118,33 @@ class ApplicationTest extends UnitTestCase {
     function testResponseSetInBeforeControllerShortCircuits() {
         $request = Request::create('http://labrador.dev');
         $resolvedRoute = new ResolvedRoute($request, function() { throw new PhpException('Should never be called'); }, Response::HTTP_OK);
-        $this->router->expects($this->once())->method('match')->with($request)->will($this->returnValue($resolvedRoute));
+        $this->router->expects($this->once())->method('match')->with($request)->willReturn($resolvedRoute);
 
         $eventDispatcher = new EventDispatcher();
-        $eventDispatcher->addListener(Events::BEFORE_CONTROLLER, function(Events\BeforeControllerEvent $event) {
+        $app = new Application($this->router, $eventDispatcher, $this->requestStack);
+        $app->onBeforeController(function(Events\BeforeControllerEvent $event) {
             $event->setResponse(new Response('called from event'));
         });
 
-        $app = new Application($this->router, $eventDispatcher, $this->requestStack);
         $response = $app->handle($request);
         $this->assertSame('called from event', $response->getContent());
     }
 
-    function testAppFinishedEventTriggeredWhenAppHandleShortCircuits() {
+    function testResponseSetInAfterControllerIsReturned() {
         $request = Request::create('http://labrador.dev');
+        $resolved = new ResolvedRoute($request, function() { return new Response(''); }, Response::HTTP_OK);
 
-        $this->router->expects($this->never())->method('match');
+        $this->router->expects($this->once())->method('match')->will($this->returnValue($resolved));
 
         $eventDispatcher = new EventDispatcher();
-        $eventDispatcher->addListener(Events::APP_HANDLE, function($event) {
-            $event->setResponse(new Response('called from event'));
-        });
-
-        $finishCalled = false;
-        $eventDispatcher->addListener(Events::APP_FINISHED, function($event) use(&$finishCalled) {
-            $finishCalled = true;
-        });
-
         $app = new Application($this->router, $eventDispatcher, $this->requestStack);
+        $app->onAfterController(function(Events\AfterControllerEvent $event) {
+            $event->setResponse(new Response('called from the after_controller listener'));
+        });
+
         $response = $app->handle($request);
-        $this->assertSame('called from event', $response->getContent());
-        $this->assertTrue($finishCalled);
+        $this->assertSame('called from the after_controller listener', $response->getContent());
     }
-
-
 
     function testResponseSetInAppFinishedEventIsReturned() {
         $request = Request::create('http://labrador.dev');
@@ -154,13 +153,51 @@ class ApplicationTest extends UnitTestCase {
         $this->router->expects($this->once())->method('match')->will($this->returnValue($resolved));
 
         $eventDispatcher = new EventDispatcher();
-        $eventDispatcher->addListener(Events::APP_FINISHED, function($event) {
+        $app = new Application($this->router, $eventDispatcher, $this->requestStack);
+        $app->onFinished(function(Events\ApplicationFinishedEvent $event) {
             $event->setResponse(new Response('called from the app_finished listener'));
         });
 
-        $app = new Application($this->router, $eventDispatcher, $this->requestStack);
         $response = $app->handle($request);
         $this->assertSame('called from the app_finished listener', $response->getContent());
+    }
+
+    function testApplicationFinishedTriggeredDuringNormalProcessing() {
+        $request = Request::create('http://labrador.dev');
+        $resolvedRoute = new ResolvedRoute($request, function() { return new Response(''); }, Response::HTTP_OK);
+        $this->router->method('match')->willReturn($resolvedRoute);
+
+        $eventDispatcher = new EventDispatcher();
+        $app = new Application($this->router, $eventDispatcher, $this->requestStack);
+        $finishCalled = false;
+        $app->onFinished(function() use(&$finishCalled) {
+            $finishCalled = true;
+        });
+        $app->handle($request);
+
+        $this->assertTrue($finishCalled);
+    }
+
+    function testResponseFromNotOkRouteMustBeResponse() {
+        $request = Request::create('http://labrador.dev');
+        $resolvedRoute = new ResolvedRoute($request, function() { return 'not a response object'; }, Response::HTTP_NOT_FOUND);
+        $this->router->expects($this->once())->method('match')->willReturn($resolvedRoute);
+
+        $app = new Application($this->router, $this->eventDispatcher, $this->requestStack);
+        $msg = 'Controllers MUST return an instance of Symfony\\Component\\HttpFoundation\\Response.';
+        $msg .= ' The controller returned type (string).';
+        $this->setExpectedException(ServerErrorException::class, $msg);
+        $app->handle($request, Application::MASTER_REQUEST, Application::THROW_EXCEPTIONS);
+    }
+
+    function testResponseFromNotOkRouteIsReturned() {
+        $request = Request::create('http://labrador.dev');
+        $resolvedRoute = new ResolvedRoute($request, function() { return new Response('This resource could not be found'); }, Response::HTTP_NOT_FOUND);
+        $this->router->expects($this->once())->method('match')->willReturn($resolvedRoute);
+
+        $app = new Application($this->router, $this->eventDispatcher, $this->requestStack);
+        $response = $app->handle($request, Application::MASTER_REQUEST, Application::THROW_EXCEPTIONS);
+        $this->assertSame('This resource could not be found', $response->getContent());
     }
 
     function exceptionThrownProvider() {
@@ -221,11 +258,11 @@ class ApplicationTest extends UnitTestCase {
             ->will($this->throwException($exception));
 
         $eventDispatcher = new EventDispatcher();
-        $eventDispatcher->addListener(Events::EXCEPTION_THROWN, function($event) {
+        $app = new Application($this->router, $eventDispatcher, $this->requestStack);
+        $app->onException(function(Events\ExceptionThrownEvent $event) {
             $event->setResponse(new Response('Called from exception thrown listener'));
         });
 
-        $app = new Application($this->router, $eventDispatcher, $this->requestStack);
         $response = $app->handle($request);
         $this->assertSame('Called from exception thrown listener', $response->getContent());
     }
