@@ -10,12 +10,13 @@
 
 namespace Labrador;
 
+use Labrador\Events\AfterControllerEvent;
 use Labrador\Events\ApplicationFinishedEvent;
 use Labrador\Events\ApplicationHandleEvent;
 use Labrador\Events\ExceptionThrownEvent;
-use Labrador\Events\RouteFoundEvent;
+use Labrador\Events\BeforeControllerEvent;
+use Labrador\Router\ResolvedRoute;
 use Labrador\Router\Router;
-use Labrador\Router\HandlerResolver;
 use Labrador\Exception\HttpException;
 use Labrador\Exception\ServerErrorException;
 use Symfony\Component\EventDispatcher\EventDispatcherInterface;
@@ -25,61 +26,13 @@ use Symfony\Component\HttpFoundation\Response;
 use Symfony\Component\HttpKernel\HttpKernelInterface;
 use Exception as PhpException;
 
-/**
- * While this is the primary processing logic we have designed it in such a way
- * that you should be able to easily replace dependencies and extend or change
- * Labrador's behavior very easily in the vast majority of use cases.
- *
- * This implementation primarily provides that flexibility in 1 of 2 ways; through
- * interface driven dependencies and timely event triggering.
- *
- * All of the Application dependencies are requested as a particular interface.
- * This allows you to change out implementations at will; assuming that each of
- * those implementations adheres to the described interface.
- *
- * Events are a much more flexible, easy-to-use way to make Labrador do what you
- * need it to do. By providing a few, strategically timed events you have the ability
- * to do a lot of nifty things. We're gonna take a look at the events triggered
- * when Application::handle is run.
- *
- * Events::APP_HANDLE = labrador.app_handle     Labrador\Events\ApplicationHandleEvent
- * -----------------------------------------------------------------------------
- * Triggered once every time Application::handle is called. If a Response is returned
- * from ApplicationHandleEvent::getResponse then Labrador will short circuit
- * normal processing; meaning no controller, if there would be one routed for the
- * Request, will be created or invoked. Additionally, Events::ROUTE_FOUND will
- * not be triggered.
- *
- * Events::ROUTE_FOUND = labrador.route_found   Labrador\Events\RouteFoundEvent
- * -----------------------------------------------------------------------------
- * Triggered if a Request was successfully routed and resolved into a callable
- * function. The callback returned from RouteFoundEvent::getController will be
- * the controller invoked for the given Request. By default the resolved controller
- * is returned from this method; you would need to explicitly call RouteFoundEvent::setController.
- *
- * Events::APP_FINISHED = labrador.app_finished     Labrador\Events\ApplicationFinishedEvent
- * -----------------------------------------------------------------------------
- * Triggered when the Application is finished handling the Request. You can return a
- * Response with ApplicaitonFinishedEvent::getResponse that will be used in place
- * of the one returned from the controller.
- *
- * Events::EXCEPTION_THROWN = labrador.exception_thrown     Labrador\Events\ExceptionThrownEvent
- * -----------------------------------------------------------------------------
- * Triggered if an exception is caught by the Application. You can set a Response
- * in this event to change the generic Response set by the Application.
- */
 class Application implements HttpKernelInterface {
 
     const CATCH_EXCEPTIONS = true;
     const THROW_EXCEPTIONS = false;
 
     private $eventDispatcher;
-
-    /**
-     * @property Router
-     */
     private $router;
-
     private $requestStack;
 
     /**
@@ -93,25 +46,58 @@ class Application implements HttpKernelInterface {
         $this->requestStack = $requestStack;
     }
 
+    /**
+     * @return Router
+     */
     function getRouter() {
         return $this->router;
     }
 
+    /**
+     * @param callable $function
+     * @param int $priority
+     * @return $this
+     */
     function onHandle(callable $function, $priority = 0) {
         $this->eventDispatcher->addListener(Events::APP_HANDLE, $function, $priority);
         return $this;
     }
 
+    /**
+     * @param callable $function
+     * @param int $priority
+     * @return $this
+     */
     function onFinished(callable $function, $priority = 0) {
         $this->eventDispatcher->addListener(Events::APP_FINISHED, $function, $priority);
         return $this;
     }
 
-    function onRouteFound(callable $function, $priority = 0) {
-        $this->eventDispatcher->addListener(Events::ROUTE_FOUND, $function, $priority);
+    /**
+     * @param callable $function
+     * @param int $priority
+     * @return $this
+     */
+    function onBeforeController(callable $function, $priority = 0) {
+        $this->eventDispatcher->addListener(Events::BEFORE_CONTROLLER, $function, $priority);
         return $this;
     }
 
+    /**
+     * @param callable $function
+     * @param int $priority
+     * @return $this
+     */
+    function onAfterController(callable $function, $priority = 0) {
+        $this->eventDispatcher->addListener(Events::AFTER_CONTROLLER, $function, $priority);
+        return $this;
+    }
+
+    /**
+     * @param callable $function
+     * @param int $priority
+     * @return $this
+     */
     function onException(callable $function, $priority = 0) {
         $this->eventDispatcher->addListener(Events::EXCEPTION_THROWN, $function, $priority);
         return $this;
@@ -126,28 +112,18 @@ class Application implements HttpKernelInterface {
      * @param Request $request A Request instance
      * @param integer $type The type of the request
      *                          (one of HttpKernelInterface::MASTER_REQUEST or HttpKernelInterface::SUB_REQUEST)
-     * @param Boolean $catch Whether to catch exceptions or not
+     * @param boolean $catch Whether to catch exceptions or not
      *
      * @return Response A Response instance
      *
-     * @throws \Exception When an Exception occurs during processing
-     *
-     * @api
+     * @throws \Exception When an Exception occurs during processing and not configured to CATCH_EXCEPTIONS
      */
     function handle(Request $request, $type = self::MASTER_REQUEST, $catch = self::CATCH_EXCEPTIONS) {
         try {
             $this->requestStack->push($request);
             $response = $this->triggerHandleEvent();
             if (!$response) {
-                $resolved = $this->router->match($request);
-                if ($resolved->isOk()) {
-                    $handler = $resolved->getHandler();
-                    $cb = $this->triggerRouteFoundEvent($request, $handler);
-                    $response = $this->executeController($request, $cb);
-                } else {
-                    $handler = $resolved->getHandler();
-                    return $handler($request);
-                }
+                $response = $this->executeControllerProcessing($request);
             }
             $response = $this->triggerApplicationFinishedEvent($response);
         } catch (PhpException $exc) {
@@ -171,21 +147,48 @@ class Application implements HttpKernelInterface {
         return $event->getResponse();
     }
 
-    private function triggerRouteFoundEvent(Request $request, callable $cb) {
-        $event = new RouteFoundEvent($this->requestStack, $cb);
-        $this->eventDispatcher->dispatch(Events::ROUTE_FOUND, $event);
-        return $event->getController();
+    private function executeControllerProcessing(Request $request) {
+        $resolved = $this->router->match($request);
+        if (!$resolved->isOk()) {
+            $controller = $resolved->getController();
+            $response = $controller($request);
+            if (!$response instanceof Response) {
+                $msg = 'Controllers MUST return an instance of %s. The controller returned type (%s).';
+                throw new ServerErrorException(sprintf($msg, Response::class, gettype($response)));
+            }
+
+            return $response;
+        }
+
+        $event = $this->triggerBeforeControllerEvent($resolved);
+        if ($event->getResponse()) {
+            return $event->getResponse();
+        }
+
+        $response = $this->executeController($request, $resolved->getController());
+        return $this->triggerAfterControllerEvent($response);
+    }
+
+    private function triggerBeforeControllerEvent(ResolvedRoute $resolvedRoute) {
+        $event = new BeforeControllerEvent($this->requestStack, $resolvedRoute);
+        $this->eventDispatcher->dispatch(Events::BEFORE_CONTROLLER, $event);
+        return $event;
     }
 
     private function executeController(Request $request, callable $cb) {
         $response = $cb($request);
         if (!$response instanceof Response) {
-            $msg = 'Controllers MUST return an instance of Symfony\\Component\\HttpFoundation\\Response.';
-            $msg .= ' The handler returned type (%s).';
-            throw new ServerErrorException(sprintf($msg, gettype($response)));
+            $msg = 'Controllers MUST return an instance of %s. The controller returned type (%s).';
+            throw new ServerErrorException(sprintf($msg, Response::class, gettype($response)));
         }
 
         return $response;
+    }
+
+    private function triggerAfterControllerEvent(Response $response) {
+        $event = new AfterControllerEvent($this->requestStack, $response);
+        $this->eventDispatcher->dispatch(Events::AFTER_CONTROLLER, $event);
+        return $event->getResponse();
     }
 
     private function triggerApplicationFinishedEvent(Response $response = null) {

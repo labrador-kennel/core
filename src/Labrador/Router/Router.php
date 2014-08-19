@@ -68,8 +68,8 @@ interface Router {
      */
     function getRoutes();
 
-    function setNotFoundHandler(callable $handler);
+    function setNotFoundController(callable $handler);
 
-    function setMethodNotAllowedHandler(callable $handler);
+    function setMethodNotAllowedController(callable $handler);
 
 } 

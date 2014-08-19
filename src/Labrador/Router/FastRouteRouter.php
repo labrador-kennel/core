@@ -26,8 +26,8 @@ class FastRouteRouter implements Router {
     private $dispatcherCb;
     private $collector;
     private $routes = [];
-    private $notFoundHandler;
-    private $methodNotFoundHandler;
+    private $notFoundController;
+    private $methodNotFoundController;
 
     /**
      * Pass a FastRoute\RouteCollector and a callback that returns a FastRoute\Dispatcher.
@@ -112,11 +112,11 @@ class FastRouteRouter implements Router {
         $status = array_shift($route);
 
         if (!$route || $status === $dispatcher::NOT_FOUND) {
-            return new ResolvedRoute($request, $this->getNotFoundHandler(), Response::HTTP_NOT_FOUND);
+            return new ResolvedRoute($request, $this->getNotFoundController(), Response::HTTP_NOT_FOUND);
         }
 
         if ($status === $dispatcher::METHOD_NOT_ALLOWED) {
-            return new ResolvedRoute($request, $this->getMethodNotAllowedHandler(), Response::HTTP_METHOD_NOT_ALLOWED, $route[0]);
+            return new ResolvedRoute($request, $this->getMethodNotAllowedController(), Response::HTTP_METHOD_NOT_ALLOWED, $route[0]);
         }
 
         list($handler, $params) = $route;
@@ -148,32 +148,32 @@ class FastRouteRouter implements Router {
         return $this->routes;
     }
 
-    function getNotFoundHandler() {
-        if (!$this->notFoundHandler) {
-            return function(Request $request) {
+    function getNotFoundController() {
+        if (!$this->notFoundController) {
+            return function() {
                 return new Response('Not Found', Response::HTTP_NOT_FOUND);
             };
         }
 
-        return $this->notFoundHandler;
+        return $this->notFoundController;
     }
 
-    function getMethodNotAllowedHandler() {
-        if (!$this->methodNotFoundHandler) {
-            return function(Request $request) {
+    function getMethodNotAllowedController() {
+        if (!$this->methodNotFoundController) {
+            return function() {
                 return new Response('Method Not Allowed', Response::HTTP_METHOD_NOT_ALLOWED);
             };
         }
 
-        return $this->methodNotFoundHandler;
+        return $this->methodNotFoundController;
     }
 
-    function setNotFoundHandler(callable $handler) {
-        $this->notFoundHandler = $handler;
+    function setNotFoundController(callable $controller) {
+        $this->notFoundController = $controller;
     }
 
-    function setMethodNotAllowedHandler(callable $handler) {
-        $this->methodNotFoundHandler = $handler;
+    function setMethodNotAllowedController(callable $controller) {
+        $this->methodNotFoundController = $controller;
     }
 
 } 

@@ -53,7 +53,7 @@ class FastRouteRouterTest extends UnitTestCase {
         $resolved = $router->match(new Request());
         $this->assertInstanceOf(ResolvedRoute::class, $resolved);
         $this->assertTrue($resolved->isNotFound());
-        $handler = $resolved->getHandler();
+        $handler = $resolved->getController();
         /** @var Response $response */
         $response = $handler(new Request());
         $this->assertSame(Response::HTTP_NOT_FOUND, $response->getStatusCode());
@@ -70,7 +70,7 @@ class FastRouteRouterTest extends UnitTestCase {
         $this->assertInstanceOf(ResolvedRoute::class, $resolved);
         $this->assertTrue($resolved->isMethodNotAllowed());
         $this->assertSame(['GET', 'PUT'], $resolved->getAvailableMethods());
-        $handler = $resolved->getHandler();
+        $handler = $resolved->getController();
         /** @var Response $response */
         $response = $handler($request);
         $this->assertSame(Response::HTTP_METHOD_NOT_ALLOWED, $response->getStatusCode());
@@ -86,7 +86,7 @@ class FastRouteRouterTest extends UnitTestCase {
         $resolved = $router->match($request);
         $this->assertInstanceOf(ResolvedRoute::class, $resolved);
         $this->assertTrue($resolved->isOk());
-        $handler = $resolved->getHandler();
+        $handler = $resolved->getController();
         $this->assertSame('OK', $handler());
     }
 

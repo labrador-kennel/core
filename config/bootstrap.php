@@ -9,13 +9,10 @@
  */
 
 use Labrador\Bootstrap\IniSetBootstrap;
-use LabradorGuide\Services as GuideServices;
 use Configlet\Config;
 use Auryn\Injector;
 
 return function(Injector $injector, Config $config) {
-
-    (new GuideServices())->register($injector);
 
     if ($config['ini'] instanceof Config) {
         (new IniSetBootstrap($config['ini']))->run();
