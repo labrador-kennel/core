@@ -21,7 +21,7 @@ fi
 echo "Creating new Labrador project named $projectName"
 echo
 
-dirs=("src" "public" "public/css" "public/img" "public/js" "public/css/labrador_guide" "public/js/labrador_guide" "config")
+dirs=("src" "public" "public/css" "public/img" "public/js" "config")
 for dir in "${dirs[@]}"
     do
         fullItem="$scriptPath/$dir"
@@ -43,7 +43,7 @@ echo
 echo "Copying over configuration and setup files..."
 echo
 
-files=("init.php" "public/index.php" "public/css/normalize.css" "public/css/prism.css" "public/css/labrador_guide/main.css" "public/js/zepto.min.js" "public/js/prism.js")
+files=("init.php" "public/index.php" "public/css/normalize.css" "public/css/prism.css" "public/js/zepto.min.js" "public/js/prism.js")
 for file in "${files[@]}"
     do
         appItem="$scriptPath/$file"
