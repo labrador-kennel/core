@@ -17,7 +17,6 @@ Labrador has a variety of dependencies that must be provided.
 - [rdlowrey/Auryn](https://github.com/rdlowrey/Auryn) DI container to automatically provision dependencies
 - [symfony/HttpFoundation](https://github.com/symfony/HttpFoundation) Provides abstraction over HTTP Request/Response and HttpKernelInterface
 - [cspray/Configlet](https://github.com/cspray/Configlet) Object Oriented library for storing PHP configurations
-- [zendframework/Component_ZendEscaper](https://github.com/zendframework/Component_ZendEscaper) Escaping library for simple, out-of-the-box template rendering
 
 ## Installation
 
@@ -39,9 +38,88 @@ if (!$you->usingComposer()) {
 
 ## Getting Started
 
-Getting started with Labrador is really simple whether you clone the repo directly or install via Composer. First we're gonna talk about getting the required directory structure setup after a Composer installation. If you are cloning the repo directly you can skip to the [server setup]() section as the out-of-the-box directory structure is a part of the repo.
+Using Labrador is intended to be easy and straight forward. The User Guide below assumes you have setup your web server to send all non-static requests to be routed to `/public/index.php`. If you need help on setting this up please check out [Server Setup](#server-setup) documentation.
 
-### Directory Setup
+### Quick Start
+
+
+
+### Manual Setup
+
+ We're also going to assume that you have done a manual setup and need to setup `/init.php` from a clean slate. If you copied over Labrador's default files your init.php will look slightly different as various pieces are split into `/config` files.
+
+```php
+<?php
+
+use Labrador\Application;
+use Labrador\ConfigDirective;
+use Labrador\Bootstrap\FrontControllerBootstrap;
+use Labrador\Events\ApplicationHandleEvent;
+use Labrador\Events\ExceptionThrownEvent;
+use Auryn\Injector;
+use Configlet\Config;
+
+require_once __DIR__ . '/vendor/autoload.php';
+
+// Typically this function would be returned from /config/application.php or some
+// other external source.
+$appConfig = function(Config $config) {
+
+    // All of these configuration values are optional
+
+    /**
+     * The environment that the current application is running in.
+     *
+     * This is a completely arbitrary string and only holds meaning to your application.
+     */
+    $config[ConfigDirective::ENVIRONMENT] = 'development';
+
+    /**
+     * The root directory for the application
+     */
+    $config[ConfigDirective::ROOT_DIR] = __DIR__;
+
+    /**
+     * A callback accepting a Auryn\Provider as the first argument and a Configlet\Config
+     * as the second argument.
+     *
+     * It should perform actions that are needed at time of request startup including
+     * wire up dependencies, set configuration values, and other tasks your application
+     * might need to carry out before Labrador actually takes over handling the Request.
+     *
+     * We recommend you return this from a /config/bootstrap.php or in some other way
+     * provide a function from an external source.
+     */
+    $config[ConfigDirective::BOOTSTRAP_CALLBACK] = function(Injector $injector, Config $config) {
+        // do your application bootup stuff here if needed
+    };
+
+};
+
+/** @var \Auryn\Injector $injector */
+/** @var \Labrador\Application $app */
+$injector = (new FrontControllerBootstrap($appConfig))->run();
+$app = $injector->make(Application::class);
+
+// perform some action when Application::handle is invoked
+$app->onHandle(function(ApplicationHandleEvent $event) {
+    // You can set a response to $event->setResponse() to short-circuit processing and return early
+    // Your Application::onFinished middleware will still be executed if you short-circuit
+});
+
+// perform some action when Application catches an exception
+// if you pass Application::THROW_EXCEPTIONS this event will not be triggered
+$app->onException(function(ExceptionThrownEvent $event) {
+
+});
+
+// Check out Labrador\Events for more information about hooking into Labrador\Application processing.
+
+$request = Request::createFromGlobals();
+$app->handle($request)->send();
+```
+
+### Directory Structure
 
 #### Bare Bones
 
@@ -53,15 +131,32 @@ This is the **absolute bare minimum you'll need** to get Labrador properly execu
 /init.php           # is where you wire up your application
 ```
 
-#### Automated with Labrador Guide
+#### Advanced
 
-Labrador provides a shell script to automatically setup the appropriate directory structure and wiring. Execute the following command in your terminal:
+Labrador provides a shell script to automatically setup the appropriate directory structure and wiring that you see in this repo.
 
 ```plain
 ./vendor/bin/labrador-skeleton
 ```
 
-This command will copy over the `/public/*`, `/config/*` and `/init.php` files from Labrador's root directory structure into the directory that the command was executed. Included with this is setting up the included LabradorGuide to be available. This is a built-in documentation that you can access through your browser and learn all kinds of intricate details on how Labrador works. This is also a safe command; if the file already exists the copy or creation will be aborted and your existing code stays intact.
+After this command the directory structure will look similar to the following
+
+```plain
+/config
+    |_application.php
+    |_bootstrap.php
+/public
+    |_/css
+        |_normalize.css
+        |_prism.css
+    |_/js
+        |_prism.js
+        |_zepto.min.js
+    |_index.php
+init.php
+```
+
+This command will copy over the `/public/*`, `/config/*` and `/init.php` files from Labrador's root directory structure into the directory that the command was executed.
 
 ### Server Setup
 
@@ -89,99 +184,4 @@ Below is a slightly modified server configuration for the Apache server that we 
 ```
 
 Load this into the appropriate `httpd.conf` file for your server and restart it.
-
-## Application Setup
-
-At this point you're ready to start developing your application. So, let's take a look at setting up your app's configuration, routes, and middleware. From this point we're going to assume that you have done a manual setup and need to setup `/init.php` from a clean slate. If you copied over Labrador's default files your init.php will look slightly different as various pieces are split into `/config` files.
-
-```php
-<?php
-
-use Labrador\Application;
-use Labrador\ConfigDirective;
-use Labrador\Bootstrap\FrontControllerBootstrap;
-use Labrador\Events\ApplicationHandleEvent;
-use Labrador\Events\ApplicationFinishedEvent;
-use Labrador\Events\RouteFoundEvent;
-use Labrador\Events\ExceptionThrownEvent;
-use Auryn\Injector;
-use Configlet\Config;
-
-require_once __DIR__ . '/vendor/autoload.php';
-
-// Typically this function would be returned from /config/application.php
-$appConfig = function(Config $config) {
-
-    // Unless utilizing the Guide all of these configuration directives are optional
-
-    /**
-     * The environment that the current application is running in.
-     *
-     * This is a completely arbitrary string and only holds meaning to your application.
-     */
-    $config[ConfigDirective::ENVIRONMENT] = 'development';
-
-    /**
-     * The root directory for the application
-     */
-    $config[ConfigDirective::ROOT_DIR] = __DIR__;
-
-    /**
-     * A callback accepting a Auryn\Provider as the first argument and a Configlet\Config
-     * as the second argument.
-     *
-     * It should perform actions that are needed at time of request startup including
-     * wire up dependencies, set configuration values, and other tasks your application
-     * might need to carry out before Labrador actually takes over handling the Request.
-     */
-    $config[ConfigDirective::BOOTSTRAP_CALLBACK] = function(Injector $injector, Config $config) {
-        // do your application bootup stuff here if needed
-    };
-
-};
-
-/** @var \Auryn\Injector $injector */
-/** @var \Labrador\Application $app */
-$injector = (new FrontControllerBootstrap($appConfig))->run();
-$app = $injector->make(Application::class);
-
-// perform some action when Application::handle is invoked
-$app->onHandle(function(ApplicationHandleEvent $event) {
-    // You can set a response to $event->setResponse() to short-circuit processing and return early
-    // Your Application::onFinished middleware will still be executed if you short-circuit
-});
-
-// perform some action when we've successfully converted a found handler into a callable
-$app->onRouteFound(function(RouteFoundEvent $event) {
-    // You can wrap the callable that we resolved. A common use case might be allowing controllers to return strings
-    $existing = $event->getController();
-    $cb = function(Request $request) use($existing) {
-        $response = $existing($request);
-        if (!$response instanceof Response) {
-            $response = new Response($response);
-        }
-
-        return $response;
-    };
-    $event->setController($cb);
-});
-
-// perform some action when we're through processing a Request
-// unless a prior Application::onFinished middleware throws an exception
-// this is guaranteed to be run on every request.
-$app->onFinished(function(ApplicationFinishedEvent $event) {
-    // For a cool example of Application::onFinished middleware check out
-    // Labrador\Development\HtmlToolbar::appFinishedEvent
-});
-
-// perform some action when Application catches an exception
-// if you pass Application::THROW_EXCEPTIONS this event will not be triggered
-$app->onException(function(ExceptionThrownEvent $event) {
-
-});
-
-
-
-```
-
 
