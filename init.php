@@ -47,7 +47,7 @@ $config = $injector->make(MasterConfig::class);
 $app = $injector->make(Application::class);
 
 $app->getRouter()->get('/', function() {
-    $response = file_get_contents(__DIR__ . '/src/Labrador/welcome.php');
+    $response = file_get_contents(__DIR__ . '/src/Labrador/_files/welcome.php');
     return new Response($response);
 });
 
