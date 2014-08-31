@@ -125,17 +125,17 @@ class Application implements HttpKernelInterface {
             if (!$response) {
                 $response = $this->executeControllerProcessing($request);
             }
-            $response = $this->triggerApplicationFinishedEvent($response);
         } catch (PhpException $exc) {
             $code = ($exc instanceof HttpException) ? $exc->getCode() : Response::HTTP_INTERNAL_SERVER_ERROR;
 
             if (!$catch) {
-                $response = isset($response) ? $response : null;
-                $this->triggerApplicationFinishedEvent($response);
                 throw $exc;
             }
             $response = $this->handleCaughtException($exc, $code);
+        } finally {
+            $response = isset($response) ? $response : null;
             $response = $this->triggerApplicationFinishedEvent($response);
+            $this->requestStack->pop();
         }
 
         return $response;
@@ -195,7 +195,6 @@ class Application implements HttpKernelInterface {
         $event = new ApplicationFinishedEvent($this->requestStack, $response);
         $this->eventDispatcher->dispatch(Events::APP_FINISHED, $event);
         $response = $event->getResponse();
-        $this->requestStack->pop();
         return $response;
     }
 
