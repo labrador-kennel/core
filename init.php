@@ -32,10 +32,9 @@ HTML;
 require_once __DIR__ . '/vendor/autoload.php';
 
 use Labrador\Application;
-use Labrador\ConfigDirective;
 use Labrador\Bootstrap\FrontControllerBootstrap;
-use Labrador\Development\Services as DevelopmentServices;
 use Symfony\Component\HttpFoundation\Request;
+use Symfony\Component\HttpFoundation\Response;
 use Configlet\MasterConfig;
 
 $appConfig = include __DIR__ . '/config/application.php';
@@ -48,7 +47,8 @@ $config = $injector->make(MasterConfig::class);
 $app = $injector->make(Application::class);
 
 $app->getRouter()->get('/', function() {
-    return new \Symfony\Component\HttpFoundation\Response('Welcome to Labrador!');
+    $response = file_get_contents(__DIR__ . '/src/Labrador/welcome.php');
+    return new Response($response);
 });
 
 $request = Request::createFromGlobals();
