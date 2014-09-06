@@ -28,6 +28,7 @@ class FastRouteRouter implements Router {
     private $routes = [];
     private $notFoundController;
     private $methodNotFoundController;
+    private $mountedPrefix;
 
     /**
      * Pass a FastRoute\RouteCollector and a callback that returns a FastRoute\Dispatcher.
@@ -93,8 +94,23 @@ class FastRouteRouter implements Router {
         return $this->addRoute($httpMethod, $pattern, $handler);
     }
 
+    /**
+     * @param string $prefix
+     * @param callable $cb
+     * @return $this
+     */
+    function mount($prefix, callable $cb) {
+        $this->mountedPrefix = $prefix;
+        $cb($this);
+        $this->mountedPrefix = null;
+        return $this;
+    }
+
     private function addRoute($method, $pattern, $handler) {
         // @todo implement FastRouterRouteCollector and parse required data from Route objects
+        if ($this->mountedPrefix) {
+            $pattern = $this->mountedPrefix . $pattern;
+        }
         $this->routes[] = new Route($pattern, $method, $handler);
         $this->collector->addRoute($method, $pattern, $handler);
         return $this;

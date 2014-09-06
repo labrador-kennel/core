@@ -55,6 +55,13 @@ interface Router {
     function custom($method, $pattern, $handler);
 
     /**
+     * @param string $prefix
+     * @param callable $cb
+     * @return $this
+     */
+    function mount($prefix, callable $cb);
+
+    /**
      * Should return a $handler for a matched $request or throw one of two HttpExceptions;
      * either NotFoundException or MethodNotAllowedException.
      *
@@ -68,8 +75,16 @@ interface Router {
      */
     function getRoutes();
 
+    /**
+     * @param callable $handler
+     * @return mixed
+     */
     function setNotFoundController(callable $handler);
 
+    /**
+     * @param callable $handler
+     * @return mixed
+     */
     function setMethodNotAllowedController(callable $handler);
 
 } 

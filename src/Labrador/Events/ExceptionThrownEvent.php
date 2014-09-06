@@ -16,24 +16,15 @@ use Symfony\Component\HttpFoundation\Response;
 class ExceptionThrownEvent extends LabradorEvent {
 
     private $exception;
-    private $response;
 
     function __construct(RequestStack $requestStack, Response $response, PhpException $exception) {
         parent::__construct($requestStack);
-        $this->response = $response;
         $this->exception = $exception;
+        $this->setResponse($response);
     }
 
     function getException() {
         return $this->exception;
-    }
-
-    function getResponse() {
-        return $this->response;
-    }
-
-    function setResponse(Response $response) {
-        $this->response = $response;
     }
 
 } 

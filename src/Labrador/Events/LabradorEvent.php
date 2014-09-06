@@ -13,10 +13,12 @@ namespace Labrador\Events;
 
 use Symfony\Component\EventDispatcher\Event;
 use Symfony\Component\HttpFoundation\RequestStack;
+use Symfony\Component\HttpFoundation\Response;
 
 abstract class LabradorEvent extends Event {
 
-    protected $requestStack;
+    private $requestStack;
+    private $response;
 
     function __construct(RequestStack $requestStack) {
         $this->requestStack = $requestStack;
@@ -32,6 +34,14 @@ abstract class LabradorEvent extends Event {
 
     function isMasterRequest() {
         return $this->getMasterRequest() === $this->getCurrentRequest();
+    }
+
+    function getResponse() {
+        return $this->response;
+    }
+
+    function setResponse(Response $response) {
+        $this->response = $response;
     }
 
 }

@@ -43,7 +43,7 @@ echo
 echo "Copying over configuration and setup files..."
 echo
 
-files=("init.php" "public/index.php" "public/css/normalize.css" "public/css/prism.css" "public/js/zepto.min.js" "public/js/prism.js")
+files=("init.php" "config/application.php" "config/bootstrap.php" "public/index.php" "public/css/normalize.css" "public/css/prism.css" "public/js/zepto.min.js" "public/js/prism.js")
 for file in "${files[@]}"
     do
         appItem="$scriptPath/$file"

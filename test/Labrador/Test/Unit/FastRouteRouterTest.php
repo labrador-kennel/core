@@ -172,4 +172,24 @@ class FastRouteRouterTest extends UnitTestCase {
         $this->assertSame($expected, $actual);
     }
 
+    function testMountingRouterAddsPrefix() {
+        $router = $this->getRouter();
+        $router->mount('/prefix', function(Router $router) {
+            $router->get('/foo', 'something');
+        });
+        $router->get('/noprefix', 'something else');
+
+        $expected = [
+            ['GET', '/prefix/foo', 'something'],
+            ['GET', '/noprefix', 'something else']
+        ];
+        $actual = [];
+        $routes = $router->getRoutes();
+        foreach ($routes as $route) {
+            $actual[] = [$route->getMethod(), $route->getPattern(), $route->getHandler()];
+        }
+
+        $this->assertSame($expected, $actual);
+    }
+
 }

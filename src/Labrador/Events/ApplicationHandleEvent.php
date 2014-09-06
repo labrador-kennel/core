@@ -11,24 +11,4 @@
 
 namespace Labrador\Events;
 
-use Symfony\Component\HttpFoundation\Response;
-
-class ApplicationHandleEvent extends LabradorEvent {
-
-    private $response;
-
-    /**
-     * @return Response|null
-     */
-    function getResponse() {
-        return $this->response;
-    }
-
-    /**
-     * @param Response $response
-     */
-    function setResponse(Response $response) {
-        $this->response = $response;
-    }
-
-}
+class ApplicationHandleEvent extends LabradorEvent {}
