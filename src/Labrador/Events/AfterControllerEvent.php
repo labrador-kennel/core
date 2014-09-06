@@ -15,20 +15,13 @@ use Symfony\Component\HttpFoundation\Response;
 
 class AfterControllerEvent extends LabradorEvent {
 
-    private $response;
 
     function __construct(RequestStack $requestStack, Response $response) {
         parent::__construct($requestStack);
-        $this->response = $response;
+        $this->setResponse($response);
     }
 
-    function getResponse() {
-        return $this->response;
-    }
 
-    function setResponse(Response $response) {
-        $this->response = $response;
-    }
 
 
 } 

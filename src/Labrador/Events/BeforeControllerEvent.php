@@ -17,7 +17,6 @@ use Symfony\Component\HttpFoundation\Response;
 class BeforeControllerEvent extends LabradorEvent {
 
     private $resolvedRoute;
-    private $response;
 
     function __construct(RequestStack $requestStack, ResolvedRoute $resolvedRoute) {
         parent::__construct($requestStack);
@@ -26,14 +25,6 @@ class BeforeControllerEvent extends LabradorEvent {
 
     function getResolvedRoute() {
         return $this->resolvedRoute;
-    }
-
-    function getResponse() {
-        return $this->response;
-    }
-
-    function setResponse(Response $response) {
-        $this->response = $response;
     }
 
 } 

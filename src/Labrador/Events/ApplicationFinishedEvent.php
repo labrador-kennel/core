@@ -16,8 +16,6 @@ use Symfony\Component\HttpFoundation\Response;
 
 class ApplicationFinishedEvent extends LabradorEvent {
 
-    private $response;
-
     /**
      * The $response may be null if this event is triggered when the Application
      * is configured to throw exceptions raised during processing.
@@ -27,21 +25,9 @@ class ApplicationFinishedEvent extends LabradorEvent {
      */
     function __construct(RequestStack $requestStack, Response $response = null) {
         parent::__construct($requestStack);
-        $this->response = $response;
-    }
-
-    /**
-     * @return Response
-     */
-    function getResponse() {
-        return $this->response;
-    }
-
-    /**
-     * @param Response $response
-     */
-    function setResponse(Response $response) {
-        $this->response = $response;
+        if ($response) {
+            $this->setResponse($response);
+        }
     }
 
 } 
