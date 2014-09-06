@@ -1,3 +1,24 @@
+<?php
+
+/**
+ * 
+ * @license See LICENSE in source root
+ * @version 1.0
+ * @since   1.0
+ */
+
+namespace Labrador;
+
+use Symfony\Component\HttpFoundation\Response;
+
+class WelcomeController {
+
+    function index() {
+        return new Response($this->getHtml());
+    }
+
+    private function getHtml() {
+        return <<<HTML
 <!doctype html>
 <html>
     <head>
@@ -48,3 +69,9 @@
         </footer>
     </body>
 </html>
+
+HTML;
+
+    }
+
+} 
