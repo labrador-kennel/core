@@ -1,11 +1,10 @@
 <?php
 
 /**
- * A router that is a wrapper around nikic's FastRoute implementation.
+ * A router that is a wrapper around the FastRoute library that adheres to
+ * Labrador\Router\Router interface.
  * 
  * @license See LICENSE in source root
- * @version 1.0
- * @since   1.0
  *
  * @see https://github.com/nikic/FastRoute
  */
@@ -13,8 +12,6 @@
 namespace Labrador\Router;
 
 use Labrador\Exception\InvalidTypeException;
-use Labrador\Exception\NotFoundException;
-use Labrador\Exception\MethodNotAllowedException;
 use FastRoute\Dispatcher;
 use FastRoute\RouteCollector;
 use Symfony\Component\HttpFoundation\Request;
@@ -34,7 +31,7 @@ class FastRouteRouter implements Router {
      * Pass a FastRoute\RouteCollector and a callback that returns a FastRoute\Dispatcher.
      *
      * We ask for a callback instead of the object itself to work around needing
-     * the list of routes at dispatcher instantiation. The $dispatcherCb is
+     * the list of routes at FastRoute dispatcher instantiation. The $dispatcherCb is
      * invoked when Router::match is called and it should expect an array of data
      * in the same format as $collector->getData().
      *
@@ -51,7 +48,7 @@ class FastRouteRouter implements Router {
     /**
      * @param string $pattern
      * @param mixed $handler
-     * @return $this|void
+     * @return $this
      */
     function get($pattern, $handler) {
         return $this->addRoute('GET', $pattern, $handler);
@@ -60,7 +57,7 @@ class FastRouteRouter implements Router {
     /**
      * @param string $pattern
      * @param mixed $handler
-     * @return $this|void
+     * @return $this
      */
     function post($pattern, $handler) {
         return $this->addRoute('POST', $pattern, $handler);
@@ -69,7 +66,7 @@ class FastRouteRouter implements Router {
     /**
      * @param string $pattern
      * @param mixed $handler
-     * @return $this|void
+     * @return $this
      */
     function put($pattern, $handler) {
         return $this->addRoute('PUT', $pattern, $handler);
@@ -78,7 +75,7 @@ class FastRouteRouter implements Router {
     /**
      * @param string $pattern
      * @param mixed $handler
-     * @return $this|void
+     * @return $this
      */
     function delete($pattern, $handler) {
         return $this->addRoute('DELETE', $pattern, $handler);
@@ -88,7 +85,7 @@ class FastRouteRouter implements Router {
      * @param string $httpMethod
      * @param string $pattern
      * @param mixed $handler
-     * @return $this|void
+     * @return $this
      */
     function custom($httpMethod, $pattern, $handler) {
         return $this->addRoute($httpMethod, $pattern, $handler);
@@ -106,6 +103,12 @@ class FastRouteRouter implements Router {
         return $this;
     }
 
+    /**
+     * @param $method
+     * @param $pattern
+     * @param $handler
+     * @return $this
+     */
     private function addRoute($method, $pattern, $handler) {
         // @todo implement FastRouterRouteCollector and parse required data from Route objects
         if ($this->mountedPrefix) {
@@ -121,17 +124,14 @@ class FastRouteRouter implements Router {
      * @return ResolvedRoute
      */
     function match(Request $request) {
-        $dispatcher = $this->getDispatcher();
-        $method = $request->getMethod();
-        $path = $request->getPathInfo();
-        $route = $dispatcher->dispatch($method, $path);
+        $route = $this->getDispatcher()->dispatch($request->getMethod(), $request->getPathInfo());
         $status = array_shift($route);
 
-        if (!$route || $status === $dispatcher::NOT_FOUND) {
+        if (!$route || $status === Dispatcher::NOT_FOUND) {
             return new ResolvedRoute($request, $this->getNotFoundController(), Response::HTTP_NOT_FOUND);
         }
 
-        if ($status === $dispatcher::METHOD_NOT_ALLOWED) {
+        if ($status === Dispatcher::METHOD_NOT_ALLOWED) {
             return new ResolvedRoute($request, $this->getMethodNotAllowedController(), Response::HTTP_METHOD_NOT_ALLOWED, $route[0]);
         }
 
@@ -141,8 +141,7 @@ class FastRouteRouter implements Router {
             $request->attributes->set($k, $v);
         }
 
-        $handler = $this->resolver->resolve($handler);
-        return new ResolvedRoute($request, $handler, Response::HTTP_OK);
+        return new ResolvedRoute($request, $this->resolver->resolve($handler), Response::HTTP_OK);
     }
 
     /**
@@ -164,6 +163,11 @@ class FastRouteRouter implements Router {
         return $this->routes;
     }
 
+    /**
+     * This function GUARANTEES that a callable will always be returned.
+     *
+     * @return callable
+     */
     function getNotFoundController() {
         if (!$this->notFoundController) {
             return function() {
@@ -174,6 +178,11 @@ class FastRouteRouter implements Router {
         return $this->notFoundController;
     }
 
+    /**
+     * This function GUARANTEES that a callable will always be returned.
+     *
+     * @return callable
+     */
     function getMethodNotAllowedController() {
         if (!$this->methodNotFoundController) {
             return function() {
@@ -184,12 +193,26 @@ class FastRouteRouter implements Router {
         return $this->methodNotFoundController;
     }
 
+    /**
+     * Set the $controller that will be passed to the resolved route when a
+     * handler could not be
+     *
+     *
+     * @param callable $controller
+     * @return $this
+     */
     function setNotFoundController(callable $controller) {
         $this->notFoundController = $controller;
+        return $this;
     }
 
+    /**
+     * @param callable $controller
+     * @return $this
+     */
     function setMethodNotAllowedController(callable $controller) {
         $this->methodNotFoundController = $controller;
+        return $this;
     }
 
 } 

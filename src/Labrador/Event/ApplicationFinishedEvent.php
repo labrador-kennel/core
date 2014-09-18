@@ -5,11 +5,9 @@
  * request and before the Response is sent to the user.
  * 
  * @license See LICENSE in source root
- * @version 1.0
- * @since   1.0
  */
 
-namespace Labrador\Events;
+namespace Labrador\Event;
 
 use Symfony\Component\HttpFoundation\RequestStack;
 use Symfony\Component\HttpFoundation\Response;

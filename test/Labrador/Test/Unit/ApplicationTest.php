@@ -12,8 +12,8 @@
 namespace Labrador\Test\Unit;
 
 use Labrador\Application;
-use Labrador\Events;
-use Labrador\Exception\InvalidHandlerException;
+use Labrador\Event;
+use Labrador\Events as LabradorEvents;
 use Labrador\Exception\NotFoundException;
 use Labrador\Exception\ServerErrorException;
 use Labrador\Router\ResolvedRoute;
@@ -66,10 +66,10 @@ class ApplicationTest extends UnitTestCase {
 
     function eventProvider() {
         return [
-            [0, Events::APP_HANDLE, 'Labrador\\Events\\ApplicationHandleEvent'],
-            [1, Events::BEFORE_CONTROLLER, 'Labrador\\Events\\BeforeControllerEvent'],
-            [2, Events::AFTER_CONTROLLER, 'Labrador\\Events\\AfterControllerEvent'],
-            [3, Events::APP_FINISHED, 'Labrador\\Events\\ApplicationFinishedEvent']
+            [0, LabradorEvents::APP_HANDLE, 'Labrador\\Event\\ApplicationHandleEvent'],
+            [1, LabradorEvents::BEFORE_CONTROLLER, 'Labrador\\Event\\BeforeControllerEvent'],
+            [2, LabradorEvents::AFTER_CONTROLLER, 'Labrador\\Event\\AfterControllerEvent'],
+            [3, LabradorEvents::APP_FINISHED, 'Labrador\\Event\\ApplicationFinishedEvent']
         ];
     }
 
@@ -107,7 +107,7 @@ class ApplicationTest extends UnitTestCase {
 
         $eventDispatcher = new EventDispatcher();
         $app = new Application($this->router, $eventDispatcher, $this->requestStack);
-        $app->onHandle(function(Events\ApplicationHandleEvent $event) {
+        $app->onHandle(function(Event\ApplicationHandleEvent $event) {
             $event->setResponse(new Response('Called from event'));
         });
 
@@ -122,7 +122,7 @@ class ApplicationTest extends UnitTestCase {
 
         $eventDispatcher = new EventDispatcher();
         $app = new Application($this->router, $eventDispatcher, $this->requestStack);
-        $app->onBeforeController(function(Events\BeforeControllerEvent $event) {
+        $app->onBeforeController(function(Event\BeforeControllerEvent $event) {
             $event->setResponse(new Response('called from event'));
         });
 
@@ -138,7 +138,7 @@ class ApplicationTest extends UnitTestCase {
 
         $eventDispatcher = new EventDispatcher();
         $app = new Application($this->router, $eventDispatcher, $this->requestStack);
-        $app->onAfterController(function(Events\AfterControllerEvent $event) {
+        $app->onAfterController(function(Event\AfterControllerEvent $event) {
             $event->setResponse(new Response('called from the after_controller listener'));
         });
 
@@ -154,7 +154,7 @@ class ApplicationTest extends UnitTestCase {
 
         $eventDispatcher = new EventDispatcher();
         $app = new Application($this->router, $eventDispatcher, $this->requestStack);
-        $app->onFinished(function(Events\ApplicationFinishedEvent $event) {
+        $app->onFinished(function(Event\ApplicationFinishedEvent $event) {
             $event->setResponse(new Response('called from the app_finished listener'));
         });
 
@@ -238,9 +238,9 @@ class ApplicationTest extends UnitTestCase {
         $this->eventDispatcher->expects($this->at(1))
             ->method('dispatch')
             ->with(
-                Events::EXCEPTION_THROWN,
+                LabradorEvents::EXCEPTION_THROWN,
                 $this->callback(function($arg) {
-                    return $arg instanceof Events\ExceptionThrownEvent;
+                    return $arg instanceof Event\ExceptionThrownEvent;
                 })
             );
 
@@ -259,7 +259,7 @@ class ApplicationTest extends UnitTestCase {
 
         $eventDispatcher = new EventDispatcher();
         $app = new Application($this->router, $eventDispatcher, $this->requestStack);
-        $app->onException(function(Events\ExceptionThrownEvent $event) {
+        $app->onException(function(Event\ExceptionThrownEvent $event) {
             $event->setResponse(new Response('Called from exception thrown listener'));
         });
 
@@ -280,18 +280,18 @@ class ApplicationTest extends UnitTestCase {
         $this->eventDispatcher->expects($this->at(1))
                               ->method('dispatch')
                               ->with(
-                                    Events::EXCEPTION_THROWN,
+                                    LabradorEvents::EXCEPTION_THROWN,
                                     $this->callback(function($arg) {
-                                        return $arg instanceof Events\ExceptionThrownEvent;
+                                        return $arg instanceof Event\ExceptionThrownEvent;
                                     })
                                 );
 
         $this->eventDispatcher->expects($this->at(2))
                               ->method('dispatch')
                               ->with(
-                                  Events::APP_FINISHED,
+                                  LabradorEvents::APP_FINISHED,
                                   $this->callback(function($arg) {
-                                      return $arg instanceof Events\ApplicationFinishedEvent;
+                                      return $arg instanceof Event\ApplicationFinishedEvent;
                                   })
                                 );
 
@@ -312,9 +312,9 @@ class ApplicationTest extends UnitTestCase {
         $this->eventDispatcher->expects($this->at(1))
                               ->method('dispatch')
                               ->with(
-                                  Events::APP_FINISHED,
+                                  LabradorEvents::APP_FINISHED,
                                   $this->callback(function($arg) {
-                                      return $arg instanceof Events\ApplicationFinishedEvent;
+                                      return $arg instanceof Event\ApplicationFinishedEvent;
                                   })
                                 );
 

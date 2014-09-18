@@ -1,14 +1,13 @@
 <?php
 
 /**
- * Creates the Auryn Injector, primary configuration and boots up the application.
+ * Creates the Auryn Injector, primary configuration and registers Labrador's
+ * default services.
  * 
  * @license See LICENSE in source root
- * @version 1.0
- * @since   1.0
  */
 
-namespace Labrador\Bootstrap;
+namespace Labrador;
 
 use Labrador\ConfigDirective;
 use Labrador\Services as LabradorServices;
@@ -17,7 +16,7 @@ use Auryn\Provider;
 use Configlet\Config;
 use Configlet\MasterConfig;
 
-class FrontControllerBootstrap implements Bootstrap {
+class FrontControllerBootstrap {
 
     /**
      * @property callable

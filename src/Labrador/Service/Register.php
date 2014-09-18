@@ -1,11 +1,11 @@
 <?php
 
 /**
- * Interface for implementations that will add a set of services to a Provider.
+ * Interface for implementations that will add a set of services to an Auryn\Injector.
  * 
  * @license See LICENSE in source root
- * @version 1.0
- * @since   1.0
+ *
+ * @see https://github.com/rdlowrey/Auryn
  */
 
 namespace Labrador\Service;

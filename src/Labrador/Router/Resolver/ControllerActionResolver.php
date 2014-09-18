@@ -5,8 +5,6 @@
  * defined by a specific handler format.
  * 
  * @license See LICENSE in source root
- * @version 1.0
- * @since   1.0
  */
 
 namespace Labrador\Router\Resolver;
@@ -15,7 +13,6 @@ use Labrador\Router\HandlerResolver;
 use Labrador\Exception\InvalidHandlerException;
 use Auryn\Injector;
 use Auryn\InjectionException;
-
 
 class ControllerActionResolver implements HandlerResolver {
 
@@ -45,6 +42,7 @@ class ControllerActionResolver implements HandlerResolver {
         if (!$this->verifyFormat($handler)) {
             return false;
         }
+        // @TODO allow the explode delimiter to be configurable
         list($controllerName, $action) = explode('#', $handler);
         try {
             $controller = $this->injector->make($controllerName);

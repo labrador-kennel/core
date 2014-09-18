@@ -1,10 +1,9 @@
 <?php
 
 /**
+ * An object that represents what HTTP Request data should be mapped to which handler.
  * 
  * @license See LICENSE in source root
- * @version 1.0
- * @since   1.0
  */
 
 namespace Labrador\Router;
@@ -15,24 +14,41 @@ class Route {
     private $method;
     private $handler;
 
+    /**
+     * @param string $pattern
+     * @param string $method
+     * @param mixed $handler
+     */
     function __construct($pattern, $method, $handler) {
         $this->pattern = $pattern;
         $this->method = $method;
         $this->handler = $handler;
     }
 
+    /**
+     * @return string
+     */
     function getPattern() {
         return $this->pattern;
     }
 
+    /**
+     * @return string
+     */
     function getMethod() {
         return $this->method;
     }
 
+    /**
+     * @return mixed
+     */
     function getHandler() {
         return $this->handler;
     }
 
+    /**
+     * @return string
+     */
     function __toString() {
         $format = "%s\t%s\t\t%s";
         $handler = $this->getNormalizedHandler($this->handler);

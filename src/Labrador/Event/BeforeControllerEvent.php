@@ -4,25 +4,29 @@
  * Event triggered when a route was successfully found for a request.
  * 
  * @license See LICENSE in source root
- * @version 1.0
- * @since   1.0
  */
 
-namespace Labrador\Events;
+namespace Labrador\Event;
 
 use Labrador\Router\ResolvedRoute;
 use Symfony\Component\HttpFoundation\RequestStack;
-use Symfony\Component\HttpFoundation\Response;
 
 class BeforeControllerEvent extends LabradorEvent {
 
     private $resolvedRoute;
 
+    /**
+     * @param RequestStack $requestStack
+     * @param ResolvedRoute $resolvedRoute
+     */
     function __construct(RequestStack $requestStack, ResolvedRoute $resolvedRoute) {
         parent::__construct($requestStack);
         $this->resolvedRoute = $resolvedRoute;
     }
 
+    /**
+     * @return ResolvedRoute
+     */
     function getResolvedRoute() {
         return $this->resolvedRoute;
     }
