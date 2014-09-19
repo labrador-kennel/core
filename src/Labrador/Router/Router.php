@@ -1,11 +1,9 @@
 <?php
 
 /**
- * Should determine the handling logic that should be executed for a given HTTP request.
+ * Interface to determine the controller to invoke for a given Request.
  * 
  * @license See LICENSE in source root
- * @version 1.0
- * @since   1.0
  */
 
 namespace Labrador\Router;
@@ -62,8 +60,8 @@ interface Router {
     function mount($prefix, callable $cb);
 
     /**
-     * Should return a $handler for a matched $request or throw one of two HttpExceptions;
-     * either NotFoundException or MethodNotAllowedException.
+     * Should always return a ResolvedRoute that includes the controller that
+     * should be invoked
      *
      * @param Request $request
      * @return ResolvedRoute

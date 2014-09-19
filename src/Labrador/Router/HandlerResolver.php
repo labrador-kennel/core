@@ -4,8 +4,6 @@
  * Should convert a routed handler into an appropriate callable function.
  * 
  * @license See LICENSE in source root
- * @version 1.0
- * @since   1.0
  */
 
 namespace Labrador\Router;
@@ -13,7 +11,7 @@ namespace Labrador\Router;
 interface HandlerResolver {
 
     /**
-     *
+     * If the implementation cannot turn $handler into a callable type return false.
      *
      * @param mixed $handler
      * @return callable|false

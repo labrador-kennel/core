@@ -14,8 +14,4 @@ use Auryn\Injector;
 
 return function(Injector $injector, Config $config) {
 
-    if ($config['ini'] instanceof Config) {
-        (new IniSetBootstrap($config['ini']))->run();
-    }
-
 };

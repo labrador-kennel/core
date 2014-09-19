@@ -7,7 +7,7 @@
  * @since   1.0
  */
 
-namespace Labrador\Test\Unit;
+namespace Labrador\Test\Unit\Router;
 
 use Labrador\Router\HandlerResolver;
 use Labrador\Router\ResolvedRoute;
@@ -38,7 +38,7 @@ class FastRouteRouterTest extends UnitTestCase {
         $router = new Router(
             $mockResolver,
             new RouteCollector(new StdRouteParser(), new GcbDataGenerator()),
-            function($data) { return 'not a dispatcher'; }
+            function() { return 'not a dispatcher'; }
         );
 
         $expectedExc = 'Labrador\\Exception\\InvalidTypeException';

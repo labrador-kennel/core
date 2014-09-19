@@ -33,7 +33,7 @@ require_once __DIR__ . '/vendor/autoload.php';
 
 use Labrador\Application;
 use Labrador\WelcomeController;
-use Labrador\Bootstrap\FrontControllerBootstrap;
+use Labrador\FrontControllerBootstrap;
 use Symfony\Component\HttpFoundation\Request;
 use Configlet\MasterConfig;
 
