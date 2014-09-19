@@ -7,7 +7,7 @@
  * @since   1.0
  */
 
-namespace Labrador\Test\Unit;
+namespace Labrador\Test\Unit\Router;
 
 use Labrador\Router\Route;
 use Labrador\Test\Stub\ToStringHandlerObject;
