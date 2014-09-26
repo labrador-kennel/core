@@ -26,8 +26,8 @@ class FrontControllerBootstrap {
     /**
      * @param callable $appConfig
      */
-    function __construct(callable $appConfig) {
-        $this->configCb = $appConfig;
+    function __construct(callable $appConfig = null) {
+        $this->configCb = isset($appConfig) ? $appConfig : function() {};
     }
 
     /**
