@@ -18,12 +18,11 @@ use Labrador\Exception\NotFoundException;
 use Labrador\Exception\ServerErrorException;
 use Labrador\Router\ResolvedRoute;
 use Labrador\Test\Stub\RouterStub;
-use PHPUnit_Framework_TestCase as UnitTestCase;
 use Symfony\Component\EventDispatcher\EventDispatcher;
 use Symfony\Component\HttpFoundation\Request;
-use Exception as PhpException;
-use Symfony\Component\HttpFoundation\RequestStack;
 use Symfony\Component\HttpFoundation\Response;
+use PHPUnit_Framework_TestCase as UnitTestCase;
+use Exception as PhpException;
 
 class ApplicationTest extends UnitTestCase {
 
