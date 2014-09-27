@@ -13,6 +13,7 @@ use Labrador\Router\Router;
 use Labrador\Router\ResolvedRoute;
 use Labrador\Exception\HttpException;
 use Labrador\Exception\ServerErrorException;
+use Symfony\Component\EventDispatcher\EventDispatcher;
 use Symfony\Component\HttpFoundation\Request;
 use Symfony\Component\HttpFoundation\Response;
 use Symfony\Component\HttpFoundation\RequestStack;
@@ -34,10 +35,10 @@ class Application implements HttpKernelInterface {
      * @param EventDispatcherInterface $eventDispatcher
      * @param RequestStack $requestStack
      */
-    function __construct(Router $router, EventDispatcherInterface $eventDispatcher, RequestStack $requestStack) {
+    function __construct(Router $router, EventDispatcherInterface $eventDispatcher = null, RequestStack $requestStack = null) {
         $this->router = $router;
-        $this->eventDispatcher = $eventDispatcher;
-        $this->requestStack = $requestStack;
+        $this->eventDispatcher = isset($eventDispatcher) ? $eventDispatcher : new EventDispatcher();
+        $this->requestStack = isset($requestStack) ? $requestStack : new RequestStack();
     }
 
     /**
