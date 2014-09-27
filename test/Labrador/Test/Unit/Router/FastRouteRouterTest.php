@@ -12,6 +12,7 @@ namespace Labrador\Test\Unit\Router;
 use Labrador\Router\HandlerResolver;
 use Labrador\Router\ResolvedRoute;
 use Labrador\Router\FastRouteRouter as Router;
+use Labrador\Exception\InvalidHandlerException;
 use FastRoute\DataGenerator\GroupCountBased as GcbDataGenerator;
 use FastRoute\Dispatcher\GroupCountBased as GcbDispatcher;
 use FastRoute\RouteCollector;
@@ -81,7 +82,7 @@ class FastRouteRouterTest extends UnitTestCase {
         $router = $this->getRouter();
         $request = Request::create('http://labrador.dev/foo', 'GET');
         $router->get('/foo', 'handler');
-        $this->mockResolver->expects($this->once())->method('resolve')->with('handler')->will($this->returnValue(function() { return 'OK'; }));
+        $this->mockResolver->expects($this->once())->method('resolve')->with('handler')->willReturn(function() { return 'OK'; });
 
         $resolved = $router->match($request);
         $this->assertInstanceOf(ResolvedRoute::class, $resolved);
@@ -94,7 +95,7 @@ class FastRouteRouterTest extends UnitTestCase {
         $router = $this->getRouter();
 
         $router->post('/foo/{name}/{id}', 'attr#action');
-        $this->mockResolver->expects($this->once())->method('resolve')->with('attr#action')->will($this->returnValue(function() { return 'OK'; }));
+        $this->mockResolver->expects($this->once())->method('resolve')->with('attr#action')->willReturn(function() { return 'OK'; });
 
         /** @var \Symfony\Component\HttpFoundation\Request $request */
         $request = Request::create('http://www.sprog.dev/foo/bar/qux', 'POST');
@@ -190,6 +191,15 @@ class FastRouteRouterTest extends UnitTestCase {
         }
 
         $this->assertSame($expected, $actual);
+    }
+
+    function testResolverReturnsFalseThrowsException() {
+        $router = $this->getRouter();
+        $this->mockResolver->expects($this->once())->method('resolve')->willReturn(false);
+        $router->get('/foo', 'something');
+
+        $this->setExpectedException(InvalidHandlerException::class, 'Could not resolve matched handler to a callable controller');
+        $router->match(Request::create('http://labrador.dev/foo', 'GET'));
     }
 
 }
