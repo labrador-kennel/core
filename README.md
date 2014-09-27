@@ -42,6 +42,7 @@ Using Labrador is intended to be easy and straight forward. The User Guide below
 
 ### Quick Start
 
+<script src="https://gist.github.com/cspray/e4ef262e2652bf54b6a6.js"></script>
 
 
 ### Manual Setup

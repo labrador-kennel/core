@@ -47,11 +47,8 @@ class WelcomeController {
                 <p>Thanks for trying out Labrador! The first thing you'll want to do is change this ugly front page! You can find the code that Responds with this in <code>/init.php</code>. Change the controller for the <code>GET /</code> route and you're on your way.</p>
 
                 <pre>
-// Change this code!
-$router->get('/', function(Request $request) {
-    return new Response('Your response body here!');
-});
-                </pre>
+// Change this code in init.php!
+$router->get('/', WelcomeController::class . '#index);</pre>
                 <p>For more information about Labrador you should install the <a href="">Labrador Guide</a> package and navigate to <code>http://your-labrador-project.dev/lg</code> in your browser.</p>
             </section>
             <section id="sidebar" class="pure-u-1-3">
@@ -65,7 +62,7 @@ $router->get('/', function(Request $request) {
                 <h2>Third Party Libs</h2>
                 <ul>
                     <li><a href="https://github.com/nikic/FastRoute">Fast Route</a></li>
-                    <li><a href="https://github.com/rdlowrey/Artax">Artax</a></li>
+                    <li><a href="https://github.com/rdlowrey/Auryn">Auryn</a></li>
                     <li><a href="https://github.com/symfony/HttpKernel">Symfony HttpKernel</a></li>
                     <li><a href="https://github.com/cspray/Configlet">Configlet</a></li>
                 </ul>
