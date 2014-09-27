@@ -11,6 +11,7 @@
 
 namespace Labrador\Router;
 
+use Labrador\Exception\InvalidHandlerException;
 use Labrador\Exception\InvalidTypeException;
 use FastRoute\Dispatcher;
 use FastRoute\RouteCollector;
@@ -141,7 +142,11 @@ class FastRouteRouter implements Router {
             $request->attributes->set($k, $v);
         }
 
-        return new ResolvedRoute($request, $this->resolver->resolve($handler), Response::HTTP_OK);
+        $controller = $this->resolver->resolve($handler);
+        if (!is_callable($controller)) {
+            throw new InvalidHandlerException('Could not resolve matched handler to a callable controller');
+        }
+        return new ResolvedRoute($request, $controller, Response::HTTP_OK);
     }
 
     /**
