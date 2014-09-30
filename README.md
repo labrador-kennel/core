@@ -6,7 +6,7 @@
 
 > This library is still in development and the provided APIs are likely to change in the short-term future.
 
-A microframework wiring together high-quality libraries to route HTTP requests to specific controller objects.
+A library to facilitate routing an HTTP request to a specific controller. Primarily Labrador wires together *other* high quality, focused libraries to provide core functionality. Labrador is less a framework and more a routing abstraction and an implementation of Symfony's HttpKernelInterface. We highly recommend that you check out the [online Labrador Guide](http://labrador.cspray.net) for more detailed documentation.
 
 ## Dependencies
 
@@ -15,7 +15,7 @@ Labrador has a variety of dependencies that must be provided.
 - PHP 5.5+
 - [nikic/FastRoute](https://github.com/nikic/FastRoute) Router for mapping an HTTP Request to a handler
 - [rdlowrey/Auryn](https://github.com/rdlowrey/Auryn) DI container to automatically provision dependencies
-- [symfony/HttpFoundation](https://github.com/symfony/HttpFoundation) Provides abstraction over HTTP Request/Response and HttpKernelInterface
+- [symfony/HttpKernel](https://github.com/symfony/HttpFoundation) Provides abstraction over HTTP Request/Response and HttpKernelInterface
 - [cspray/Configlet](https://github.com/cspray/Configlet) Object Oriented library for storing PHP configurations
 
 ## Installation
@@ -36,137 +36,55 @@ if (!$you->usingComposer()) {
 }
 ```
 
-## Getting Started
+## Hello Labrador
 
-Using Labrador is intended to be easy and straight forward. The User Guide below assumes you have setup your web server to send all non-static requests to be routed to `/public/index.php`. If you need help on setting this up please check out [Server Setup](#server-setup) documentation.
-
-### Quick Start
-
-
-
-### Manual Setup
-
- We're also going to assume that you have done a manual setup and need to setup `/init.php` from a clean slate. If you copied over Labrador's default files your init.php will look slightly different as various pieces are split into `/config` files.
+Let's take a look at a simple "Hello World" Labrador style. This example assumes that you have installed Labrador via Composer.
 
 ```php
 <?php
 
+require __DIR__ . '/vendor/autoload.php';
+
 use Labrador\Application;
-use Labrador\ConfigDirective;
-use Labrador\Bootstrap\FrontControllerBootstrap;
-use Labrador\Events\ApplicationHandleEvent;
-use Labrador\Events\ExceptionThrownEvent;
-use Auryn\Injector;
-use Configlet\Config;
+use Labrador\Router\Router;
+use Labrador\FrontControllerBootstrap;
+use Symfony\Component\HttpFoundation\Request;
+use Symfony\Component\HttpFoundation\Response;
 
-require_once __DIR__ . '/vendor/autoload.php';
+$aurynInjector = (new FrontControllerBootstrap())->run();
+$app = $aurynInjector->make(Application::class);
+$router = $aurynInjector->make(Router::class); // OR $app->getRouter();
 
-// Typically this function would be returned from /config/application.php or some
-// other external source.
-$appConfig = function(Config $config) {
+$router->get('/', function() { return new Response('Hello Labrador'); });
 
-    // All of these configuration values are optional
+// OR the following are equivalent with out-of-the-box-behavior
+// $router->get('/', new Response('Hello Labrador'));
+// $router->get('/', YourObject::class. '#methodToInvoke');
 
-    /**
-     * The environment that the current application is running in.
-     *
-     * This is a completely arbitrary string and only holds meaning to your application.
-     */
-    $config[ConfigDirective::ENVIRONMENT] = 'development';
-
-    /**
-     * The root directory for the application
-     */
-    $config[ConfigDirective::ROOT_DIR] = __DIR__;
-
-    /**
-     * A callback accepting a Auryn\Provider as the first argument and a Configlet\Config
-     * as the second argument.
-     *
-     * It should perform actions that are needed at time of request startup including
-     * wire up dependencies, set configuration values, and other tasks your application
-     * might need to carry out before Labrador actually takes over handling the Request.
-     *
-     * We recommend you return this from a /config/bootstrap.php or in some other way
-     * provide a function from an external source.
-     */
-    $config[ConfigDirective::BOOTSTRAP_CALLBACK] = function(Injector $injector, Config $config) {
-        // do your application bootup stuff here if needed
-    };
-
-};
-
-/** @var \Auryn\Injector $injector */
-/** @var \Labrador\Application $app */
-$injector = (new FrontControllerBootstrap($appConfig))->run();
-$app = $injector->make(Application::class);
-
-// perform some action when Application::handle is invoked
-$app->onHandle(function(ApplicationHandleEvent $event) {
-    // You can set a response to $event->setResponse() to short-circuit processing and return early
-    // Your Application::onFinished middleware will still be executed if you short-circuit
-});
-
-// perform some action when Application catches an exception
-// if you pass Application::THROW_EXCEPTIONS this event will not be triggered
-$app->onException(function(ExceptionThrownEvent $event) {
-
-});
-
-// Check out Labrador\Events for more information about hooking into Labrador\Application processing.
-
-$request = Request::createFromGlobals();
-$app->handle($request)->send();
+$app->handle(Request::createFromGlobals())->send();
 ```
 
-### Directory Structure
-
-#### Bare Bones
-
-This is the **absolute bare minimum you'll need** to get Labrador properly executing your requests. This will not setup the LabradorGuide and requires you to properly wire up the Labrador\Application. Take a look at the repository's `/init.php` for an example of a working implementation.
-
-```plain
-/public             # your webroot, all publicly accessible files should be stored here (i.e. css, js, images)
-    |_index.php     # should only require ../init.php
-/init.php           # is where you wire up your application
-```
-
-#### Advanced
-
-Labrador provides a shell script to automatically setup the appropriate directory structure and wiring that you see in this repo.
-
-```plain
-./vendor/bin/labrador-skeleton
-```
-
-After this command the directory structure will look similar to the following
-
-```plain
-/config
-    |_application.php
-    |_bootstrap.php
-/public
-    |_/css
-        |_normalize.css
-        |_prism.css
-    |_/js
-        |_prism.js
-        |_zepto.min.js
-    |_index.php
-init.php
-```
-
-This command will copy over the `/public/*`, `/config/*` and `/init.php` files from Labrador's root directory structure into the directory that the command was executed.
+Check out more about Labrador at the online [Labrador Guide](http://labrador.cspray.net) that details everything you need to know about the library. You can also install [Labrador Guide](http://github.com/cspray/labrador-guide) as a local install. If you need help getting your server setup please check out the documentation below.
 
 ### Server Setup
 
-Labrador has been developed on a VM running Apache. In theory there's nothing that would require you to use Apache and any web server capable of running PHP 5.5 should suffice. But for now the only configurations that we provide examples for is Apache because we haven't confirmed other server's configurations work.
+Labrador works with the Front Controller design pattern that dictates that ALL web requests handled by the application be routed through a single script. By convention this is typically a `/public/index.php` file that includes `/init.php`. So, let's break that down into a minimum directory structure needed:
 
-## Apache Configuration
+```
+/your-install-dir       # the root directory for your project
+    |_public            # web accessible files
+        |_index.php     # all web requests should be routed here, should only include /your-install-dir/init.php
+    |_init.php          # this is where you would wire up Labrador, the Hello World code would be here
+```
 
-Below is a slightly modified server configuration for the Apache server that we use in development.
+The names for the specific directories and files are only what we recommend... you do not have to stick with these names and can use whatever convention is already in place for you or your team.
 
-```plain
+What this means is you need to configure your web server to route all requests to `./public/index.php` or whatever file you choose to be where all dynamic requests are routed. Below are the web configurations for the servers that Labrador has been tested or used on, Apache and Nginx.
+
+
+ #### Apache Configuration
+
+ ```
 <VirtualHost *:80>
     ServerName awesome.dev
     ServerAlias www.awesome.dev
@@ -183,5 +101,38 @@ Below is a slightly modified server configuration for the Apache server that we 
 </VirtualHost>
 ```
 
-Load this into the appropriate `httpd.conf` file for your server and restart it.
+#### Nginx Configuration
 
+```
+server {
+
+    listen *:80;
+
+    root /var/www/awesome/public;
+    server_name     awesome.dev www.awesome.dev;
+    index index.php;
+
+    location = / {
+        try_files @site @site;
+    }
+
+    location / {
+        try_files $uri @site;
+    }
+
+    location @site {
+        fastcgi_pass 127.0.0.1:9000;
+        include fastcgi_params;
+        fastcgi_param SCRIPT_FILENAME $document_root/index.php;
+    }
+
+}
+```
+
+> If you find that your home page on Nginx is downloading instead of properly executing the Labrador front controller **you may need to change your `default_type` to `text/html`!**
+
+Keep in mind that these are example configurations and depending on your server's settings you may need to configure the values or change this configuration entirely. If you find ways these configurations can be improved please submit an issue to this repository's issue tracker.
+
+### What's up with the name?
+
+Right around the time I started this project my wife and I acquired a new family member; Nick, a chocolate Labrador Retriever, came bounding into our lives. I'm horrible at naming things and Labrador was an obvious choice at the time. You can think of Labrador the library as similar to the dog; friendly, eager to please, and lets you lead the way.

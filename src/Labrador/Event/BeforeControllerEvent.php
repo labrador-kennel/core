@@ -1,7 +1,8 @@
 <?php
 
 /**
- * Event triggered when a route was successfully found for a request.
+ * Event triggered when a route was successfully routed to a controller and before
+ * that controller is invoked.
  * 
  * @license See LICENSE in source root
  */
