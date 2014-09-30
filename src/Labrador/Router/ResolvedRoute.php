@@ -75,6 +75,4 @@ class ResolvedRoute {
         return $this->availableMethods;
     }
 
-
-
 } 
