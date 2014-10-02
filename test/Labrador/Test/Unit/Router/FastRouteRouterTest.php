@@ -193,6 +193,31 @@ class FastRouteRouterTest extends UnitTestCase {
         $this->assertSame($expected, $actual);
     }
 
+    function testNestedMountingAddsCorrectPrefixes() {
+        $router = $this->getRouter();
+        $router->mount('/foo', function(Router $router) {
+            $router->get('/foo-get', 'one');
+            $router->mount('/bar', function(Router $router) {
+                $router->post('/bar-post', 'two');
+                $router->mount('/baz', function(Router $router) {
+                    $router->put('/baz-put', 'three');
+                });
+            });
+        });
+
+        $expected = [
+            ['GET', '/foo/foo-get', 'one'],
+            ['POST', '/foo/bar/bar-post', 'two'],
+            ['PUT', '/foo/bar/baz/baz-put', 'three']
+        ];
+        $actual = [];
+        foreach ($router->getRoutes() as $route) {
+            $actual[] = [$route->getMethod(), $route->getPattern(), $route->getHandler()];
+        }
+
+        $this->assertSame($expected, $actual);
+    }
+
     function testResolverReturnsFalseThrowsException() {
         $router = $this->getRouter();
         $this->mockResolver->expects($this->once())->method('resolve')->willReturn(false);

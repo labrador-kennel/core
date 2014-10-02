@@ -26,7 +26,7 @@ class FastRouteRouter implements Router {
     private $routes = [];
     private $notFoundController;
     private $methodNotFoundController;
-    private $mountedPrefix;
+    private $mountedPrefix = [];
 
     /**
      * Pass a FastRoute\RouteCollector and a callback that returns a FastRoute\Dispatcher.
@@ -98,9 +98,9 @@ class FastRouteRouter implements Router {
      * @return $this
      */
     function mount($prefix, callable $cb) {
-        $this->mountedPrefix = $prefix;
+        $this->mountedPrefix[] = $prefix;
         $cb($this);
-        $this->mountedPrefix = null;
+        $this->mountedPrefix = [];
         return $this;
     }
 
@@ -112,8 +112,8 @@ class FastRouteRouter implements Router {
      */
     private function addRoute($method, $pattern, $handler) {
         // @todo implement FastRouterRouteCollector and parse required data from Route objects
-        if ($this->mountedPrefix) {
-            $pattern = $this->mountedPrefix . $pattern;
+        if (!empty($this->mountedPrefix)) {
+            $pattern = implode('', $this->mountedPrefix) . $pattern;
         }
         $this->routes[] = new Route($pattern, $method, $handler);
         $this->collector->addRoute($method, $pattern, $handler);
@@ -123,6 +123,7 @@ class FastRouteRouter implements Router {
     /**
      * @param Request $request
      * @return ResolvedRoute
+     * @throws \Labrador\Exception\InvalidHandlerException
      */
     function match(Request $request) {
         $route = $this->getDispatcher()->dispatch($request->getMethod(), $request->getPathInfo());
