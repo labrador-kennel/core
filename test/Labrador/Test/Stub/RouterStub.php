@@ -22,58 +22,7 @@ class RouterStub implements Router {
         $this->resolvedRoute = $resolvedRoute;
     }
 
-    /**
-     * @param string $pattern
-     * @param mixed $handler
-     * @return $this
-     */
-    function get($pattern, $handler) {
-
-    }
-
-    /**
-     * @param string $pattern
-     * @param mixed $handler
-     * @return $this
-     */
-    function post($pattern, $handler) {
-
-    }
-
-    /**
-     * @param string $pattern
-     * @param mixed $handler
-     * @return $this
-     */
-    function delete($pattern, $handler) {
-
-    }
-
-    /**
-     * @param string $pattern
-     * @param mixed $handler
-     * @return $this
-     */
-    function put($pattern, $handler) {
-
-    }
-
-    /**
-     * @param string $method
-     * @param string $pattern
-     * @param mixed $handler
-     * @return $this
-     */
-    function custom($method, $pattern, $handler) {
-
-    }
-
-    /**
-     * @param string $prefix
-     * @param callable $cb
-     * @return $this
-     */
-    function mount($prefix, callable $cb) {
+    function addRoute($method, $pattern, $handler) {
 
     }
 
@@ -92,22 +41,6 @@ class RouterStub implements Router {
      * @return Route[]
      */
     function getRoutes() {
-
-    }
-
-    /**
-     * @param callable $handler
-     * @return mixed
-     */
-    function setNotFoundController(callable $handler) {
-
-    }
-
-    /**
-     * @param callable $handler
-     * @return mixed
-     */
-    function setMethodNotAllowedController(callable $handler) {
 
     }
 
