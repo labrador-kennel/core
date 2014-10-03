@@ -220,4 +220,23 @@ class ApplicationTest extends UnitTestCase {
         }
     }
 
+    function testChangingControllerInBeforeControllerMiddleware() {
+        $request = Request::create('http://labrador.dev');
+        $resolvedRoute = new ResolvedRoute($request, function() { return new Response('from route'); }, Response::HTTP_OK);
+        $router = new RouterStub($resolvedRoute);
+        $app = new Application($router);
+
+        $app->onBeforeController(function(Event\BeforeControllerEvent $event) {
+            $controller = $event->getController();
+            $decorator = function() use($controller) {
+                $response = $controller();
+                return new Response($response->getContent() . ' and decorator');
+            };
+            $event->setController($decorator);
+        });
+
+        $response = $app->handle($request);
+        $this->assertSame('from route and decorator', $response->getContent());
+    }
+
 }

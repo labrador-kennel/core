@@ -160,12 +160,12 @@ class Application implements HttpKernelInterface {
             return $event->getResponse();
         }
 
-        $response = $this->executeController($request, $resolved->getController());
+        $response = $this->executeController($request, $event->getController());
         return $this->triggerAfterControllerEvent($response);
     }
 
     private function triggerBeforeControllerEvent(ResolvedRoute $resolvedRoute) {
-        $event = new Event\BeforeControllerEvent($this->requestStack, $resolvedRoute);
+        $event = new Event\BeforeControllerEvent($this->requestStack, $resolvedRoute->getController());
         $this->eventDispatcher->dispatch(Events::BEFORE_CONTROLLER, $event);
         return $event;
     }
