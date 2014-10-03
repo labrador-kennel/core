@@ -23,7 +23,4 @@ class AfterControllerEvent extends LabradorEvent {
         $this->setResponse($response);
     }
 
-
-
-
 } 

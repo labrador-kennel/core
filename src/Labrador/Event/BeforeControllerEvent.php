@@ -14,22 +14,23 @@ use Symfony\Component\HttpFoundation\RequestStack;
 
 class BeforeControllerEvent extends LabradorEvent {
 
-    private $resolvedRoute;
+    private $controller;
 
     /**
      * @param RequestStack $requestStack
-     * @param ResolvedRoute $resolvedRoute
+     * @param callable $controller
      */
-    function __construct(RequestStack $requestStack, ResolvedRoute $resolvedRoute) {
+    function __construct(RequestStack $requestStack, callable $controller) {
         parent::__construct($requestStack);
-        $this->resolvedRoute = $resolvedRoute;
+        $this->controller = $controller;
     }
 
-    /**
-     * @return ResolvedRoute
-     */
-    function getResolvedRoute() {
-        return $this->resolvedRoute;
+    function getController() {
+        return $this->controller;
+    }
+
+    function setController(callable $controller) {
+        $this->controller = $controller;
     }
 
 } 
