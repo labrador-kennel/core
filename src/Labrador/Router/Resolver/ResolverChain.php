@@ -43,18 +43,4 @@ class ResolverChain implements HandlerResolver {
         return $this;
     }
 
-    /**
-     * @param HandlerResolver $resolver
-     * @return $this
-     */
-    function remove(HandlerResolver $resolver) {
-        foreach($this->resolvers as $index => $stored) {
-            if ($resolver === $stored) {
-                unset($this->resolvers[$index]);
-            }
-        }
-
-        return $this;
-    }
-
 }
