@@ -118,7 +118,8 @@ class Application implements HttpKernelInterface {
             $this->requestStack->push($request);
             $response = $this->triggerHandleEvent();
             if (!$response) {
-                $response = $this->executeControllerProcessing($request);
+                $resolved = $this->router->match($request);
+                $response = $this->executeControllerProcessing($resolved);
             }
         } catch (PhpException $exc) {
             if (!$catch) {
@@ -128,7 +129,6 @@ class Application implements HttpKernelInterface {
             $code = ($exc instanceof HttpException) ? $exc->getCode() : Response::HTTP_INTERNAL_SERVER_ERROR;
             $response = $this->handleCaughtException($exc, $code);
         } finally {
-            $response = isset($response) ? $response : null;
             $response = $this->triggerApplicationFinishedEvent($response);
             $this->requestStack->pop();
         }
@@ -142,26 +142,26 @@ class Application implements HttpKernelInterface {
         return $event->getResponse();
     }
 
-    private function executeControllerProcessing(Request $request) {
-        $resolved = $this->router->match($request);
+    private function executeControllerProcessing(ResolvedRoute $resolved) {
         if (!$resolved->isOk()) {
-            $controller = $resolved->getController();
-            $response = $controller($request);
-            if (!$response instanceof Response) {
-                $msg = 'Controllers MUST return an instance of %s. The controller returned type (%s).';
-                throw new ServerErrorException(sprintf($msg, Response::class, gettype($response)));
+            $response = $this->handleNotOkResolvedRoute($resolved);
+        } else {
+            $event = $this->triggerBeforeControllerEvent($resolved);
+            $response = $event->getResponse();
+            if (!$response) {
+                $controller = $event->getController();
+                $response = $controller($resolved->getRequest());
             }
-
-            return $response;
         }
 
-        $event = $this->triggerBeforeControllerEvent($resolved);
-        if ($event->getResponse()) {
-            return $event->getResponse();
-        }
-
-        $response = $this->executeController($request, $event->getController());
+        $this->guardControllerReturnsResponse($response);
         return $this->triggerAfterControllerEvent($response);
+    }
+
+    private function handleNotOkResolvedRoute(ResolvedRoute $resolved) {
+        $controller = $resolved->getController();
+        $response = $controller($resolved->getRequest());
+        return $response;
     }
 
     private function triggerBeforeControllerEvent(ResolvedRoute $resolvedRoute) {
@@ -170,20 +170,17 @@ class Application implements HttpKernelInterface {
         return $event;
     }
 
-    private function executeController(Request $request, callable $cb) {
-        $response = $cb($request);
-        if (!$response instanceof Response) {
-            $msg = 'Controllers MUST return an instance of %s. The controller returned type (%s).';
-            throw new ServerErrorException(sprintf($msg, Response::class, gettype($response)));
-        }
-
-        return $response;
-    }
-
     private function triggerAfterControllerEvent(Response $response) {
         $event = new Event\AfterControllerEvent($this->requestStack, $response);
         $this->eventDispatcher->dispatch(Events::AFTER_CONTROLLER, $event);
         return $event->getResponse();
+    }
+
+    private function guardControllerReturnsResponse($returnType) {
+        if (!$returnType instanceof Response) {
+            $msg = 'Controllers MUST return an instance of %s. The controller returned type (%s).';
+            throw new ServerErrorException(sprintf($msg, Response::class, gettype($returnType)));
+        }
     }
 
     private function triggerApplicationFinishedEvent(Response $response = null) {

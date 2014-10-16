@@ -10,4 +10,7 @@
 
 namespace Labrador\Exception;
 
+/**
+ * @codeCoverageIgnore
+ */
 class BootupException extends Exception {}

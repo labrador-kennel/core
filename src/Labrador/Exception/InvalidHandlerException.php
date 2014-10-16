@@ -9,4 +9,7 @@
 
 namespace Labrador\Exception;
 
+/**
+ * @codeCoverageIgnore
+ */
 class InvalidHandlerException extends Exception {}

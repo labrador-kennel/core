@@ -9,6 +9,9 @@
 
 namespace Labrador\Exception;
 
+/**
+ * @codeCoverageIgnore
+ */
 abstract class HttpException extends Exception {
 
     /**
