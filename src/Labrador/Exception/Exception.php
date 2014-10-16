@@ -10,4 +10,7 @@ namespace Labrador\Exception;
 
 use Exception as PhpException;
 
+/**
+ * @codeCoverageIgnore
+ */
 class Exception extends PhpException {}

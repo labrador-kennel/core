@@ -8,6 +8,9 @@
 
 namespace Labrador\Exception;
 
+/**
+ * @codeCoverageIgnore
+ */
 class ServerErrorException extends HttpException {
 
     /**

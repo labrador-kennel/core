@@ -9,20 +9,36 @@ namespace Labrador;
 
 use Symfony\Component\HttpFoundation\Response;
 
+/**
+ * @codeCoverageIgnore
+ */
 class WelcomeController {
 
     function index() {
         return new Response($this->getHtml());
     }
 
+    private function getReadmeMarkdown() {
+        $path = dirname(dirname(__DIR__)) . '/README.md';
+        return file_get_contents($path);
+    }
+
     private function getHtml() {
-        return <<<'HTML'
+        $readmeMarkdown = htmlspecialchars($this->getReadmeMarkdown());
+        return <<<HTML
 <!doctype html>
 <html>
     <head>
         <meta charset="utf-8" />
         <title>Welcome to Labrador!</title>
         <link rel="stylesheet" href="http://yui.yahooapis.com/pure/0.5.0/pure-min.css">
+        <script src="//cdnjs.cloudflare.com/ajax/libs/marked/0.3.2/marked.min.js"></script>
+        <script>
+        document.addEventListener('DOMContentLoaded', function() {
+            var readmeElement = document.getElementById('readme');
+            readmeElement.innerHTML = marked(readmeElement.textContent.trim());
+        });
+        </script>
         <style>
             body {
                 margin: 0 auto;
@@ -34,7 +50,7 @@ class WelcomeController {
                 height: 60px;
             }
 
-            ul {
+            header ul, #sidebar ul {
                 list-style: none;
             }
 
@@ -83,8 +99,11 @@ class WelcomeController {
                 <p>Thanks for trying out Labrador! The first thing you'll want to do is change this ugly front page! You can find the code that responds with this in <code>/init.php</code>. Change the controller for the <code>GET /</code> route and you're on your way.</p>
                 <pre>
 // Change this code in init.php!
-$router->get('/', WelcomeController::class . '#index);</pre>
-                <p>For more information about Labrador you should check out the <a href="http://labrador.cspray.net">online Labrador Guide</a>. You can also install the <a href="http://github.com/cspray/labrador-guide">Labrador Guide</a> package as a stand-alone addition to your Labrador installations.
+\$router->get('/', WelcomeController::class . '#index);</pre>
+                <p>For more information here's the Labrador README</p>
+                <article id="readme">
+                    {$readmeMarkdown}
+                </article>
             </section>
             <section id="sidebar" class="pure-u-1-3">
                 <h2>Third Party Libs</h2>

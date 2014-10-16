@@ -8,4 +8,7 @@
 
 namespace Labrador\Exception;
 
+/**
+ * @codeCoverageIgnore
+ */
 class FileNotFoundException extends Exception {}
