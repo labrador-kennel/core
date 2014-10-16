@@ -196,7 +196,7 @@ class FastRouteRouterTest extends UnitTestCase {
     function testNestedMountingAddsCorrectPrefixes() {
         $router = $this->getRouter();
         $router->mount('/foo', function(Router $router) {
-            $router->get('/foo-get', 'one');
+            $router->delete('/foo-get', 'one');
             $router->mount('/bar', function(Router $router) {
                 $router->post('/bar-post', 'two');
                 $router->mount('/baz', function(Router $router) {
@@ -206,7 +206,7 @@ class FastRouteRouterTest extends UnitTestCase {
         });
 
         $expected = [
-            ['GET', '/foo/foo-get', 'one'],
+            ['DELETE', '/foo/foo-get', 'one'],
             ['POST', '/foo/bar/bar-post', 'two'],
             ['PUT', '/foo/bar/baz/baz-put', 'three']
         ];
@@ -225,6 +225,20 @@ class FastRouteRouterTest extends UnitTestCase {
 
         $this->setExpectedException(InvalidHandlerException::class, 'Could not resolve matched handler to a callable controller');
         $router->match(Request::create('http://labrador.dev/foo', 'GET'));
+    }
+
+    function testSettingNotFoundController() {
+        $router = $this->getRouter();
+        $router->setNotFoundController(function() { return 'the set controller'; });
+        $controller = $router->getNotFoundController();
+        $this->assertSame('the set controller', $controller());
+    }
+
+    function testSettingMethodNotAllowedController() {
+        $router = $this->getRouter();
+        $router->setMethodNotAllowedController(function() { return 'the set controller'; });
+        $controller = $router->getMethodNotAllowedController();
+        $this->assertSame('the set controller', $controller());
     }
 
 }
