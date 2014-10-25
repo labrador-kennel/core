@@ -14,8 +14,7 @@ namespace Labrador\Test\Unit;
 use Labrador\Application;
 use Labrador\Event;
 use Labrador\Events as LabradorEvents;
-use Labrador\Exception\NotFoundException;
-use Labrador\Exception\ServerErrorException;
+use Labrador\Exception\InvalidTypeException;
 use Labrador\Router\ResolvedRoute;
 use Labrador\Test\Stub\RouterStub;
 use Symfony\Component\EventDispatcher\EventDispatcher;
@@ -86,7 +85,7 @@ class ApplicationTest extends UnitTestCase {
             ['onBeforeController', new ResolvedRoute(new Request(), function() { throw new PhpException('Should never be called'); }, Response::HTTP_OK)],
             ['onAfterController', new ResolvedRoute(new Request(), function() { return new Response(''); }, Response::HTTP_OK)],
             ['onFinished', new ResolvedRoute(new Request(), function() { return new Response(''); }, Response::HTTP_OK)],
-            ['onException', new ResolvedRoute(new Request(), function() { throw new ServerErrorException(); }, Response::HTTP_OK)]
+            ['onException', new ResolvedRoute(new Request(), function() { throw new PhpException(); }, Response::HTTP_OK)]
         ];
     }
 
@@ -129,7 +128,7 @@ class ApplicationTest extends UnitTestCase {
         $app = new Application($router);
         $msg = 'Controllers MUST return an instance of Symfony\\Component\\HttpFoundation\\Response.';
         $msg .= ' The controller returned type (string).';
-        $this->setExpectedException(ServerErrorException::class, $msg);
+        $this->setExpectedException(InvalidTypeException::class, $msg);
         $app->handle($request, Application::MASTER_REQUEST, Application::THROW_EXCEPTIONS);
     }
 
@@ -145,8 +144,7 @@ class ApplicationTest extends UnitTestCase {
 
     function exceptionThrownProvider() {
         return [
-            [new PhpException('this is the message why something failed')],
-            [new NotFoundException('this is the resource not found')]
+            [new PhpException('this is the message why something failed')]
         ];
     }
 
@@ -170,28 +168,14 @@ class ApplicationTest extends UnitTestCase {
         $request = Request::create('http://labrador.dev');
         $resolvedRoute = new ResolvedRoute($request, function() use($exception) { throw $exception; }, Response::HTTP_OK);
         $router = new RouterStub($resolvedRoute);
-        $eventDispatcher = $this->getMock(EventDispatcher::class);
-
-        $eventDispatcher->expects($this->at(2))
-                        ->method('dispatch')
-                        ->with(
-                            LabradorEvents::EXCEPTION_THROWN,
-                            $this->callback(function($arg) {
-                                return $arg instanceof Event\ExceptionThrownEvent;
-                            })
-                        );
-
-        $eventDispatcher->expects($this->at(3))
-                        ->method('dispatch')
-                        ->with(
-                            LabradorEvents::APP_FINISHED,
-                            $this->callback(function($arg) {
-                                return $arg instanceof Event\ApplicationFinishedEvent;
-                            })
-                        );
-
-        $app = new Application($router, $eventDispatcher);
+        $app = new Application($router);
+        $triggered = false;
+        $app->onFinished(function() use(&$triggered) {
+            $triggered = true;
+        });
         $app->handle($request);
+
+        $this->assertTrue($triggered);
     }
 
     /**
@@ -201,23 +185,34 @@ class ApplicationTest extends UnitTestCase {
         $request = Request::create('http://labrador.dev');
         $resolvedRoute = new ResolvedRoute($request, function() use($exception) { throw $exception; }, Response::HTTP_OK);
         $router = new RouterStub($resolvedRoute);
-        $eventDispatcher = $this->getMock(EventDispatcher::class);
-
-        $eventDispatcher->expects($this->at(2))
-                              ->method('dispatch')
-                              ->with(
-                                  LabradorEvents::APP_FINISHED,
-                                  $this->callback(function($arg) {
-                                      return $arg instanceof Event\ApplicationFinishedEvent;
-                                  })
-                                );
-
-        $app = new Application($router, $eventDispatcher);
+        $app = new Application($router);
+        $triggered = false;
+        $app->onFinished(function() use(&$triggered) {
+            $triggered = true;
+        });
         try {
             $app->handle($request, Application::MASTER_REQUEST, Application::THROW_EXCEPTIONS);
         } catch(PhpException $exc) {
-            // don't want tests to fail because we know the application will throw an exception
+            // no op
+        } finally {
+            $this->assertTrue($triggered);
         }
+    }
+
+    /**
+     * @dataProvider exceptionThrownProvider
+     */
+    function testExceptionAccessibleFromExceptionEvent($exception) {
+        $request = Request::create('http://labrador.dev');
+        $resolvedRoute = new ResolvedRoute($request, function() use($exception) { throw $exception; }, Response::HTTP_OK);
+        $router = new RouterStub($resolvedRoute);
+        $app = new Application($router);
+        $exceptionInstance = null;
+        $app->onException(function($event) use(&$exceptionInstance) {
+            $exceptionInstance = $event->getException();
+        });
+        $app->handle($request);
+        $this->assertSame($exception, $exceptionInstance);
     }
 
     function testChangingControllerInBeforeControllerMiddleware() {

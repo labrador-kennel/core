@@ -9,6 +9,7 @@
 namespace Labrador;
 
 use Labrador\Event;
+use Labrador\Exception\InvalidTypeException;
 use Labrador\Router\Router;
 use Labrador\Router\ResolvedRoute;
 use Labrador\Exception\HttpException;
@@ -125,9 +126,7 @@ class Application implements HttpKernelInterface {
             if (!$catch) {
                 throw $exc;
             }
-
-            $code = ($exc instanceof HttpException) ? $exc->getCode() : Response::HTTP_INTERNAL_SERVER_ERROR;
-            $response = $this->handleCaughtException($exc, $code);
+            $response = $this->handleCaughtException($exc);
         } finally {
             $response = $this->triggerApplicationFinishedEvent($response);
             $this->requestStack->pop();
@@ -179,7 +178,7 @@ class Application implements HttpKernelInterface {
     private function guardControllerReturnsResponse($returnType) {
         if (!$returnType instanceof Response) {
             $msg = 'Controllers MUST return an instance of %s. The controller returned type (%s).';
-            throw new ServerErrorException(sprintf($msg, Response::class, gettype($returnType)));
+            throw new InvalidTypeException(sprintf($msg, Response::class, gettype($returnType)));
         }
     }
 
@@ -190,8 +189,8 @@ class Application implements HttpKernelInterface {
         return $response;
     }
 
-    private function handleCaughtException(PhpException $exception, $httpStatus) {
-        $response = new Response($exception->getMessage(), $httpStatus);
+    private function handleCaughtException(PhpException $exception) {
+        $response = new Response($exception->getMessage(), Response::HTTP_INTERNAL_SERVER_ERROR);
         $event = new Event\ExceptionThrownEvent($this->requestStack, $response, $exception);
         $this->eventDispatcher->dispatch(Events::EXCEPTION_THROWN, $event);
         return $event->getResponse();
