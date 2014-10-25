@@ -15,13 +15,11 @@ use Symfony\Component\HttpFoundation\Response;
 class ApplicationFinishedEvent extends LabradorEvent {
 
     /**
-     * The $response may be null if this event is triggered when the Application
-     * is configured to throw exceptions raised during processing.
      *
      * @param RequestStack $requestStack
      * @param Response $response
      */
-    function __construct(RequestStack $requestStack, Response $response = null) {
+    function __construct(RequestStack $requestStack, Response $response) {
         parent::__construct($requestStack);
         if ($response) {
             $this->setResponse($response);

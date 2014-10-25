@@ -38,8 +38,8 @@ class Application implements HttpKernelInterface {
      */
     function __construct(Router $router, EventDispatcherInterface $eventDispatcher = null, RequestStack $requestStack = null) {
         $this->router = $router;
-        $this->eventDispatcher = isset($eventDispatcher) ? $eventDispatcher : new EventDispatcher();
-        $this->requestStack = isset($requestStack) ? $requestStack : new RequestStack();
+        $this->eventDispatcher = $eventDispatcher ?: new EventDispatcher();
+        $this->requestStack = $requestStack ?: new RequestStack();
     }
 
     /**
@@ -128,6 +128,7 @@ class Application implements HttpKernelInterface {
             }
             $response = $this->handleCaughtException($exc);
         } finally {
+            $response = isset($response) ? $response : new Response('Unexpected error occurred.', Response::HTTP_INTERNAL_SERVER_ERROR);
             $response = $this->triggerApplicationFinishedEvent($response);
             $this->requestStack->pop();
         }
@@ -145,12 +146,7 @@ class Application implements HttpKernelInterface {
         if (!$resolved->isOk()) {
             $response = $this->handleNotOkResolvedRoute($resolved);
         } else {
-            $event = $this->triggerBeforeControllerEvent($resolved);
-            $response = $event->getResponse();
-            if (!$response) {
-                $controller = $event->getController();
-                $response = $controller($resolved->getRequest());
-            }
+            $response = $this->handleOkResolvedRoute($resolved);
         }
 
         $this->guardControllerReturnsResponse($response);
@@ -160,6 +156,17 @@ class Application implements HttpKernelInterface {
     private function handleNotOkResolvedRoute(ResolvedRoute $resolved) {
         $controller = $resolved->getController();
         $response = $controller($resolved->getRequest());
+        return $response;
+    }
+
+    private function handleOkResolvedRoute(ResolvedRoute $resolved) {
+        $event = $this->triggerBeforeControllerEvent($resolved);
+        $response = $event->getResponse();
+        if (!$response) {
+            $controller = $event->getController();
+            $response = $controller($resolved->getRequest());
+        }
+
         return $response;
     }
 
