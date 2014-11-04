@@ -84,6 +84,9 @@ class FastRouteRouter implements Router {
     }
 
     /**
+     * Allows you to easily prefix routes to composer complex URL patterns without
+     * constantly retyping pattern matchers.
+     *
      * @param string $prefix
      * @param callable $cb
      * @return $this
@@ -96,6 +99,20 @@ class FastRouteRouter implements Router {
     }
 
     /**
+     * @return string
+     */
+    function root() {
+        return $this->isMounted() ? '' : '/';
+    }
+
+    /**
+     * @return bool
+     */
+    function isMounted() {
+        return !empty($this->mountedPrefix);
+    }
+
+    /**
      * @param $method
      * @param $pattern
      * @param $handler
@@ -103,7 +120,7 @@ class FastRouteRouter implements Router {
      */
     function addRoute($method, $pattern, $handler) {
         // @todo implement FastRouterRouteCollector and parse required data from Route objects
-        if (!empty($this->mountedPrefix)) {
+        if ($this->isMounted()) {
             $pattern = implode('', $this->mountedPrefix) . $pattern;
         }
         $this->routes[] = new Route($pattern, $method, $handler);
@@ -119,13 +136,8 @@ class FastRouteRouter implements Router {
     function match(Request $request) {
         $route = $this->getDispatcher()->dispatch($request->getMethod(), $request->getPathInfo());
         $status = array_shift($route);
-
-        if (!$route || $status === Dispatcher::NOT_FOUND) {
-            return new ResolvedRoute($request, $this->getNotFoundController(), Response::HTTP_NOT_FOUND);
-        }
-
-        if ($status === Dispatcher::METHOD_NOT_ALLOWED) {
-            return new ResolvedRoute($request, $this->getMethodNotAllowedController(), Response::HTTP_METHOD_NOT_ALLOWED, $route[0]);
+        if ($notOkResolved = $this->guardNotOkMatch($request, $status, $route)) {
+            return $notOkResolved;
         }
 
         list($handler, $params) = $route;
@@ -138,7 +150,26 @@ class FastRouteRouter implements Router {
         if (!is_callable($controller)) {
             throw new InvalidHandlerException('Could not resolve matched handler to a callable controller');
         }
+
         return new ResolvedRoute($request, $controller, Response::HTTP_OK);
+    }
+
+    /**
+     * @param Request $request
+     * @param integer $status
+     * @param string $route
+     * @return ResolvedRoute|null
+     */
+    private function guardNotOkMatch(Request $request, $status, $route) {
+        if (!$route || $status === Dispatcher::NOT_FOUND) {
+            return new ResolvedRoute($request, $this->getNotFoundController(), Response::HTTP_NOT_FOUND);
+        }
+
+        if ($status === Dispatcher::METHOD_NOT_ALLOWED) {
+            return new ResolvedRoute($request, $this->getMethodNotAllowedController(), Response::HTTP_METHOD_NOT_ALLOWED, $route[0]);
+        }
+
+        return null;
     }
 
     /**
@@ -192,8 +223,7 @@ class FastRouteRouter implements Router {
 
     /**
      * Set the $controller that will be passed to the resolved route when a
-     * handler could not be
-     *
+     * handler could not be found for a given request.
      *
      * @param callable $controller
      * @return $this
@@ -204,6 +234,9 @@ class FastRouteRouter implements Router {
     }
 
     /**
+     * Set the controller that will be passed to the resolved route when a handler
+     * is found for a given request but the HTTP method is not allowed.
+     *
      * @param callable $controller
      * @return $this
      */

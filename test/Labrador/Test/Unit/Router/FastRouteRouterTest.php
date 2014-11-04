@@ -241,4 +241,32 @@ class FastRouteRouterTest extends UnitTestCase {
         $this->assertSame('the set controller', $controller());
     }
 
+    function testSettingMountedRoot() {
+        $router = $this->getRouter();
+        $router->mount('/foo', function($router) {
+            $router->get($router->root(), 'something');
+        });
+        $this->mockResolver->expects($this->once())
+                           ->method('resolve')
+                           ->with('something')
+                           ->willReturn(function() { return 'the set controller'; });
+
+        $resolved = $router->match(Request::create('http://example.com/foo'));
+        $controller = $resolved->getController();
+        $this->assertSame('the set controller', $controller());
+    }
+
+    function testUsingRouterRootWithoutMount() {
+        $router = $this->getRouter();
+        $router->get($router->root(), 'something');
+        $this->mockResolver->expects($this->once())
+             ->method('resolve')
+             ->with('something')
+             ->willReturn(function() { return 'the set controller'; });
+
+        $resolved = $router->match(Request::create('http://example.com'));
+        $controller = $resolved->getController();
+        $this->assertSame('the set controller', $controller());
+    }
+
 }
