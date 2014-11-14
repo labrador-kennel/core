@@ -149,13 +149,14 @@ class Application implements HttpKernelInterface {
             $response = $this->handleOkResolvedRoute($resolved);
         }
 
-        $this->guardControllerReturnsResponse($response);
-        return $this->triggerAfterControllerEvent($response);
+
+        return $response;
     }
 
     private function handleNotOkResolvedRoute(ResolvedRoute $resolved) {
         $controller = $resolved->getController();
         $response = $controller($resolved->getRequest());
+        $this->guardControllerReturnsResponse($response);
         return $response;
     }
 
@@ -165,6 +166,8 @@ class Application implements HttpKernelInterface {
         if (!$response) {
             $controller = $event->getController();
             $response = $controller($resolved->getRequest());
+            $this->guardControllerReturnsResponse($response);
+            $response = $this->triggerAfterControllerEvent($response, $controller);
         }
 
         return $response;
@@ -176,8 +179,8 @@ class Application implements HttpKernelInterface {
         return $event;
     }
 
-    private function triggerAfterControllerEvent(Response $response) {
-        $event = new Event\AfterControllerEvent($this->requestStack, $response);
+    private function triggerAfterControllerEvent(Response $response, callable $controller) {
+        $event = new Event\AfterControllerEvent($this->requestStack, $response, $controller);
         $this->eventDispatcher->dispatch(Events::AFTER_CONTROLLER, $event);
         return $event->getResponse();
     }
