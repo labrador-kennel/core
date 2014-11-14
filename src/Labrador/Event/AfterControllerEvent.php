@@ -24,6 +24,7 @@ class AfterControllerEvent extends LabradorEvent {
     function __construct(RequestStack $requestStack, Response $response, callable $controller) {
         parent::__construct($requestStack);
         $this->setResponse($response);
+        $this->controller = $controller;
     }
 
     /**
