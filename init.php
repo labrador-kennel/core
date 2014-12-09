@@ -11,42 +11,51 @@ set_error_handler(function($severity, $msg, $file, $line) {
     throw new ErrorException($msg, 0, $severity, $file, $line);
 });
 set_exception_handler(function(Exception $exception) {
-    http_response_code(500);
-    $msg = htmlspecialchars($exception->getMessage());
-    echo <<<HTML
-<!DOCTYPE html>
-<html>
-    <head>
-        <title>Labrador Error</title>
-    </head>
-    <body>
-        <h1>Internal Server Error</h1>
-        <p>An error was encountered processing your request. Please contact the administrator.</p>
-        <p>The error message was: {$msg}</p>
-    </body>
-</html>
-HTML;
-    exit;
+    $type = get_class($exception);
+    $message = $exception->getMessage();
+    $file = $exception->getFile();
+    $line = $exception->getLine();
+    $stackTrace = $exception->getTraceAsString();
+    $msg = <<<MSG
+An exception was thrown!
+
+Type: {$type}
+Message: {$message} in {$file} on {$line}.
+
+Stack Trace:
+
+{$stackTrace}
+MSG;
+
+    fwrite(STDERR, $msg);
 });
 
 require_once __DIR__ . '/vendor/autoload.php';
 
-use Labrador\Application;
-use Labrador\WelcomeController;
-use Labrador\FrontControllerBootstrap;
-use Symfony\Component\HttpFoundation\Request;
-use Configlet\MasterConfig;
+use Labrador\Engine;
+use Labrador\Plugin\PluginManager;
+use Auryn\Provider;
+use Symfony\Component\EventDispatcher\EventDispatcher;
 
-$appConfig = include __DIR__ . '/config/application.php';
+$provider = new Provider();
+$eventDispatcher = new EventDispatcher();
+$pluginManager = new PluginManager($provider, $eventDispatcher);
+$engine = new Engine($eventDispatcher, $pluginManager);
 
-/** @var Auryn\Injector $injector */
-/** @var Labrador\Application $app */
-/** @var Symfony\Component\HttpFoundation\Request $request */
-$injector = (new FrontControllerBootstrap($appConfig))->run();
-$config = $injector->make(MasterConfig::class);
-$app = $injector->make(Application::class);
+$eventDispatcher->addListener(Engine::PLUGIN_BOOT_EVENT, function() {
+    fwrite(STDOUT, "Called the plugin boot event!\n");
+});
 
-$app->getRouter()->get('/', WelcomeController::class . '#index');
+$eventDispatcher->addListener(Engine::APP_EXECUTE_EVENT, function() {
+    fwrite(STDOUT, "Your application should execute here!\n");
+});
 
-$request = Request::createFromGlobals();
-$app->handle($request)->send();
+$eventDispatcher->addListener(Engine::PLUGIN_CLEANUP_EVENT, function() {
+    fwrite(STDOUT, "You can do any final cleanup here\n");
+});
+
+$eventDispatcher->addListener(Engine::EXCEPTION_THROWN_EVENT, function() {
+    fwrite(STDOUT, "We caught an exception thrown during one of the previously documented events. Do something about it!\n");
+});
+
+$engine->run();

@@ -1,36 +1,32 @@
 <?php
 
 /**
- * Event triggered when an exception is caught by Labrador\Application.
  * 
  * @license See LICENSE in source root
+ * @version 1.0
+ * @since   1.0
  */
 
 namespace Labrador\Event;
 
-use Symfony\Component\HttpFoundation\RequestStack;
-use Symfony\Component\HttpFoundation\Response;
-use Exception as PhpException;
+use Labrador\Engine;
+use Symfony\Component\EventDispatcher\Event;
 
-class ExceptionThrownEvent extends LabradorEvent {
+class ExceptionThrownEvent extends Event {
 
+    private $engine;
     private $exception;
 
-    /**
-     * @param RequestStack $requestStack
-     * @param Response $response
-     * @param \Exception $exception
-     */
-    function __construct(RequestStack $requestStack, Response $response, PhpException $exception) {
-        parent::__construct($requestStack);
+    public function __construct(Engine $engine, \Exception $exception) {
+        $this->engine = $engine;
         $this->exception = $exception;
-        $this->setResponse($response);
     }
 
-    /**
-     * @return \Exception
-     */
-    function getException() {
+    public function getEngine() {
+        return $this->engine;
+    }
+
+    public function getException() {
         return $this->exception;
     }
 
