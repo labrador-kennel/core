@@ -1,7 +1,8 @@
 <?php
 
 /**
- * Base exception that all Labrador exceptions will extend from.
+ * Base exception that indicates an exception that was thrown originated from
+ * within the Labrador library.
  * 
  * @license See LICENSE in source root
  */
@@ -10,7 +11,4 @@ namespace Labrador\Exception;
 
 use Exception as PhpException;
 
-/**
- * @codeCoverageIgnore
- */
 class Exception extends PhpException {}
