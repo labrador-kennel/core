@@ -20,7 +20,6 @@
         "phploc/phploc": "2.0.*",
         "filp/whoops": "1.1.*"
     },
-    "bin": ["bin/labrador-skeleton.sh"],
     "autoload": {
         "psr-0": {
             "Labrador\\": ["src/", "test/"]
