@@ -9,8 +9,16 @@
 
 namespace Labrador\Event;
 
-use Symfony\Component\EventDispatcher\Event;
+use Labrador\Engine;
 
-class AppExecuteEvent extends Event {
+class AppExecuteEvent {
+
+    use EngineEventTrait;
+
+    public function __construct(Engine $engine) {
+        $this->setEngine($engine);
+    }
+
+
 
 } 

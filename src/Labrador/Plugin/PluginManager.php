@@ -13,24 +13,23 @@ use Labrador\Engine;
 use Labrador\Exception\InvalidArgumentException;
 use Labrador\Exception\NotFoundException;
 use Auryn\Injector;
-use Labrador\PluginBooter;
-use Symfony\Component\EventDispatcher\EventDispatcherInterface;
+use Evenement\EventEmitterInterface;
 
 class PluginManager implements Pluggable {
 
     private $plugins;
-    private $eventDispatcher;
+    private $emitter;
     private $injector;
 
-    public function __construct(Injector $injector, EventDispatcherInterface $eventDispatcher) {
-        $this->eventDispatcher = $eventDispatcher;
+    public function __construct(Injector $injector, EventEmitterInterface $emitter) {
+        $this->emitter = $emitter;
         $this->injector = $injector;
         $this->plugins = new PluginCollection();
     }
 
     public function registerBooter() {
         $cb = function() { $this->getPlugins()->map('boot'); };
-        $this->eventDispatcher->addListener(Engine::PLUGIN_BOOT_EVENT, $cb);
+        $this->emitter->on(Engine::PLUGIN_BOOT_EVENT, $cb);
     }
 
     public function registerPlugin(Plugin $plugin) {
@@ -43,7 +42,7 @@ class PluginManager implements Pluggable {
         }
 
         if ($plugin instanceof EventAwarePlugin) {
-            $plugin->registerEventListeners($this->eventDispatcher);
+            $plugin->registerEventListeners($this->emitter);
         }
 
         $this->plugins->add($plugin);

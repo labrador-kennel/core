@@ -9,10 +9,10 @@
 
 namespace Labrador\Plugin;
 
-use Symfony\Component\EventDispatcher\EventDispatcherInterface;
+use Evenement\EventEmitterInterface;
 
 interface EventAwarePlugin extends Plugin {
 
-    public function registerEventListeners(EventDispatcherInterface $eventDispatcher);
+    public function registerEventListeners(EventEmitterInterface $emitter);
 
 } 
