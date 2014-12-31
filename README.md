@@ -5,25 +5,24 @@
 [![Code Coverage](https://scrutinizer-ci.com/g/cspray/labrador/badges/coverage.png?b=master)](https://scrutinizer-ci.com/g/cspray/labrador/?branch=master)
 [![License](https://poser.pugx.org/cspray/labrador/license.png)](https://packagist.org/packages/cspray/labrador)
 
-A small, event dispatching library that encourages applications to adhere to the following philosophy:
+A microframework to
 
-- Be built of small, composable, reusable libraries
-- Be framework agnostic
-- Use dependency injection throughyout your software stack
-- Be thoroughly and easily unit-tested
+- Be exceedingly simple, allowing complexity to be added as needed.
+- Be framework agnostic.
+- Use dependency injection throughout your software stack.
+- Be thoroughly and easily unit-tested.
 
-Here's the simplest "Hello world" Labrador style. Labrador isn't really meant to develop such a simple, meaningless application but it will give you an idea on how Labrador is used at a basic level.
+Here's a simple Hello World application implemented as a Plugin.
 
 ```php
 <?php
 
 require_once './vendor/autoload.php';
 
-use Labrador\Engine;
+use Labrador\CoreEngine;
 use Labrador\Plugin\EventAwarePlugin;
 use Labrador\Plugin\PluginManager;
-use Symfony\Component\EventDispatcher\EventDispatcherInterface;
-use Symfony\Component\EventDispatcher\EventDispatcher;
+use Evenement\EventEmitterInterface;
 
 class HelloWorldPlugin implements EventAwarePlugin {
 
@@ -35,16 +34,16 @@ class HelloWorldPlugin implements EventAwarePlugin {
         // our app is too simple to do anything here but yours might not be
     }
 
-    public function registerEventListeners(EventDispatcherInterface $eventDispatcher) {
-        $eventDispatcher->addListener(Engine::APP_EXECUTE_EVENT, function() {
+    public function registerEventListeners(EventEmitterInterface $emitter) {
+        $emitter->on(CoreEngine::APP_EXECUTE_EVENT, function() {
             echo 'Hello world!';
         });
     }
 
 }
 
-$eventDispatcher = new EventDispatcher();
-$pluginManager = new PluginManager(new Auryn\Provider, $eventDispatcher);
+$emitter = new EventEmitter();
+$pluginManager = new PluginManager(new Auryn\Provider, $emitter);
 $engine = new Engine($eventDispatcher, $pluginManager);
 
 $engine->registerPlugin(new HelloWorldPlugin());
@@ -56,8 +55,8 @@ $engine->run();
 Labrador has a few dependencies that must be provided.
 
 - PHP 5.5+
-- [rdlowrey/Auryn](https://github.com/rdlowrey/Auryn) DI container to provision dependencies and incourage a dependency-injection driven development.
-- [symfony/EventDispatcher](https://github.com/symfony/EventDispatcher) Dispatches events to registered listeners, the primary driving force behind Labrador's functionality.
+- [rdlowrey/Auryn](https://github.com/rdlowrey/Auryn) IoC container to provision dependencies and encourages using dependency injection
+- [evenement/evenement](https://github.com/igorw/evenement) Emits events to registered listeners, the primary driving force behind Labrador's functionality.
 
 ## Installation
 
