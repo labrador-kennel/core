@@ -15,8 +15,8 @@ use Labrador\Exception\NotFoundException;
 use Labrador\Stub\BootCalledPlugin;
 use Labrador\Stub\NameOnlyPlugin;
 use Labrador\Exception\InvalidArgumentException;
-use Symfony\Component\EventDispatcher\EventDispatcher;
-use Symfony\Component\EventDispatcher\EventDispatcherInterface;
+use Evenement\EventEmitterInterface;
+use Evenement\EventEmitter;
 use Auryn\Injector;
 use PHPUnit_Framework_TestCase as UnitTestCase;
 
@@ -29,7 +29,7 @@ class PluginManagerTest extends UnitTestCase {
     private $mockInjector;
 
     public function setUp() {
-        $this->mockDispatcher = $this->getMock(EventDispatcherInterface::class);
+        $this->mockDispatcher = $this->getMock(EventEmitterInterface::class);
         $this->mockInjector = $this->getMock(Injector::class);
     }
 
@@ -112,14 +112,14 @@ class PluginManagerTest extends UnitTestCase {
     }
 
     public function testPluginBooterListenerAddedToEventDispatcher() {
-        $eventDispatcher = new EventDispatcher();
+        $eventDispatcher = new EventEmitter();
         $manager = new PluginManager($this->mockInjector, $eventDispatcher);
         $manager->registerPlugin($plugin = new BootCalledPlugin('foo'));
         $manager->registerBooter();
 
         $engine = $this->getMockBuilder(Engine::class)->disableOriginalConstructor()->getMock();
 
-        $eventDispatcher->dispatch(Engine::PLUGIN_BOOT_EVENT, new PluginBootEvent($engine));
+        $eventDispatcher->emit(Engine::PLUGIN_BOOT_EVENT, [new PluginBootEvent($engine)]);
         $this->assertTrue($plugin->bootCalled());
     }
 

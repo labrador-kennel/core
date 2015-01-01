@@ -10,20 +10,17 @@
 namespace Labrador\Event;
 
 use Labrador\Engine;
-use Symfony\Component\EventDispatcher\Event;
+use Exception;
 
-class ExceptionThrownEvent extends Event {
+class ExceptionThrownEvent {
 
-    private $engine;
+    use EngineEventTrait;
+
     private $exception;
 
-    public function __construct(Engine $engine, \Exception $exception) {
-        $this->engine = $engine;
+    public function __construct(Engine $engine, Exception $exception) {
+        $this->setEngine($engine);
         $this->exception = $exception;
-    }
-
-    public function getEngine() {
-        return $this->engine;
     }
 
     public function getException() {

@@ -11,18 +11,13 @@
 namespace Labrador\Event;
 
 use Labrador\Engine;
-use Symfony\Component\EventDispatcher\Event;
 
-class PluginBootEvent extends Event {
+class PluginBootEvent {
 
-    private $engine;
+    use EngineEventTrait;
 
     public function __construct(Engine $engine) {
-        $this->engine;
-    }
-
-    public function getEngine() {
-        return $this->engine;
+        $this->setEngine($engine);
     }
 
 } 
