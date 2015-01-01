@@ -48,6 +48,10 @@ class CoreEngine implements Engine {
         $this->emitter->on(self::PLUGIN_CLEANUP_EVENT, $cb);
     }
 
+    public function onExceptionThrown(callable $cb) {
+        $this->emitter->on(self::EXCEPTION_THROWN_EVENT, $cb);
+    }
+
     public function run() {
         try {
             $this->emitter->emit(self::PLUGIN_BOOT_EVENT, [new PluginBootEvent($this)]);
