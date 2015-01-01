@@ -36,6 +36,18 @@ class CoreEngine implements Engine {
         return '0.1.0-alpha';
     }
 
+    public function onPluginBoot(callable $cb) {
+        $this->emitter->on(self::PLUGIN_BOOT_EVENT, $cb);
+    }
+
+    public function onAppExecute(callable $cb) {
+        $this->emitter->on(self::APP_EXECUTE_EVENT, $cb);
+    }
+
+    public function onPluginCleanup(callable $cb) {
+        $this->emitter->on(self::PLUGIN_CLEANUP_EVENT, $cb);
+    }
+
     public function run() {
         try {
             $this->emitter->emit(self::PLUGIN_BOOT_EVENT, [new PluginBootEvent($this)]);
