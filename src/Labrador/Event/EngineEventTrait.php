@@ -21,7 +21,7 @@ trait EngineEventTrait {
     }
 
     protected function setEngine(Engine $engine) {
-        $this->engine;
+        $this->engine = $engine;
     }
 
 } 
