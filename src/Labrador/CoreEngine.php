@@ -54,6 +54,7 @@ class CoreEngine implements Engine {
 
     public function run() {
         try {
+            $this->pluginManager->registerBooter();
             $this->emitter->emit(self::PLUGIN_BOOT_EVENT, [new PluginBootEvent($this)]);
             $this->emitter->emit(self::APP_EXECUTE_EVENT, [new AppExecuteEvent($this)]);
         } catch (\Exception $exception) {
