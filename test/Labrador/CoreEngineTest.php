@@ -9,6 +9,7 @@
 
 namespace Labrador\Test\Unit;
 
+
 use Labrador\CoreEngine;
 use Labrador\Event\AppExecuteEvent;
 use Labrador\Event\ExceptionThrownEvent;
@@ -16,7 +17,10 @@ use Labrador\Event\PluginBootEvent;
 use Labrador\Event\PluginCleanupEvent;
 use Labrador\Exception\Exception;
 use Labrador\Plugin\PluginManager;
+use Labrador\Stub\BootCalledPlugin;
+use Evenement\EventEmitter;
 use Evenement\EventEmitterInterface;
+use Auryn\Injector;
 use PHPUnit_Framework_TestCase as UnitTestCase;
 
 class CoreEngineTest extends UnitTestCase {
@@ -29,8 +33,10 @@ class CoreEngineTest extends UnitTestCase {
         $this->mockPluginManager = $this->getMockBuilder(PluginManager::class)->disableOriginalConstructor()->getMock();
     }
 
-    private function getEngine() {
-        return new CoreEngine($this->mockEventDispatcher, $this->mockPluginManager);
+    private function getEngine(EventEmitterInterface $eventEmitter = null, PluginManager $pluginManager = null) {
+        $emitter = $eventEmitter ?: $this->mockEventDispatcher;
+        $manager = $pluginManager ?: $this->mockPluginManager;
+        return new CoreEngine($emitter, $manager);
     }
 
     public function normalProcessingEventDataProvider() {
@@ -97,6 +103,19 @@ class CoreEngineTest extends UnitTestCase {
 
         $engine = $this->getEngine();
         $engine->run();
+    }
+
+    public function testRegisteredPluginsGetBooted() {
+        $emitter = new EventEmitter();
+        $pluginManager = new PluginManager($this->getMock(Injector::class), $emitter);
+        $engine = $this->getEngine($emitter, $pluginManager);
+
+        $plugin = new BootCalledPlugin('boot_called_plugin');
+        $engine->registerPlugin($plugin);
+
+        $engine->run();
+
+        $this->assertTrue($plugin->bootCalled(), 'The Plugin::boot method was not called');
     }
 
 } 
