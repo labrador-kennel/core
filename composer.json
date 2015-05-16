@@ -1,6 +1,6 @@
 {
     "name": "cspray/labrador",
-    "description": "A microframework wiring together high-quality libraries to route an HTTP request to a specific controller",
+    "description": "A microframework proving a plugin and event system to build PHP powered applications.",
     "license": "MIT",
     "authors": [
         {
@@ -11,13 +11,15 @@
         }
     ],
     "require": {
-        "php": "~5.5",
-        "rdlowrey/auryn": "0.14.*",
+        "php": "~5.6",
+        "rdlowrey/auryn": "0.15.*",
         "evenement/evenement": "2.0.*"
     },
     "require-dev": {
-        "phpunit/phpunit": "4.4.*",
-        "filp/whoops": "1.1.*"
+        "phpunit/phpunit": "4.6.*"
+    },
+    "suggest": {
+        "filp/whoops": ""
     },
     "autoload": {
         "psr-0": {

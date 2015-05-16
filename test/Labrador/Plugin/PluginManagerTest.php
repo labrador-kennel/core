@@ -20,9 +20,6 @@ use Evenement\EventEmitter;
 use Auryn\Injector;
 use PHPUnit_Framework_TestCase as UnitTestCase;
 
-/**
- * @property \PHPUnit_Framework_MockObject_MockObject $mockDispatcher
- */
 class PluginManagerTest extends UnitTestCase {
 
     private $mockDispatcher;
@@ -30,7 +27,7 @@ class PluginManagerTest extends UnitTestCase {
 
     public function setUp() {
         $this->mockDispatcher = $this->getMock(EventEmitterInterface::class);
-        $this->mockInjector = $this->getMock(Injector::class);
+        $this->mockInjector = $this->getMockBuilder(Injector::class)->disableOriginalConstructor()->getMock();
     }
 
     private function getPluginManager() {
