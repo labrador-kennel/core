@@ -19,7 +19,7 @@
         "phpunit/phpunit": "4.6.*"
     },
     "suggest": {
-        "filp/whoops": ""
+        "filp/whoops": "Library to help ensure your error output doesn't suck."
     },
     "autoload": {
         "psr-0": {
