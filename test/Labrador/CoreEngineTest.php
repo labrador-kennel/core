@@ -11,6 +11,7 @@ namespace Labrador\Test\Unit;
 
 
 use Labrador\CoreEngine;
+use Labrador\Engine;
 use Labrador\Event\AppExecuteEvent;
 use Labrador\Event\ExceptionThrownEvent;
 use Labrador\Event\PluginBootEvent;
@@ -51,17 +52,23 @@ class CoreEngineTest extends UnitTestCase {
      * @dataProvider normalProcessingEventDataProvider
      */
     public function testEventNormalProcessing($dispatchIndex, $eventName, $eventType) {
+        $engine = $this->getEngine();
+        $eventEngine = null;
         $this->mockEventDispatcher->expects($this->at($dispatchIndex))
                                   ->method('emit')
                                   ->with(
                                       $eventName,
-                                      $this->callback(function($arg) use($eventType) {
-                                          return $arg[0] instanceof $eventType;
+                                      $this->callback(function($arg) use($eventType, &$eventEngine) {
+                                          if ($arg[0] instanceof $eventType) {
+                                              $eventEngine = $arg[0]->getEngine();
+                                              return true;
+                                          }
+
+                                          return false;
                                       })
                                   );
-
-        $engine = $this->getEngine();
         $engine->run();
+        $this->assertSame($engine, $eventEngine);
     }
 
     public function testExceptionThrownEventDispatched() {
@@ -116,6 +123,65 @@ class CoreEngineTest extends UnitTestCase {
         $engine->run();
 
         $this->assertTrue($plugin->bootCalled(), 'The Plugin::boot method was not called');
+    }
+
+    public function testGettingEngineName() {
+        $this->assertSame('labrador-core', $this->getEngine()->getName());
+    }
+
+    public function testGettingEngineVersion() {
+        $this->assertSame('0.1.0-alpha', $this->getEngine()->getVersion());
+    }
+
+    public function eventEmitterProxyData() {
+        return [
+            ['onPluginBoot', Engine::PLUGIN_BOOT_EVENT],
+            ['onAppExecute', Engine::APP_EXECUTE_EVENT],
+            ['onPluginCleanup', Engine::PLUGIN_CLEANUP_EVENT],
+            ['onExceptionThrown', Engine::EXCEPTION_THROWN_EVENT]
+        ];
+    }
+
+    /**
+     * @dataProvider eventEmitterProxyData
+     */
+    public function testProxyToEventEmitter($method, $event) {
+        $cb = function() {};
+        $emitter = $this->getMock(EventEmitterInterface::class);
+        $emitter->expects($this->once())
+                ->method('on')
+                ->with($event, $cb);
+
+        $engine = $this->getEngine($emitter);
+        $engine->$method($cb);
+
+        $engine->run();
+    }
+
+    public function pluginManagerProxyData() {
+        return [
+            ['removePlugin', 'foo'],
+            ['hasPlugin', 'foo'],
+            ['getPlugin', 'foo'],
+            ['getPlugins', null]
+        ];
+    }
+
+    /**
+     * @dataProvider pluginManagerProxyData
+     */
+    public function testProxyToPluginManager($method, $arg) {
+        $pluginManager = $this->getMockBuilder(PluginManager::class)
+                              ->disableOriginalConstructor()
+                              ->getMock();
+
+        $pluginMethod = $pluginManager->expects($this->once())
+                                      ->method($method);
+        if ($arg) {
+            $pluginMethod->with($arg);
+        }
+
+        $this->getEngine(null, $pluginManager)->$method($arg);
     }
 
 } 

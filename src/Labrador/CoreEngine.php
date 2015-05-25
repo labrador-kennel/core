@@ -33,7 +33,7 @@ class CoreEngine implements Engine {
      * @return string
      */
     public function getName() {
-        return 'Labrador Core';
+        return 'labrador-core';
     }
 
     /**
