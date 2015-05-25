@@ -1,6 +1,9 @@
 <?php
 
 /**
+ * This is here to abstract away how plugins are managed for the Engine and
+ * to ensure that Engine implementations do not have to require the Injector
+ * directly to satisfy the Pluggable interface.
  * 
  * @license See LICENSE in source root
  * @version 1.0
@@ -26,29 +29,42 @@ class PluginManager implements Pluggable {
         $this->emitter = $emitter;
         $this->injector = $injector;
         $this->plugins = new HashMap();
+        $this->registerBooter();
     }
 
-    public function registerBooter() {
-        $plugins = $this->getPlugins();
-        $cb = function() use($plugins) {
-            foreach($plugins as $plugin) { /** @var Plugin $plugin */
+    private function registerBooter() {
+        $cb = function() {
+            $plugins = $this->getPlugins();
+
+            // We are executing each of these three methods in separate loops on purpose
+            // We want all plugins to register services, then register event listeners, and then boot
+            // This is because Plugins may wind up depending on other plugins. This ensures
+            // that all of the services a given Plugin may need are registered
+            foreach($plugins as $plugin) {
+                if ($plugin instanceof ServiceAwarePlugin) {
+                    $plugin->registerServices($this->injector);
+                }
+            }
+
+            foreach ($plugins as $plugin) {
+                if ($plugin instanceof EventAwarePlugin) {
+                    $plugin->registerEventListeners($this->emitter);
+                }
+            }
+
+            foreach ($plugins as $plugin) { /** @var Plugin $plugin */
                 $plugin->boot();
             }
         };
+        $cb = $cb->bindTo($this);
+
         $this->emitter->on(Engine::PLUGIN_BOOT_EVENT, $cb);
     }
 
     public function registerPlugin(Plugin $plugin) {
         if (preg_match('/[^A-Za-z0-9\.\-\_]/', $plugin->getName())) {
-            throw new InvalidArgumentException('A valid plugin name may only contain letters, numbers, periods, underscores, and dashes [A-Za-z0-9\.\-\_]');
-        }
-
-        if ($plugin instanceof ServiceAwarePlugin) {
-            $plugin->registerServices($this->injector);
-        }
-
-        if ($plugin instanceof EventAwarePlugin) {
-            $plugin->registerEventListeners($this->emitter);
+            $msg = 'A valid plugin name may only contain letters, numbers, periods, underscores, and dashes [A-Za-z0-9\.\-\_]';
+            throw new InvalidArgumentException($msg);
         }
 
         $this->plugins[$plugin->getName()] = $plugin;
@@ -68,8 +84,10 @@ class PluginManager implements Pluggable {
 
     public function getPlugin($name) {
         if (!isset($this->plugins[$name])) {
-            throw new NotFoundException("Could not find a registered plugin named \"$name\"");
+            $msg = 'Could not find a registered plugin named "%s"';
+            throw new NotFoundException(sprintf($msg, $name));
         }
+
         return $this->plugins[$name];
     }
 

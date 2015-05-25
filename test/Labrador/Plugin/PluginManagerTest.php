@@ -13,11 +13,13 @@ use Labrador\Engine;
 use Labrador\Event\PluginBootEvent;
 use Labrador\Exception\NotFoundException;
 use Labrador\Stub\BootCalledPlugin;
+use Labrador\Stub\EventsRegisteredPlugin;
 use Labrador\Stub\NameOnlyPlugin;
 use Labrador\Exception\InvalidArgumentException;
 use Evenement\EventEmitterInterface;
 use Evenement\EventEmitter;
 use Auryn\Injector;
+use Labrador\Stub\ServicesRegisteredPlugin;
 use PHPUnit_Framework_TestCase as UnitTestCase;
 
 class PluginManagerTest extends UnitTestCase {
@@ -34,14 +36,14 @@ class PluginManagerTest extends UnitTestCase {
         return new PluginManager($this->mockInjector, $this->mockDispatcher);
     }
 
-    public function testRegisterPluginHasIt() {
+    public function testManagerHasRegisteredPlugin() {
         $plugin = new NameOnlyPlugin('foo_plugin');
         $manager = $this->getPluginManager();
         $manager->registerPlugin($plugin);
         $this->assertTrue($manager->hasPlugin('foo_plugin'));
     }
 
-    public function testUnregisteredPluginDoesNotHaveIt() {
+    public function testManagerDoesNotHavePlugin() {
         $manager = $this->getPluginManager();
         $this->assertFalse($manager->hasPlugin('anything'));
     }
@@ -70,22 +72,6 @@ class PluginManagerTest extends UnitTestCase {
         $this->assertFalse($manager->hasPlugin('foo_plugin'));
     }
 
-    public function testRegisteringEventAwarePluginRegistersListeners() {
-        $plugin = $this->getMock(EventAwarePlugin::class);
-        $plugin->expects($this->once())->method('registerEventListeners')->with($this->mockDispatcher);
-
-        $manager = $this->getPluginManager();
-        $manager->registerPlugin($plugin);
-    }
-
-    public function testRegisteringServiceAwarePluginRegistersServices() {
-        $plugin = $this->getMock(ServiceAwarePlugin::class);
-        $plugin->expects($this->once())->method('registerServices')->with($this->mockInjector);
-
-        $manager = $this->getPluginManager();
-        $manager->registerPlugin($plugin);
-    }
-
     public function testPluginsWithInvalidNameThrowsException() {
         $plugin = new NameOnlyPlugin('an inalid name because of the spaces');
         $manager = $this->getPluginManager();
@@ -107,12 +93,34 @@ class PluginManagerTest extends UnitTestCase {
         $eventDispatcher = new EventEmitter();
         $manager = new PluginManager($this->mockInjector, $eventDispatcher);
         $manager->registerPlugin($plugin = new BootCalledPlugin('foo'));
-        $manager->registerBooter();
 
         $engine = $this->getMockBuilder(Engine::class)->disableOriginalConstructor()->getMock();
 
-        $eventDispatcher->emit(Engine::PLUGIN_BOOT_EVENT, [new PluginBootEvent($engine)]);
+        $eventDispatcher->emit(Engine::PLUGIN_BOOT_EVENT, [new PluginBootEvent(), $engine]);
         $this->assertTrue($plugin->bootCalled());
     }
+
+    public function testPluginServicesRegisteredOnBoot() {
+        $emitter = new EventEmitter();
+        $manager = new PluginManager($this->mockInjector, $emitter);
+        $manager->registerPlugin($plugin = new ServicesRegisteredPlugin());
+
+        $engine = $this->getMockBuilder(Engine::class)->disableOriginalConstructor()->getMock();
+
+        $emitter->emit(Engine::PLUGIN_BOOT_EVENT, [new PluginBootEvent(), $engine]);
+        $this->assertTrue($plugin->wasCalled());
+    }
+
+    public function testPluginEventsRegisteredOnBoot() {
+        $emitter = new EventEmitter();
+        $manager = new PluginManager($this->mockInjector, $emitter);
+        $manager->registerPlugin($plugin = new EventsRegisteredPlugin());
+
+        $engine = $this->getMockBuilder(Engine::class)->disableOriginalConstructor()->getMock();
+
+        $emitter->emit(Engine::PLUGIN_BOOT_EVENT, [new PluginBootEvent(), $engine]);
+        $this->assertTrue($plugin->wasCalled());
+    }
+
 
 }
