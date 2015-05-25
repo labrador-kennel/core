@@ -1,6 +1,6 @@
 {
     "name": "cspray/labrador",
-    "description": "A microframework proving a plugin and event system to build PHP powered applications.",
+    "description": "A microframework providing a plugin and event system to build PHP powered applications.",
     "license": "MIT",
     "authors": [
         {
