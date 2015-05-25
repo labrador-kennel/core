@@ -14,4 +14,17 @@ use Collections\HashMap;
 
 class SafeHashMap extends HashMap {
 
+    public function offsetGet($key) {
+        if (!isset($this[$key])) {
+            return null;
+        }
+
+        return parent::offsetGet($key);
+    }
+
+    public function get($key) {
+        return $this->offsetGet($key);
+    }
+
+
 }
