@@ -60,11 +60,6 @@ class PluginManagerTest extends UnitTestCase {
         $manager->getPlugin('foo');
     }
 
-    public function testGettingPluginsReturnsPluginCollection() {
-        $manager = $this->getPluginManager();
-        $this->assertInstanceOf(PluginCollection::class, $manager->getPlugins());
-    }
-
     public function testRemovingRegisteredPlugin() {
         $plugin = new NameOnlyPlugin('foo_plugin');
         $manager = $this->getPluginManager();
@@ -103,7 +98,7 @@ class PluginManagerTest extends UnitTestCase {
         $manager = $this->getPluginManager();
         $copy = $manager->getPlugins();
         $stub = new NameOnlyPlugin('stub');
-        $copy->add($stub);
+        $copy['stub'] = $stub;
 
         $this->assertFalse($manager->hasPlugin('stub'));
     }

@@ -36,11 +36,9 @@ interface Pluggable {
     public function getPlugin($name);
 
     /**
-     * The plugin collection returned should not also be used to manage the plugins
-     * for this pluggable; meaning adding plugins to the returned PluginCollection
-     * should not also add them to the object implementing this interface.
+     * An array of Plugin objects associated to the given Pluggable.
      *
-     * @return PluginCollection
+     * @return Plugin[]
      */
     public function getPlugins();
 
