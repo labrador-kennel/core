@@ -1,6 +1,8 @@
 <?php
 
 /**
+ * A trait to ensure all events triggered by Labrador have access to
+ * the Engine that triggered the event.
  * 
  * @license See LICENSE in source root
  * @version 1.0
@@ -8,7 +10,6 @@
  */
 
 namespace Labrador\Event;
-
 
 use Labrador\Engine;
 

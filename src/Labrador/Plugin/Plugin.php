@@ -1,8 +1,9 @@
 <?php
 
 /**
- * Objects that interact with the Labrador engine, the application running on top
- * of Labrador, or extensions to other plugins.
+ * Objects that interact with the Labrador engine or an application written on top
+ * of Labrador; primarily this will involve making use of the EventAwarePlugin and
+ * ServiceAwarePlugin interfaces to respond to triggered events or provide services.
  * 
  * @license See LICENSE in source root
  * @version 1.0
