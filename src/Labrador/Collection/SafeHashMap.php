@@ -26,5 +26,4 @@ class SafeHashMap extends HashMap {
         return $this->offsetGet($key);
     }
 
-
 }
