@@ -9,6 +9,7 @@
 
 namespace Labrador\Plugin;
 
+use Collections\HashMap;
 use Labrador\Engine;
 use Labrador\Exception\InvalidArgumentException;
 use Labrador\Exception\NotFoundException;
@@ -24,11 +25,16 @@ class PluginManager implements Pluggable {
     public function __construct(Injector $injector, EventEmitterInterface $emitter) {
         $this->emitter = $emitter;
         $this->injector = $injector;
-        $this->plugins = new PluginCollection();
+        $this->plugins = new HashMap();
     }
 
     public function registerBooter() {
-        $cb = function() { $this->getPlugins()->map('boot'); };
+        $plugins = $this->getPlugins();
+        $cb = function() use($plugins) {
+            foreach($plugins as $plugin) { /** @var Plugin $plugin */
+                $plugin->boot();
+            }
+        };
         $this->emitter->on(Engine::PLUGIN_BOOT_EVENT, $cb);
     }
 
@@ -45,26 +51,26 @@ class PluginManager implements Pluggable {
             $plugin->registerEventListeners($this->emitter);
         }
 
-        $this->plugins->add($plugin);
+        $this->plugins[$plugin->getName()] = $plugin;
     }
 
     public function removePlugin($name) {
-        $this->plugins->remove($name);
+        unset($this->plugins[$name]);
     }
 
     public function hasPlugin($name) {
-        return $this->plugins->has($name);
+        return isset($this->plugins[$name]);
     }
 
     public function getPlugins() {
-        return $this->plugins->copy();
+        return $this->plugins->toArray();
     }
 
     public function getPlugin($name) {
-        if (!$this->plugins->has($name)) {
+        if (!isset($this->plugins[$name])) {
             throw new NotFoundException("Could not find a registered plugin named \"$name\"");
         }
-        return $this->plugins->get($name);
+        return $this->plugins[$name];
     }
 
 }
