@@ -10,21 +10,16 @@
 
 namespace Labrador\Event;
 
-use Labrador\Engine;
 use Exception;
 
 class ExceptionThrownEvent {
 
-    use EngineEventTrait;
-
     private $exception;
 
     /**
-     * @param Engine $engine
      * @param Exception $exception
      */
-    public function __construct(Engine $engine, Exception $exception) {
-        $this->setEngine($engine);
+    public function __construct(Exception $exception) {
         $this->exception = $exception;
     }
 
