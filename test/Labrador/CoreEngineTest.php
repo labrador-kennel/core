@@ -53,22 +53,16 @@ class CoreEngineTest extends UnitTestCase {
      */
     public function testEventNormalProcessing($dispatchIndex, $eventName, $eventType) {
         $engine = $this->getEngine();
-        $eventEngine = null;
         $this->mockEventDispatcher->expects($this->at($dispatchIndex))
                                   ->method('emit')
                                   ->with(
                                       $eventName,
-                                      $this->callback(function($arg) use($eventType, &$eventEngine) {
-                                          if ($arg[0] instanceof $eventType) {
-                                              $eventEngine = $arg[0]->getEngine();
-                                              return true;
-                                          }
-
-                                          return false;
+                                      $this->callback(function($arg) use($eventType, $engine) {
+                                          return $arg[0] instanceof $eventType &&
+                                                 $arg[1] === $engine;
                                       })
                                   );
         $engine->run();
-        $this->assertSame($engine, $eventEngine);
     }
 
     public function testExceptionThrownEventDispatched() {

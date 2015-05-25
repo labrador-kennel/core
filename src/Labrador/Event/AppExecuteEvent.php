@@ -11,17 +11,4 @@
 
 namespace Labrador\Event;
 
-use Labrador\Engine;
-
-class AppExecuteEvent {
-
-    use EngineEventTrait;
-
-    /**
-     * @param Engine $engine
-     */
-    public function __construct(Engine $engine) {
-        $this->setEngine($engine);
-    }
-
-} 
+class AppExecuteEvent {}

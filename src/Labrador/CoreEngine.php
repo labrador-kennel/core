@@ -83,12 +83,12 @@ class CoreEngine implements Engine {
     public function run() {
         try {
             $this->pluginManager->registerBooter();
-            $this->emitter->emit(self::PLUGIN_BOOT_EVENT, [new Event\PluginBootEvent($this)]);
-            $this->emitter->emit(self::APP_EXECUTE_EVENT, [new Event\AppExecuteEvent($this)]);
+            $this->emitter->emit(self::PLUGIN_BOOT_EVENT, [new Event\PluginBootEvent(), $this]);
+            $this->emitter->emit(self::APP_EXECUTE_EVENT, [new Event\AppExecuteEvent(), $this]);
         } catch (\Exception $exception) {
-            $this->emitter->emit(self::EXCEPTION_THROWN_EVENT, [new Event\ExceptionThrownEvent($this, $exception)]);
+            $this->emitter->emit(self::EXCEPTION_THROWN_EVENT, [new Event\ExceptionThrownEvent($exception), $this]);
         } finally {
-            $this->emitter->emit(self::PLUGIN_CLEANUP_EVENT, [new Event\PluginCleanupEvent($this)]);
+            $this->emitter->emit(self::PLUGIN_CLEANUP_EVENT, [new Event\PluginCleanupEvent(), $this]);
         }
     }
 
