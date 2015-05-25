@@ -1,17 +1,19 @@
 # Labrador
 
-[![Build Status](https://travis-ci.org/cspray/labrador.svg?branch=master)](https://travis-ci.org/cspray/labrador.svg?branch=master)
+[![Build Status](https://travis-ci.org/cspray/labrador.svg?branch=master)](https://travis-ci.org/cspray/labrador)
 [![License](https://poser.pugx.org/cspray/labrador/license.png)](https://packagist.org/packages/cspray/labrador)
 
+A minimalist PHP 5.6+ library that provides a few core "modules" to facilitate creating small-to-medium sized PHP 
+applications.
 
+- **Data Structures** Provided through the [Ardent](https://github.com/morrisonlevi/Ardent) library.
+- **IoC Container** Provided through the [Auryn](https://github.com/rdlowrey/Auryn) library.
+- **Events** Provided through the [Evenement](https://github.com/igorw/evenement) library.
+- **Plugins** A series of simple to implement interfaces provided by Labrador.
+- **Engines** A service that ties events and plugins together to execute your application's primary logic.
 
-## Dependencies
-
-Labrador has a few dependencies that must be provided.
-
-- PHP 5.6+
-- [rdlowrey/Auryn](https://github.com/rdlowrey/Auryn) IoC container to provision dependencies and encourages using dependency injection
-- [evenement/evenement](https://github.com/igorw/evenement) Emits events to registered listeners, the primary driving force behind Labrador's functionality.
+You can checkout a "Hello World" example below to get started quickly. If you'd like more detailed
+ information you can check out the [wiki](https://github.com/cspray/labrador/wiki).
 
 ## Installation
 
@@ -32,37 +34,23 @@ If Composer is too fancy for your blood you can always clone this repo.
 ## Hello World
 
 Here are 2 examples of a Hello World application; one using Labrador directly and the other by implementing 
-a Plugin to do the work for us.
+a Plugin to do the work for us. Clearly Labrador is overkill for something this simple but it explains how you 
+could use the library.
 
 ### Using Labrador Directly
+
+> If you've already installed Labrador you can execute this example by running `php app.php` from the install directory.
 
 ```php
 <?php
 
-require_once './vendor/autoload.php';
+require_once __DIR__ . '/vendor/autoload.php';
 
+use Labrador\Services;
 use Labrador\CoreEngine;
-use Labrador\Plugin\PluginManager;
-use Auryn\Injector;
-use Evenement\EventEmitter;
 
-// it is recommended you install filp/whoops to handle outputting exception messages
-use Whoops\Run;
-use Whoops\Handler\PrettyPageHandler;
-
-$injector = new Injector();
-$emitter = new EventEmitter();
-$pluginManager = new PluginManager($injector, $emitter);
-$engine = new CoreEngine($emitter, $pluginManager);
-
-$excHandler = new Run();
-$excHandler->pushHandler(new PrettyPageHandler());
-
-// Important that you set a handler for the ExceptionThrowEvent, otherwise exceptions 
-// in your app may be silently squashed.
-$engine->onExceptionThrown(function(ExceptionThrownEvent $event) use($excHandler) {
-    $excHandler->handleException($event->getException());
-});
+$injector = (new Services())->createInjector();
+$engine = $injector->make(CoreEngine::class);
 
 $engine->onAppExecute(function() {
     echo 'Hello World';
@@ -71,9 +59,6 @@ $engine->onAppExecute(function() {
 $engine->run();
 ```
 
-
-
-
 ### As a Plugin
 
 ```php
@@ -81,9 +66,8 @@ $engine->run();
 
 require_once './vendor/autoload.php';
 
+use Labrador\Services;
 use Labrador\CoreEngine;
-use Labrador\Plugin;
-use Auryn\Injector;
 use Evenement\EventEmitterInterface;
 
 class HelloWorldPlugin implements Plugin\EventAwarePlugin {
@@ -106,30 +90,11 @@ class HelloWorldPlugin implements Plugin\EventAwarePlugin {
     
 }
 
-$emitter = new EventEmitter();
-$pluginManager = new Pluing\PluginManager(new Auryn\Provider, $emitter);
-$engine = new Engine($eventDispatcher, $pluginManager);
+$injector = (new Services())->createInjector();
+$engine = $injector->make(CoreEngine::class);
 
 $engine->registerPlugin(new HelloWorldPlugin());
 $engine->run();
-```
-
-## Installation
-
-We recommend you use Composer to install Labrador.
-
-`require cspray/labrador dev-master`
-
-```php
-<?php
-
-$me->assumesCompetentDeveloper();
-
-if (!$you->usingComposer()) {
-    $you->downloadLabrador();
-    $you->downloadDependencies();
-    $you->setupAutoloader();
-}
 ```
 
 ### What's up with the name?
