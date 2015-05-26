@@ -11,4 +11,4 @@
 
 namespace Labrador\Event;
 
-class AppExecuteEvent {}
+class AppExecuteEvent extends PropagatableEvent {}

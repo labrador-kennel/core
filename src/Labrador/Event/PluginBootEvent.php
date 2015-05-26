@@ -12,4 +12,4 @@
 
 namespace Labrador\Event;
 
-class PluginBootEvent {}
+class PluginBootEvent extends PropagatableEvent {}

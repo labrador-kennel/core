@@ -12,4 +12,4 @@
 
 namespace Labrador\Event;
 
-class PluginCleanupEvent {}
+class PluginCleanupEvent extends PropagatableEvent {}

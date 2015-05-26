@@ -12,7 +12,7 @@ namespace Labrador\Event;
 
 use Exception;
 
-class ExceptionThrownEvent {
+class ExceptionThrownEvent extends PropagatableEvent {
 
     private $exception;
 
