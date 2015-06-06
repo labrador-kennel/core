@@ -11,8 +11,9 @@
 namespace Labrador\Event;
 
 use Exception;
+use Labrador\Engine;
 
-class ExceptionThrownEvent extends PropagatableEvent {
+class ExceptionThrownEvent extends Event {
 
     private $exception;
 
@@ -20,6 +21,7 @@ class ExceptionThrownEvent extends PropagatableEvent {
      * @param Exception $exception
      */
     public function __construct(Exception $exception) {
+        parent::__construct(Engine::EXCEPTION_THROWN_EVENT);
         $this->exception = $exception;
     }
 

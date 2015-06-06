@@ -11,4 +11,12 @@
 
 namespace Labrador\Event;
 
-class AppExecuteEvent extends PropagatableEvent {}
+use Labrador\Engine;
+
+class AppExecuteEvent extends Event {
+
+    public function __construct() {
+        parent::__construct(Engine::APP_EXECUTE_EVENT);
+    }
+
+}

@@ -12,4 +12,12 @@
 
 namespace Labrador\Event;
 
-class PluginBootEvent extends PropagatableEvent {}
+use Labrador\Engine;
+
+class PluginBootEvent extends Event {
+
+    public function __construct() {
+        parent::__construct(Engine::PLUGIN_BOOT_EVENT);
+    }
+    
+}

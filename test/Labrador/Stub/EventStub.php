@@ -2,8 +2,12 @@
 
 namespace Labrador\Stub;
 
-use Labrador\Event\PropagatableEvent;
+use Labrador\Event\Event;
 
-class EventStub extends PropagatableEvent {
+class EventStub extends Event {
+
+    public function __construct() {
+        parent::__construct('event_stub');
+    }
 
 }

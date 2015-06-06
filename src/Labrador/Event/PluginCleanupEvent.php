@@ -12,4 +12,12 @@
 
 namespace Labrador\Event;
 
-class PluginCleanupEvent extends PropagatableEvent {}
+use Labrador\Engine;
+
+class PluginCleanupEvent extends Event {
+
+    public function __construct() {
+        parent::__construct(Engine::PLUGIN_CLEANUP_EVENT);
+    }
+
+}

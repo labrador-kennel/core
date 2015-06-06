@@ -20,7 +20,7 @@ class HaltableEventEmitterTest extends UnitTestCase {
     public function getTestCallbackThatHalts() {
         $a = new \stdClass();
         $a->cbCalled = false;
-        $cb = function(PropagatableEvent $event) use($a) {
+        $cb = function(Event $event) use($a) {
             $event->stopPropagation();
             $a->cbCalled = true;
         };

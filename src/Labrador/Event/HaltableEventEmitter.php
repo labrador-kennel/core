@@ -10,7 +10,7 @@ class HaltableEventEmitter implements EventEmitterInterface {
     use EventEmitterTrait;
 
     public function emit($event, array $arguments = []) {
-        if (count($arguments) > 0 && $arguments[0] instanceof PropagatableEvent) {
+        if (count($arguments) > 0 && $arguments[0] instanceof Event) {
             $eventObj = $arguments[0];
         }
 
