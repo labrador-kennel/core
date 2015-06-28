@@ -12,8 +12,9 @@ declare(strict_types=1);
 
 namespace Labrador\Event;
 
-use Exception;
 use Labrador\Engine;
+use Exception;
+
 
 class ExceptionThrownEvent extends Event {
 

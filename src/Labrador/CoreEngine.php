@@ -13,8 +13,8 @@ declare(strict_types=1);
 
 namespace Labrador;
 
-use Labrador\Event;
-use Labrador\Plugin;
+use Labrador\Event\{PluginBootEvent, AppExecuteEvent, PluginCleanupEvent, ExceptionThrownEvent};
+use Labrador\Plugin\{Plugin, PluginManager};
 use Evenement\EventEmitterInterface;
 
 class CoreEngine implements Engine {
@@ -24,9 +24,9 @@ class CoreEngine implements Engine {
 
     /**
      * @param EventEmitterInterface $emitter
-     * @param Plugin\PluginManager $pluginManager
+     * @param PluginManager $pluginManager
      */
-    public function __construct(EventEmitterInterface $emitter, Plugin\PluginManager $pluginManager) {
+    public function __construct(EventEmitterInterface $emitter, PluginManager $pluginManager) {
         $this->emitter = $emitter;
         $this->pluginManager = $pluginManager;
     }
@@ -47,34 +47,38 @@ class CoreEngine implements Engine {
 
     /**
      * @param callable $cb
-     * @return void
+     * @return $this
      */
-    public function onPluginBoot(callable $cb) {
+    public function onPluginBoot(callable $cb) : self {
         $this->emitter->on(self::PLUGIN_BOOT_EVENT, $cb);
+        return $this;
     }
 
     /**
      * @param callable $cb
-     * @return void
+     * @return $this
      */
-    public function onAppExecute(callable $cb) {
+    public function onAppExecute(callable $cb) : self {
         $this->emitter->on(self::APP_EXECUTE_EVENT, $cb);
+        return $this;
     }
 
     /**
      * @param callable $cb
-     * @return void
+     * @return $this
      */
-    public function onPluginCleanup(callable $cb) {
+    public function onPluginCleanup(callable $cb) : self {
         $this->emitter->on(self::PLUGIN_CLEANUP_EVENT, $cb);
+        return $this;
     }
 
     /**
      * @param callable $cb
-     * @return void
+     * @return $this
      */
-    public function onExceptionThrown(callable $cb) {
+    public function onExceptionThrown(callable $cb) : self {
         $this->emitter->on(self::EXCEPTION_THROWN_EVENT, $cb);
+        return $this;
     }
 
     /**
@@ -84,31 +88,32 @@ class CoreEngine implements Engine {
      */
     public function run() {
         try {
-            $this->emitter->emit(self::PLUGIN_BOOT_EVENT, [new Event\PluginBootEvent(), $this]);
-            $this->emitter->emit(self::APP_EXECUTE_EVENT, [new Event\AppExecuteEvent(), $this]);
+            $this->emitter->emit(self::PLUGIN_BOOT_EVENT, [new PluginBootEvent(), $this]);
+            $this->emitter->emit(self::APP_EXECUTE_EVENT, [new AppExecuteEvent(), $this]);
         } catch (\Exception $exception) {
-            $this->emitter->emit(self::EXCEPTION_THROWN_EVENT, [new Event\ExceptionThrownEvent($exception), $this]);
+            $this->emitter->emit(self::EXCEPTION_THROWN_EVENT, [new ExceptionThrownEvent($exception), $this]);
         } finally {
-            $this->emitter->emit(self::PLUGIN_CLEANUP_EVENT, [new Event\PluginCleanupEvent(), $this]);
+            $this->emitter->emit(self::PLUGIN_CLEANUP_EVENT, [new PluginCleanupEvent(), $this]);
         }
     }
 
     /**
-     * @param Plugin\Plugin $plugin
-     * @return void
+     * @param Plugin $plugin
+     * @return $this
      * @throws Exception\InvalidArgumentException
      */
-    public function registerPlugin(Plugin\Plugin $plugin) {
+    public function registerPlugin(Plugin $plugin) : self {
         $this->pluginManager->registerPlugin($plugin);
         return $this;
     }
 
     /**
      * @param string $name
-     * @return void
+     * @return $this
      */
-    public function removePlugin(string $name) {
+    public function removePlugin(string $name) : self {
         $this->pluginManager->removePlugin($name);
+        return $this;
     }
 
     /**
@@ -121,15 +126,15 @@ class CoreEngine implements Engine {
 
     /**
      * @param string $name
-     * @return Plugin\Plugin
+     * @return Plugin
      * @throws Exception\NotFoundException
      */
-    public function getPlugin(string $name) : Plugin\Plugin {
+    public function getPlugin(string $name) : Plugin {
         return $this->pluginManager->getPlugin($name);
     }
 
     /**
-     * @return Plugin\Plugin[]
+     * @return Plugin[]
      */
     public function getPlugins() : array {
         return $this->pluginManager->getPlugins();

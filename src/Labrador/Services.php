@@ -14,6 +14,7 @@ declare(strict_types=1);
 namespace Labrador;
 
 use Labrador\Plugin\PluginManager;
+use Labrador\Event\HaltableEventEmitter;
 use Auryn\Injector;
 use Evenement\EventEmitterInterface;
 
@@ -23,8 +24,8 @@ class Services {
         $injector = new Injector();
 
         $injector->share($injector);
-        $injector->share(Event\HaltableEventEmitter::class);
-        $injector->alias(EventEmitterInterface::class, Event\HaltableEventEmitter::class);
+        $injector->share(HaltableEventEmitter::class);
+        $injector->alias(EventEmitterInterface::class, HaltableEventEmitter::class);
 
         $injector->share(PluginManager::class);
         $injector->share(CoreEngine::class);

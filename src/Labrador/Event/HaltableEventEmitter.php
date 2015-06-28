@@ -4,8 +4,7 @@ declare(strict_types=1);
 
 namespace Labrador\Event;
 
-use Evenement\EventEmitterInterface;
-use Evenement\EventEmitterTrait;
+use Evenement\{EventEmitterInterface, EventEmitterTrait};
 
 class HaltableEventEmitter implements EventEmitterInterface {
 
