@@ -1,9 +1,11 @@
 <?php
 
+declare(strict_types=1);
+
 /**
  * An interface that represents primary execution logic for a
  * Labrador powered application.
- * 
+ *
  * @license See LICENSE in source root
  * @version 1.0
  * @since   1.0
@@ -25,18 +27,18 @@ interface Engine extends Pluggable {
     /**
      * @return string
      */
-    public function getName();
+    public function getName() : string;
 
     /**
      * Return the version of the Engine; this should be in semver format.
      *
      * @return string
      */
-    public function getVersion();
+    public function getVersion() : string;
 
     /**
      * @return mixed
      */
     public function run();
 
-} 
+}

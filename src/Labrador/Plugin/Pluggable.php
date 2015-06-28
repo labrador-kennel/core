@@ -1,11 +1,11 @@
 <?php
 
+declare(strict_types=1);
+
 /**
  * An interface for objects that allow plugins to be attached or associated with them.
- * 
+ *
  * @license See LICENSE in source root
- * @version 1.0
- * @since   1.0
  */
 
 namespace Labrador\Plugin;
@@ -21,25 +21,25 @@ interface Pluggable {
     /**
      * @param string $name
      */
-    public function removePlugin($name);
+    public function removePlugin(string $name);
 
     /**
      * @param string $name
      * @return boolean
      */
-    public function hasPlugin($name);
+    public function hasPlugin(string $name) : bool;
 
     /**
      * @param string $name
      * @return Plugin
      */
-    public function getPlugin($name);
+    public function getPlugin(string $name) : Plugin;
 
     /**
      * An array of Plugin objects associated to the given Pluggable.
      *
      * @return Plugin[]
      */
-    public function getPlugins();
+    public function getPlugins() : array;
 
 }

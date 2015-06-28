@@ -1,9 +1,11 @@
 <?php
 
+declare(strict_types=1);
+
 /**
  * A minimal implementation to trigger specific events and handle
  * plugin registration.
- * 
+ *
  * @license See LICENSE in source root
  * @version 1.0
  * @since   1.0
@@ -32,14 +34,14 @@ class CoreEngine implements Engine {
     /**
      * @return string
      */
-    public function getName() {
+    public function getName() : string {
         return 'labrador-core';
     }
 
     /**
      * @return string
      */
-    public function getVersion() {
+    public function getVersion() : string {
         return '0.1.0-alpha';
     }
 
@@ -98,13 +100,14 @@ class CoreEngine implements Engine {
      */
     public function registerPlugin(Plugin\Plugin $plugin) {
         $this->pluginManager->registerPlugin($plugin);
+        return $this;
     }
 
     /**
      * @param string $name
      * @return void
      */
-    public function removePlugin($name) {
+    public function removePlugin(string $name) {
         $this->pluginManager->removePlugin($name);
     }
 
@@ -112,7 +115,7 @@ class CoreEngine implements Engine {
      * @param string $name
      * @return bool
      */
-    public function hasPlugin($name) {
+    public function hasPlugin(string $name) : bool {
         return $this->pluginManager->hasPlugin($name);
     }
 
@@ -121,14 +124,14 @@ class CoreEngine implements Engine {
      * @return Plugin\Plugin
      * @throws Exception\NotFoundException
      */
-    public function getPlugin($name) {
+    public function getPlugin(string $name) : Plugin\Plugin {
         return $this->pluginManager->getPlugin($name);
     }
 
     /**
      * @return Plugin\Plugin[]
      */
-    public function getPlugins() {
+    public function getPlugins() : array {
         return $this->pluginManager->getPlugins();
     }
 

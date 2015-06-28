@@ -19,7 +19,7 @@ class ServicesRegisteredPlugin implements ServiceAwarePlugin {
      *
      * @return string
      */
-    public function getName() {
+    public function getName() : string {
         return 'services-plugin-stub';
     }
 

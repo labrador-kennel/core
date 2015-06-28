@@ -1,5 +1,7 @@
 <?php
 
+declare(strict_types=1);
+
 /**
  * A SafeHashMap implementation that does not allow data to be modified
  * after the map has been created.

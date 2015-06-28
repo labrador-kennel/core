@@ -1,5 +1,7 @@
 <?php
 
+declare(strict_types=1);
+
 namespace Labrador\Event;
 
 abstract class Event {
@@ -7,15 +9,15 @@ abstract class Event {
     private $name;
     private $stopEventPropagation = false;
 
-    public function __construct($name) {
-        $this->name = (string) $name;
+    public function __construct(string $name) {
+        $this->name = $name;
     }
 
-    public function getName() {
+    public function getName() : string {
         return $this->name;
     }
 
-    public function isPropagationStopped() {
+    public function isPropagationStopped() : bool {
         return $this->stopEventPropagation;
     }
 

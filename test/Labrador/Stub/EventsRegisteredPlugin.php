@@ -29,8 +29,8 @@ class EventsRegisteredPlugin implements EventAwarePlugin {
      *
      * @return string
      */
-    public function getName() {
-        // TODO: Implement getName() method.
+    public function getName() : string {
+        return 'events_registered';
     }
 
     /**

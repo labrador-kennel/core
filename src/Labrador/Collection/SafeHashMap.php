@@ -1,5 +1,7 @@
 <?php
 
+declare(strict_types=1);
+
 /**
  * A HashMap that will return null if the key requested was not found.
  *

@@ -1,5 +1,7 @@
 <?php
 
+declare(strict_types=1);
+
 /**
  * A convenience object to easily get started with Labrador; creates and returns an
  * Auryn\Injector instance with Labrador's services already configured.
@@ -17,7 +19,7 @@ use Evenement\EventEmitterInterface;
 
 class Services {
 
-    public function createInjector() {
+    public function createInjector() : Injector {
         $injector = new Injector();
 
         $injector->share($injector);

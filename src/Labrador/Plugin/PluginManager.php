@@ -1,10 +1,12 @@
 <?php
 
+declare(strict_types=1);
+
 /**
  * This is here to abstract away how plugins are managed for the Engine and
  * to ensure that Engine implementations do not have to require the Injector
  * directly to satisfy the Pluggable interface.
- * 
+ *
  * @license See LICENSE in source root
  * @version 1.0
  * @since   1.0
@@ -70,19 +72,19 @@ class PluginManager implements Pluggable {
         $this->plugins[$plugin->getName()] = $plugin;
     }
 
-    public function removePlugin($name) {
+    public function removePlugin(string $name) {
         unset($this->plugins[$name]);
     }
 
-    public function hasPlugin($name) {
+    public function hasPlugin(string $name) : bool {
         return isset($this->plugins[$name]);
     }
 
-    public function getPlugins() {
+    public function getPlugins() : array {
         return $this->plugins->toArray();
     }
 
-    public function getPlugin($name) {
+    public function getPlugin(string $name) : Plugin {
         if (!isset($this->plugins[$name])) {
             $msg = 'Could not find a registered plugin named "%s"';
             throw new NotFoundException(sprintf($msg, $name));
