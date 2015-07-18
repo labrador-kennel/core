@@ -13,20 +13,16 @@
     "repositories": [
         {
             "type": "vcs",
-            "url": "https://github.com/cspray/Ardent"
-        },
-        {
-            "type": "vcs",
-            "url": "https://github.com/cspray/phpunit"
-        },
-        {
-            "type": "vcs",
             "url": "https://github.com/cspray/phpunit-mock-objects"
+        },
+        {
+            "type": "vcs",
+            "url": "https://github.com/cspray/Ardent"
         }
     ],
     "require": {
         "php": "~7.0",
-        "rdlowrey/auryn": "0.15.*",
+        "rdlowrey/auryn": "~1.0",
         "evenement/evenement": "2.0.*",
         "morrisonlevi/ardent": "dev-master"
     },
