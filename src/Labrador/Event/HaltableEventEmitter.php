@@ -2,6 +2,13 @@
 
 declare(strict_types=1);
 
+/**
+ * An event emitter that will halt listeners for a given event if
+ * propagation is stopped.
+ *
+ * @license See LICENSE in source root
+ */
+
 namespace Labrador\Event;
 
 use Evenement\{EventEmitterInterface, EventEmitterTrait};

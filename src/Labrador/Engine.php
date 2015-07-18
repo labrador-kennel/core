@@ -3,12 +3,9 @@
 declare(strict_types=1);
 
 /**
- * An interface that represents primary execution logic for a
- * Labrador powered application.
+ * An interface that represents primary execution logic for a Labrador powered application.
  *
  * @license See LICENSE in source root
- * @version 1.0
- * @since   1.0
  */
 
 namespace Labrador;

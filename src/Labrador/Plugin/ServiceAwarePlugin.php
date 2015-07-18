@@ -7,8 +7,6 @@ declare(strict_types=1);
  * the Labrador application.
  * 
  * @license See LICENSE in source root
- * @version 1.0
- * @since   1.0
  */
 
 namespace Labrador\Plugin;

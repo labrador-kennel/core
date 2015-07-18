@@ -2,6 +2,13 @@
 
 declare(strict_types=1);
 
+/**
+ * An abstract class that allows an event to mark that further listeners for the
+ * given event should not be triggered.
+ *
+ * @license See LICENSE in source root
+ */
+
 namespace Labrador\Event;
 
 abstract class Event {

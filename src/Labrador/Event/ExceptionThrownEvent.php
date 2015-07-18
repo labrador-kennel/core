@@ -6,8 +6,6 @@ declare(strict_types=1);
  * An event triggered when an exception is thrown when Engine::run is invoked.
  *
  * @license See LICENSE in source root
- * @version 1.0
- * @since   1.0
  */
 
 namespace Labrador\Event;
