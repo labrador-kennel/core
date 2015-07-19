@@ -32,29 +32,7 @@ class PluginManager implements Pluggable {
     }
 
     private function registerBooter() {
-        $cb = function() {
-            $plugins = $this->getPlugins();
-
-            // We are executing each of these three methods in separate loops on purpose
-            // We want all plugins to register services, then register event listeners, and then boot
-            // This is because Plugins may wind up depending on other plugins. This ensures
-            // that all of the services a given Plugin may need are registered
-            foreach($plugins as $plugin) {
-                if ($plugin instanceof ServiceAwarePlugin) {
-                    $plugin->registerServices($this->injector);
-                }
-            }
-
-            foreach ($plugins as $plugin) {
-                if ($plugin instanceof EventAwarePlugin) {
-                    $plugin->registerEventListeners($this->emitter);
-                }
-            }
-
-            foreach ($plugins as $plugin) { /** @var Plugin $plugin */
-                $plugin->boot();
-            }
-        };
+        $cb = function() { $this->getBooter()->bootPlugins(); };
         $cb = $cb->bindTo($this);
 
         $this->emitter->on(Engine::PLUGIN_BOOT_EVENT, $cb);
@@ -83,6 +61,44 @@ class PluginManager implements Pluggable {
         }
 
         return $this->plugins[$name];
+    }
+
+    private function getBooter() {
+        return new class($this, $this->injector, $this->emitter) {
+            private $pluggable;
+            private $injector;
+            private $emitter;
+
+            public function __construct(Pluggable $pluggable, Injector $injector, EventEmitterInterface $emitter) {
+                $this->pluggable = $pluggable;
+                $this->injector = $injector;
+                $this->emitter = $emitter;
+            }
+
+            public function bootPlugins() {
+                $plugins = $this->pluggable->getPlugins();
+
+                // We are executing each of these three methods in separate loops on purpose
+                // We want all plugins to register services, then register event listeners, and then boot
+                // This is because Plugins may wind up depending on other plugins. This ensures
+                // that all of the services a given Plugin may need are registered
+                foreach($plugins as $plugin) {
+                    if ($plugin instanceof ServiceAwarePlugin) {
+                        $plugin->registerServices($this->injector);
+                    }
+                }
+
+                foreach ($plugins as $plugin) {
+                    if ($plugin instanceof EventAwarePlugin) {
+                        $plugin->registerEventListeners($this->emitter);
+                    }
+                }
+
+                foreach ($plugins as $plugin) { /** @var Plugin $plugin */
+                    $plugin->boot();
+                }
+            }
+        };
     }
 
 }
