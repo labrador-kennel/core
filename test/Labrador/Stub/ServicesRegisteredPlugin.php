@@ -15,15 +15,6 @@ class ServicesRegisteredPlugin implements ServiceAwarePlugin {
     }
 
     /**
-     * Return the name of the plugin; this name should match /[A-Za-z0-9\.\-\_]/
-     *
-     * @return string
-     */
-    public function getName() : string {
-        return 'services-plugin-stub';
-    }
-
-    /**
      * Perform any actions that should be
      */
     public function boot() {

@@ -14,8 +14,7 @@ use Labrador\Event\PluginBootEvent;
 use Labrador\Exception\NotFoundException;
 use Labrador\Stub\BootCalledPlugin;
 use Labrador\Stub\EventsRegisteredPlugin;
-use Labrador\Stub\NameOnlyPlugin;
-use Labrador\Exception\InvalidArgumentException;
+use Labrador\Stub\PluginStub;
 use Evenement\EventEmitterInterface;
 use Evenement\EventEmitter;
 use Auryn\Injector;
@@ -37,62 +36,54 @@ class PluginManagerTest extends UnitTestCase {
     }
 
     public function testManagerHasRegisteredPlugin() {
-        $plugin = new NameOnlyPlugin('foo_plugin');
+        $plugin = new PluginStub();
         $manager = $this->getPluginManager();
         $manager->registerPlugin($plugin);
-        $this->assertTrue($manager->hasPlugin('foo_plugin'));
+        $this->assertTrue($manager->hasPlugin(PluginStub::class));
     }
 
     public function testManagerDoesNotHavePlugin() {
         $manager = $this->getPluginManager();
-        $this->assertFalse($manager->hasPlugin('anything'));
+        $this->assertFalse($manager->hasPlugin(PluginStub::class));
     }
 
     public function testGettingRegisteredPlugin() {
-        $plugin = new NameOnlyPlugin('foo_plugin');
+        $plugin = new PluginStub();
         $manager = $this->getPluginManager();
         $manager->registerPlugin($plugin);
-        $this->assertSame($plugin, $manager->getPlugin('foo_plugin'));
+        $this->assertSame($plugin, $manager->getPlugin(PluginStub::class));
     }
 
     public function testGettingUnregisteredPluginThrowsException() {
         $manager = $this->getPluginManager();
-        $msg = 'Could not find a registered plugin named "foo"';
-        $this->setExpectedException(NotFoundException::class, $msg);
-        $manager->getPlugin('foo');
+        $msg = 'Could not find a registered plugin named "%s"';
+        $this->setExpectedException(NotFoundException::class, sprintf($msg, PluginStub::class));
+        $manager->getPlugin(PluginStub::class);
     }
 
     public function testRemovingRegisteredPlugin() {
-        $plugin = new NameOnlyPlugin('foo_plugin');
+        $plugin = new PluginStub();
         $manager = $this->getPluginManager();
         $manager->registerPlugin($plugin);
-        $this->assertTrue($manager->hasPlugin('foo_plugin'));
+        $this->assertTrue($manager->hasPlugin(PluginStub::class));
 
-        $manager->removePlugin('foo_plugin');
-        $this->assertFalse($manager->hasPlugin('foo_plugin'));
-    }
-
-    public function testPluginsWithInvalidNameThrowsException() {
-        $plugin = new NameOnlyPlugin('an inalid name because of the spaces');
-        $manager = $this->getPluginManager();
-        $msg = 'A valid plugin name may only contain letters, numbers, periods, underscores, and dashes [A-Za-z0-9\.\-\_]';
-        $this->setExpectedException(InvalidArgumentException::class, $msg);
-        $manager->registerPlugin($plugin);
+        $manager->removePlugin(PluginStub::class);
+        $this->assertFalse($manager->hasPlugin(PluginStub::class));
     }
 
     public function testGettingCopyOfPlugins() {
         $manager = $this->getPluginManager();
         $copy = $manager->getPlugins();
-        $stub = new NameOnlyPlugin('stub');
+        $stub = new PluginStub();
         $copy['stub'] = $stub;
 
-        $this->assertFalse($manager->hasPlugin('stub'));
+        $this->assertFalse($manager->hasPlugin(PluginStub::class));
     }
 
     public function testPluginBooterListenerAddedToEventDispatcher() {
         $eventDispatcher = new EventEmitter();
         $manager = new PluginManager($this->mockInjector, $eventDispatcher);
-        $manager->registerPlugin($plugin = new BootCalledPlugin('foo'));
+        $manager->registerPlugin($plugin = new BootCalledPlugin());
 
         $engine = $this->getMockBuilder(Engine::class)->disableOriginalConstructor()->getMock();
 

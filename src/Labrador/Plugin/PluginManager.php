@@ -62,12 +62,7 @@ class PluginManager implements Pluggable {
     }
 
     public function registerPlugin(Plugin $plugin) {
-        if (preg_match('/[^A-Za-z0-9\.\-\_]/', $plugin->getName())) {
-            $msg = 'A valid plugin name may only contain letters, numbers, periods, underscores, and dashes [A-Za-z0-9\.\-\_]';
-            throw new InvalidArgumentException($msg);
-        }
-
-        $this->plugins[$plugin->getName()] = $plugin;
+        $this->plugins[get_class($plugin)] = $plugin;
     }
 
     public function removePlugin(string $name) {

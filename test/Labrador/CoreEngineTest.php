@@ -19,7 +19,7 @@ use Labrador\Event\PluginCleanupEvent;
 use Labrador\Exception\Exception;
 use Labrador\Plugin\PluginManager;
 use Labrador\Stub\BootCalledPlugin;
-use Labrador\Stub\NameOnlyPlugin;
+use Labrador\Stub\PluginStub;
 use Evenement\EventEmitter;
 use Evenement\EventEmitterInterface;
 use Auryn\Injector;
@@ -155,9 +155,9 @@ class CoreEngineTest extends UnitTestCase {
 
     public function pluginManagerProxyData() {
         return [
-            ['removePlugin', 'foo', null],
-            ['hasPlugin', 'foo', true],
-            ['getPlugin', 'foo', new NameOnlyPlugin('foo')],
+            ['removePlugin', PluginStub::class, null],
+            ['hasPlugin', PluginStub::class, true],
+            ['getPlugin', PluginStub::class, new PluginStub()],
             ['getPlugins', null, []]
         ];
     }
