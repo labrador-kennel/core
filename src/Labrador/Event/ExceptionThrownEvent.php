@@ -1,17 +1,18 @@
 <?php
 
+declare(strict_types=1);
+
 /**
  * An event triggered when an exception is thrown when Engine::run is invoked.
- * 
+ *
  * @license See LICENSE in source root
- * @version 1.0
- * @since   1.0
  */
 
 namespace Labrador\Event;
 
-use Exception;
 use Labrador\Engine;
+use Exception;
+
 
 class ExceptionThrownEvent extends Event {
 
@@ -28,8 +29,8 @@ class ExceptionThrownEvent extends Event {
     /**
      * @return Exception
      */
-    public function getException() {
+    public function getException() : Exception {
         return $this->exception;
     }
 
-} 
+}

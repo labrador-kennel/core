@@ -1,7 +1,7 @@
 <?php
 
 /**
- * 
+ *
  * @license See LICENSE in source root
  * @version 1.0
  * @since   1.0
@@ -19,6 +19,7 @@ use Labrador\Event\PluginCleanupEvent;
 use Labrador\Exception\Exception;
 use Labrador\Plugin\PluginManager;
 use Labrador\Stub\BootCalledPlugin;
+use Labrador\Stub\NameOnlyPlugin;
 use Evenement\EventEmitter;
 use Evenement\EventEmitterInterface;
 use Auryn\Injector;
@@ -154,17 +155,17 @@ class CoreEngineTest extends UnitTestCase {
 
     public function pluginManagerProxyData() {
         return [
-            ['removePlugin', 'foo'],
-            ['hasPlugin', 'foo'],
-            ['getPlugin', 'foo'],
-            ['getPlugins', null]
+            ['removePlugin', 'foo', null],
+            ['hasPlugin', 'foo', true],
+            ['getPlugin', 'foo', new NameOnlyPlugin('foo')],
+            ['getPlugins', null, []]
         ];
     }
 
     /**
      * @dataProvider pluginManagerProxyData
      */
-    public function testProxyToPluginManager($method, $arg) {
+    public function testProxyToPluginManager($method, $arg, $returnVal) {
         $pluginManager = $this->getMockBuilder(PluginManager::class)
                               ->disableOriginalConstructor()
                               ->getMock();
@@ -175,7 +176,11 @@ class CoreEngineTest extends UnitTestCase {
             $pluginMethod->with($arg);
         }
 
+        if (!is_null($returnVal)) {
+            $pluginMethod->willReturn($returnVal);
+        }
+
         $this->getEngine(null, $pluginManager)->$method($arg);
     }
 
-} 
+}

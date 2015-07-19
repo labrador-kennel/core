@@ -1,12 +1,12 @@
 <?php
 
+declare(strict_types=1);
+
 /**
  * A SafeHashMap implementation that does not allow data to be modified
  * after the map has been created.
  *
  * @license See LICENSE in source root
- * @version 1.0
- * @since   1.0
  */
 
 namespace Labrador\Collection;

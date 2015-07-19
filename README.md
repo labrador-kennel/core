@@ -3,7 +3,7 @@
 [![Build Status](https://travis-ci.org/cspray/labrador.svg?branch=master)](https://travis-ci.org/cspray/labrador)
 [![License](https://poser.pugx.org/cspray/labrador/license.png)](https://packagist.org/packages/cspray/labrador)
 
-A minimalist PHP 5.6+ library that provides a few core "modules" to facilitate creating small-to-medium sized PHP 
+A minimalist PHP 7.0+ library that provides core "modules" to facilitate creating small-to-medium sized PHP 
 applications.
 
 - **Data Structures** Provided through the [Ardent](https://github.com/morrisonlevi/Ardent) library.
