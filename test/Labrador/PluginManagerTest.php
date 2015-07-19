@@ -7,7 +7,7 @@
  * @since   1.0
  */
 
-namespace Labrador\Plugin;
+namespace Labrador;
 
 use Labrador\Engine;
 use Labrador\Event\PluginBootEvent;

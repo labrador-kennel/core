@@ -12,12 +12,12 @@ namespace Labrador\Test\Unit;
 
 use Labrador\CoreEngine;
 use Labrador\Engine;
+use Labrador\PluginManager;
 use Labrador\Event\AppExecuteEvent;
 use Labrador\Event\ExceptionThrownEvent;
 use Labrador\Event\PluginBootEvent;
 use Labrador\Event\PluginCleanupEvent;
 use Labrador\Exception\Exception;
-use Labrador\Plugin\PluginManager;
 use Labrador\Stub\BootCalledPlugin;
 use Labrador\Stub\PluginStub;
 use Evenement\EventEmitter;

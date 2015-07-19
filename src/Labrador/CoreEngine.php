@@ -11,7 +11,7 @@ declare(strict_types=1);
 namespace Labrador;
 
 use Labrador\Event\{PluginBootEvent, AppExecuteEvent, PluginCleanupEvent, ExceptionThrownEvent};
-use Labrador\Plugin\{Plugin, PluginManager};
+use Labrador\Plugin\Plugin;
 use Evenement\EventEmitterInterface;
 
 class CoreEngine implements Engine {

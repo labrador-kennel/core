@@ -10,13 +10,12 @@ declare(strict_types=1);
  * @license See LICENSE in source root
  */
 
-namespace Labrador\Plugin;
+namespace Labrador;
 
-use Collections\HashMap;
-use Labrador\Engine;
-use Labrador\Exception\InvalidArgumentException;
+use Labrador\Plugin\{Pluggable, Plugin, ServiceAwarePlugin, EventAwarePlugin};
 use Labrador\Exception\NotFoundException;
 use Auryn\Injector;
+use Collections\HashMap;
 use Evenement\EventEmitterInterface;
 
 class PluginManager implements Pluggable {
