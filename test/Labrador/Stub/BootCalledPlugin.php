@@ -15,7 +15,7 @@ class BootCalledPlugin implements Plugin {
 
     private $bootCalled = false;
 
-    public function bootCalled() {
+    public function wasCalled() {
         return $this->bootCalled;
     }
 

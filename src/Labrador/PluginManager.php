@@ -12,8 +12,8 @@ declare(strict_types=1);
 
 namespace Labrador;
 
-use Labrador\Plugin\{Pluggable, Plugin, ServiceAwarePlugin, EventAwarePlugin};
-use Labrador\Exception\NotFoundException;
+use Labrador\Plugin\{Pluggable, Plugin, ServiceAwarePlugin, EventAwarePlugin, PluginDependentPlugin};
+use Labrador\Exception\{CircularDependencyException, NotFoundException};
 use Auryn\Injector;
 use Collections\HashMap;
 use Evenement\EventEmitterInterface;
@@ -65,6 +65,9 @@ class PluginManager implements Pluggable {
 
     private function getBooter() {
         return new class($this, $this->injector, $this->emitter) {
+
+            private $loading = [];
+            private $loaded = [];
             private $pluggable;
             private $injector;
             private $emitter;
@@ -76,26 +79,62 @@ class PluginManager implements Pluggable {
             }
 
             public function bootPlugins() {
-                $plugins = $this->pluggable->getPlugins();
-
-                // We are executing each of these three methods in separate loops on purpose
-                // We want all plugins to register services, then register event listeners, and then boot
-                // This is because Plugins may wind up depending on other plugins. This ensures
-                // that all of the services a given Plugin may need are registered
-                foreach($plugins as $plugin) {
-                    if ($plugin instanceof ServiceAwarePlugin) {
-                        $plugin->registerServices($this->injector);
-                    }
+                foreach($this->pluggable->getPlugins() as $plugin) {
+                    $this->loadPlugin($plugin);
                 }
+            }
 
-                foreach ($plugins as $plugin) {
-                    if ($plugin instanceof EventAwarePlugin) {
-                        $plugin->registerEventListeners($this->emitter);
-                    }
-                }
-
-                foreach ($plugins as $plugin) { /** @var Plugin $plugin */
+            private function loadPlugin(Plugin $plugin) {
+                if ($this->notLoaded($plugin)) {
+                    $this->startLoading($plugin);
+                    $this->handlePluginDependencies($plugin);
+                    $this->handlePluginServices($plugin);
+                    $this->handlePluginEvents($plugin);
                     $plugin->boot();
+                    $this->finishLoading($plugin);
+                }
+            }
+
+            private function notLoaded(Plugin $plugin) {
+                return !in_array(get_class($plugin), $this->loaded);
+            }
+
+            private function startLoading(Plugin $plugin) {
+                $this->loading[] = get_class($plugin);
+            }
+
+            private function finishLoading(Plugin $plugin) {
+                $name = get_class($plugin);
+                $this->loading = array_diff($this->loading, [$name]);
+                $this->loaded[] = $name;
+            }
+
+            private function isLoading(Plugin $plugin) {
+                return in_array(get_class($plugin), $this->loading);
+            }
+
+            private function handlePluginDependencies(Plugin $plugin) {
+                if ($plugin instanceof PluginDependentPlugin) {
+                    foreach ($plugin->dependsOn() as $reqPluginName) {
+                        $reqPlugin = $this->pluggable->getPlugin($reqPluginName);
+                        if ($this->isLoading($reqPlugin)) {
+                            $msg = 'A circular dependency was found with %s requiring %s.';
+                            throw new CircularDependencyException(sprintf($msg, get_class($plugin), get_class($reqPlugin)));
+                        }
+                        $this->loadPlugin($reqPlugin);
+                    }
+                }
+            }
+
+            private function handlePluginServices(Plugin $plugin) {
+                if ($plugin instanceof ServiceAwarePlugin) {
+                    $plugin->registerServices($this->injector);
+                }
+            }
+
+            private function handlePluginEvents(Plugin $plugin) {
+                if ($plugin instanceof EventAwarePlugin) {
+                    $plugin->registerEventListeners($this->emitter);
                 }
             }
         };

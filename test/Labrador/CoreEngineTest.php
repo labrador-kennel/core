@@ -117,7 +117,7 @@ class CoreEngineTest extends UnitTestCase {
 
         $engine->run();
 
-        $this->assertTrue($plugin->bootCalled(), 'The Plugin::boot method was not called');
+        $this->assertTrue($plugin->wasCalled(), 'The Plugin::boot method was not called');
     }
 
     public function testGettingEngineName() {
