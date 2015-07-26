@@ -52,9 +52,8 @@ require_once __DIR__ . '/vendor/autoload.php';
 
 use Labrador\Services;
 use Labrador\CoreEngine;
-use Telluris\Config\NullStorage;
 
-$injector = (new Services(new NullStorage()))->createInjector();
+$injector = (new Services())->createInjector();
 $engine = $injector->make(CoreEngine::class);
 
 $engine->onAppExecute(function() {
