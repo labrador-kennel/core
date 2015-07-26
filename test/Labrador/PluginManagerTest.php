@@ -188,4 +188,17 @@ class PluginManagerTest extends UnitTestCase {
         $booter->bootPlugins();
     }
 
+    public function testLoadPluginIfRegisteredAfterPluginBootEvent() {
+        $emitter = new EventEmitter();
+        $manager = new PluginManager($this->mockInjector, $emitter);
+
+        $emitter->emit(Engine::PLUGIN_BOOT_EVENT);
+
+        $plugin = new BootCalledPlugin();
+
+        $manager->registerPlugin($plugin);
+
+        $this->assertTrue($plugin->wasCalled());
+    }
+
 }

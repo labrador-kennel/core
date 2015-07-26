@@ -23,16 +23,22 @@ class PluginManager implements Pluggable {
     private $plugins;
     private $emitter;
     private $injector;
+    private $booter;
+    private $pluginsBooted = false;
 
     public function __construct(Injector $injector, EventEmitterInterface $emitter) {
         $this->emitter = $emitter;
         $this->injector = $injector;
         $this->plugins = new HashMap();
+        $this->booter = $this->getBooter();
         $this->registerBooter();
     }
 
     private function registerBooter() {
-        $cb = function() { $this->getBooter()->bootPlugins(); };
+        $cb = function() {
+            $this->pluginsBooted = true;
+            $this->booter->bootPlugins();
+        };
         $cb = $cb->bindTo($this);
 
         $this->emitter->on(Engine::PLUGIN_BOOT_EVENT, $cb);
@@ -40,6 +46,9 @@ class PluginManager implements Pluggable {
 
     public function registerPlugin(Plugin $plugin) {
         $this->plugins[get_class($plugin)] = $plugin;
+        if ($this->pluginsBooted) {
+            $this->booter->loadPlugin($plugin);
+        }
     }
 
     public function removePlugin(string $name) {
@@ -84,7 +93,7 @@ class PluginManager implements Pluggable {
                 }
             }
 
-            private function loadPlugin(Plugin $plugin) {
+            public function loadPlugin(Plugin $plugin) {
                 if ($this->notLoaded($plugin)) {
                     $this->startLoading($plugin);
                     $this->handlePluginDependencies($plugin);
