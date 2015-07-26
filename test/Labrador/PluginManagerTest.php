@@ -14,6 +14,7 @@ use Labrador\Plugin\Plugin;
 
 use Labrador\Exception\NotFoundException;
 use Labrador\Exception\CircularDependencyException;
+use Labrador\Exception\PluginDependencyNotProvidedException;
 
 use Labrador\Stub\BootCalledPlugin;
 use Labrador\Stub\CircularDependencyPluginStub;
@@ -23,6 +24,7 @@ use Labrador\Stub\FooPluginStub;
 use Labrador\Stub\PluginStub;
 use Labrador\Stub\RecusivelyDependentPluginStub;
 use Labrador\Stub\RequiresCircularDependentStub;
+use Labrador\Stub\RequiresNotPresentPlugin;
 use Labrador\Stub\ServicesRegisteredPlugin;
 
 use Evenement\EventEmitterInterface;
@@ -169,6 +171,20 @@ class PluginManagerTest extends UnitTestCase {
         $exc = CircularDependencyException::class;
         $msg = "A circular dependency was found with Labrador\\Stub\\RequiresCircularDependentStub requiring Labrador\\Stub\\CircularDependencyPluginStub.";
         $this->setExpectedException($exc, $msg);
+        $booter->bootPlugins();
+    }
+
+    public function testDependentPluginNotPresentThrowsException() {
+        $injector = new Injector();
+        $manager = new PluginManager($injector, $this->mockDispatcher);
+        $booter = $this->getPluginBooter($manager);
+
+        $manager->registerPlugin(new RequiresNotPresentPlugin());
+
+        $exc = PluginDependencyNotProvidedException::class;
+        $msg = 'Labrador\Stub\RequiresNotPresentPlugin requires a plugin that is not registered: SomeAwesomePlugin.';
+        $this->setExpectedException($exc, $msg);
+
         $booter->bootPlugins();
     }
 

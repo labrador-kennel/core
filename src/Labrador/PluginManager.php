@@ -13,7 +13,7 @@ declare(strict_types=1);
 namespace Labrador;
 
 use Labrador\Plugin\{Pluggable, Plugin, ServiceAwarePlugin, EventAwarePlugin, PluginDependentPlugin};
-use Labrador\Exception\{CircularDependencyException, NotFoundException};
+use Labrador\Exception\{CircularDependencyException, NotFoundException, PluginDependencyNotProvidedException};
 use Auryn\Injector;
 use Collections\HashMap;
 use Evenement\EventEmitterInterface;
@@ -116,10 +116,15 @@ class PluginManager implements Pluggable {
             private function handlePluginDependencies(Plugin $plugin) {
                 if ($plugin instanceof PluginDependentPlugin) {
                     foreach ($plugin->dependsOn() as $reqPluginName) {
+                        if (!$this->pluggable->hasPlugin($reqPluginName)) {
+                            $msg = '%s requires a plugin that is not registered: %s.';
+                            throw new PluginDependencyNotProvidedException(sprintf($msg, get_class($plugin), $reqPluginName));
+                        }
+
                         $reqPlugin = $this->pluggable->getPlugin($reqPluginName);
                         if ($this->isLoading($reqPlugin)) {
                             $msg = 'A circular dependency was found with %s requiring %s.';
-                            throw new CircularDependencyException(sprintf($msg, get_class($plugin), get_class($reqPlugin)));
+                            throw new CircularDependencyException(sprintf($msg, get_class($plugin), $reqPluginName));
                         }
                         $this->loadPlugin($reqPlugin);
                     }
