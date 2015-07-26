@@ -10,20 +10,30 @@ declare(strict_types=1);
 
 namespace Labrador;
 
-use Labrador\Event\{PluginBootEvent, AppExecuteEvent, PluginCleanupEvent, ExceptionThrownEvent};
+use Labrador\Event\{
+    EnvironmentInitializeEvent,
+    PluginBootEvent,
+    AppExecuteEvent,
+    PluginCleanupEvent,
+    ExceptionThrownEvent
+};
 use Labrador\Plugin\Plugin;
 use Evenement\EventEmitterInterface;
+use Telluris\Environment;
 
 class CoreEngine implements Engine {
 
+    private $environment;
     private $emitter;
     private $pluginManager;
 
     /**
+     * @param Environment $environment
      * @param EventEmitterInterface $emitter
      * @param PluginManager $pluginManager
      */
-    public function __construct(EventEmitterInterface $emitter, PluginManager $pluginManager) {
+    public function __construct(Environment $environment, EventEmitterInterface $emitter, PluginManager $pluginManager) {
+        $this->environment = $environment;
         $this->emitter = $emitter;
         $this->pluginManager = $pluginManager;
     }
@@ -40,6 +50,15 @@ class CoreEngine implements Engine {
      */
     public function getVersion() : string {
         return '0.1.0-alpha';
+    }
+
+    public function getEnvironment() : Environment {
+        return $this->environment;
+    }
+
+    public function onEnvironmentInitialize(callable $cb) : self {
+        $this->emitter->on(self::ENVIRONMENT_INITIALIZE_EVENT, $cb);
+        return $this;
     }
 
     /**
@@ -85,6 +104,7 @@ class CoreEngine implements Engine {
      */
     public function run() {
         try {
+            $this->emitter->emit(self::ENVIRONMENT_INITIALIZE_EVENT, [new EnvironmentInitializeEvent($this->environment), $this]);
             $this->emitter->emit(self::PLUGIN_BOOT_EVENT, [new PluginBootEvent(), $this]);
             $this->emitter->emit(self::APP_EXECUTE_EVENT, [new AppExecuteEvent(), $this]);
         } catch (\Exception $exception) {
