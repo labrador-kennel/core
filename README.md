@@ -3,6 +3,9 @@
 [![Build Status](https://travis-ci.org/cspray/labrador.svg?branch=master)](https://travis-ci.org/cspray/labrador)
 [![License](https://poser.pugx.org/cspray/labrador/license.png)](https://packagist.org/packages/cspray/labrador)
 
+> The library is currently failing on Travis because our fork of PHPUnit Mock Objects that supports return types 
+> is not properly picked up. Installing and running Labrador tests locally has all green.
+
 A minimalist PHP 7.0+ library that provides core "modules" to facilitate creating small-to-medium sized PHP 
 applications.
 
