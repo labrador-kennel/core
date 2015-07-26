@@ -11,7 +11,6 @@ declare(strict_types=1);
 
 namespace Labrador;
 
-use Labrador\Plugin\PluginManager;
 use Labrador\Event\HaltableEventEmitter;
 use Auryn\Injector;
 use Evenement\EventEmitterInterface;

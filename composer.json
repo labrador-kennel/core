@@ -23,11 +23,11 @@
     "require": {
         "php": "~7.0",
         "rdlowrey/auryn": "~1.0",
-        "evenement/evenement": "2.0.*",
+        "evenement/evenement": "~2.0",
         "morrisonlevi/ardent": "dev-master"
     },
     "require-dev": {
-        "phpunit/phpunit": "dev-master",
+        "phpunit/phpunit": "~4.7",
         "phpunit/phpunit-mock-objects": "dev-master"
     },
     "suggest": {

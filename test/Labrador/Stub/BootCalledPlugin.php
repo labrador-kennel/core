@@ -9,11 +9,13 @@
 
 namespace Labrador\Stub;
 
-class BootCalledPlugin extends NameOnlyPlugin {
+use Labrador\Plugin\Plugin;
+
+class BootCalledPlugin implements Plugin {
 
     private $bootCalled = false;
 
-    public function bootCalled() {
+    public function wasCalled() {
         return $this->bootCalled;
     }
 

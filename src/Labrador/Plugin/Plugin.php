@@ -15,13 +15,6 @@ namespace Labrador\Plugin;
 interface Plugin {
 
     /**
-     * Return the name of the plugin; this name should match /[A-Za-z0-9\.\-\_]/
-     *
-     * @return string
-     */
-    public function getName(): string;
-
-    /**
      * Perform any actions that should be completed by your Plugin before the
      * primary execution of your app is kicked off.
      */

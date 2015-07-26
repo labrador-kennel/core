@@ -12,14 +12,14 @@ namespace Labrador\Test\Unit;
 
 use Labrador\CoreEngine;
 use Labrador\Engine;
+use Labrador\PluginManager;
 use Labrador\Event\AppExecuteEvent;
 use Labrador\Event\ExceptionThrownEvent;
 use Labrador\Event\PluginBootEvent;
 use Labrador\Event\PluginCleanupEvent;
 use Labrador\Exception\Exception;
-use Labrador\Plugin\PluginManager;
 use Labrador\Stub\BootCalledPlugin;
-use Labrador\Stub\NameOnlyPlugin;
+use Labrador\Stub\PluginStub;
 use Evenement\EventEmitter;
 use Evenement\EventEmitterInterface;
 use Auryn\Injector;
@@ -117,7 +117,7 @@ class CoreEngineTest extends UnitTestCase {
 
         $engine->run();
 
-        $this->assertTrue($plugin->bootCalled(), 'The Plugin::boot method was not called');
+        $this->assertTrue($plugin->wasCalled(), 'The Plugin::boot method was not called');
     }
 
     public function testGettingEngineName() {
@@ -155,9 +155,9 @@ class CoreEngineTest extends UnitTestCase {
 
     public function pluginManagerProxyData() {
         return [
-            ['removePlugin', 'foo', null],
-            ['hasPlugin', 'foo', true],
-            ['getPlugin', 'foo', new NameOnlyPlugin('foo')],
+            ['removePlugin', PluginStub::class, null],
+            ['hasPlugin', PluginStub::class, true],
+            ['getPlugin', PluginStub::class, new PluginStub()],
             ['getPlugins', null, []]
         ];
     }
