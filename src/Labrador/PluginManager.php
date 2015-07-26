@@ -13,7 +13,7 @@ declare(strict_types=1);
 namespace Labrador;
 
 use Labrador\Plugin\{Pluggable, Plugin, ServiceAwarePlugin, EventAwarePlugin, PluginDependentPlugin};
-use Labrador\Exception\{CircularDependencyException, NotFoundException};
+use Labrador\Exception\{CircularDependencyException, NotFoundException, PluginDependencyNotProvidedException};
 use Auryn\Injector;
 use Collections\HashMap;
 use Evenement\EventEmitterInterface;
@@ -23,16 +23,22 @@ class PluginManager implements Pluggable {
     private $plugins;
     private $emitter;
     private $injector;
+    private $booter;
+    private $pluginsBooted = false;
 
     public function __construct(Injector $injector, EventEmitterInterface $emitter) {
         $this->emitter = $emitter;
         $this->injector = $injector;
         $this->plugins = new HashMap();
+        $this->booter = $this->getBooter();
         $this->registerBooter();
     }
 
     private function registerBooter() {
-        $cb = function() { $this->getBooter()->bootPlugins(); };
+        $cb = function() {
+            $this->pluginsBooted = true;
+            $this->booter->bootPlugins();
+        };
         $cb = $cb->bindTo($this);
 
         $this->emitter->on(Engine::PLUGIN_BOOT_EVENT, $cb);
@@ -40,6 +46,9 @@ class PluginManager implements Pluggable {
 
     public function registerPlugin(Plugin $plugin) {
         $this->plugins[get_class($plugin)] = $plugin;
+        if ($this->pluginsBooted) {
+            $this->booter->loadPlugin($plugin);
+        }
     }
 
     public function removePlugin(string $name) {
@@ -84,7 +93,7 @@ class PluginManager implements Pluggable {
                 }
             }
 
-            private function loadPlugin(Plugin $plugin) {
+            public function loadPlugin(Plugin $plugin) {
                 if ($this->notLoaded($plugin)) {
                     $this->startLoading($plugin);
                     $this->handlePluginDependencies($plugin);
@@ -116,10 +125,15 @@ class PluginManager implements Pluggable {
             private function handlePluginDependencies(Plugin $plugin) {
                 if ($plugin instanceof PluginDependentPlugin) {
                     foreach ($plugin->dependsOn() as $reqPluginName) {
+                        if (!$this->pluggable->hasPlugin($reqPluginName)) {
+                            $msg = '%s requires a plugin that is not registered: %s.';
+                            throw new PluginDependencyNotProvidedException(sprintf($msg, get_class($plugin), $reqPluginName));
+                        }
+
                         $reqPlugin = $this->pluggable->getPlugin($reqPluginName);
                         if ($this->isLoading($reqPlugin)) {
                             $msg = 'A circular dependency was found with %s requiring %s.';
-                            throw new CircularDependencyException(sprintf($msg, get_class($plugin), get_class($reqPlugin)));
+                            throw new CircularDependencyException(sprintf($msg, get_class($plugin), $reqPluginName));
                         }
                         $this->loadPlugin($reqPlugin);
                     }
