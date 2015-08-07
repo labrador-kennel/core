@@ -10,6 +10,7 @@
 namespace Cspray\Labrador\Test;
 
 use Cspray\Labrador\Engine;
+use Cspray\Labrador\Event\EnvironmentInitializeEvent;
 use Cspray\Labrador\Event\PluginBootEvent;
 use Cspray\Labrador\Plugin\Plugin;
 use Cspray\Labrador\PluginManager;
@@ -33,6 +34,7 @@ use Evenement\EventEmitterInterface;
 use Evenement\EventEmitter;
 use Auryn\Injector;
 use PHPUnit_Framework_TestCase as UnitTestCase;
+use Telluris\Environment;
 
 class PluginManagerTest extends UnitTestCase {
 
@@ -118,7 +120,8 @@ class PluginManagerTest extends UnitTestCase {
 
         $engine = $this->getMockBuilder(Engine::class)->disableOriginalConstructor()->getMock();
 
-        $eventDispatcher->emit(Engine::PLUGIN_BOOT_EVENT, [new PluginBootEvent(), $engine]);
+        $env = $this->getMockBuilder(Environment::class)->disableOriginalConstructor()->getMock();
+        $eventDispatcher->emit(Engine::ENVIRONMENT_INITIALIZE_EVENT, [new EnvironmentInitializeEvent($env), $engine]);
         $this->assertTrue($plugin->wasCalled());
     }
 
@@ -194,7 +197,7 @@ class PluginManagerTest extends UnitTestCase {
         $emitter = new EventEmitter();
         $manager = new PluginManager($this->mockInjector, $emitter);
 
-        $emitter->emit(Engine::PLUGIN_BOOT_EVENT);
+        $emitter->emit(Engine::ENVIRONMENT_INITIALIZE_EVENT);
 
         $plugin = new BootCalledPlugin();
 

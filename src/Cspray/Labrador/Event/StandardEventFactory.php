@@ -15,9 +15,8 @@ class StandardEventFactory implements EventFactory {
 
     private $knownEventsMap = [
         Engine::ENVIRONMENT_INITIALIZE_EVENT => EnvironmentInitializeEvent::class,
-        Engine::PLUGIN_BOOT_EVENT => PluginBootEvent::class,
         Engine::APP_EXECUTE_EVENT => AppExecuteEvent::class,
-        Engine::PLUGIN_CLEANUP_EVENT => PluginCleanupEvent::class,
+        Engine::APP_CLEANUP_EVENT => AppCleanupEvent::class,
         Engine::EXCEPTION_THROWN_EVENT => ExceptionThrownEvent::class
     ];
 

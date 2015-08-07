@@ -14,8 +14,7 @@ use Cspray\Labrador\Engine;
 use Cspray\Labrador\PluginManager;
 use Cspray\Labrador\Event\AppExecuteEvent;
 use Cspray\Labrador\Event\ExceptionThrownEvent;
-use Cspray\Labrador\Event\PluginBootEvent;
-use Cspray\Labrador\Event\PluginCleanupEvent;
+use Cspray\Labrador\Event\AppCleanupEvent;
 use Cspray\Labrador\Event\EnvironmentInitializeEvent;
 use Cspray\Labrador\Exception\Exception;
 use Cspray\Labrador\Test\Stub\BootCalledPlugin;
@@ -41,15 +40,14 @@ class CoreEngineTest extends UnitTestCase {
     private function getEngine(EventEmitterInterface $eventEmitter = null, PluginManager $pluginManager = null) {
         $emitter = $eventEmitter ?: $this->mockEventDispatcher;
         $manager = $pluginManager ?: $this->mockPluginManager;
-        return new CoreEngine($this->mockEnvironment, $emitter, $manager);
+        return new CoreEngine($this->mockEnvironment, $manager, $emitter);
     }
 
     public function normalProcessingEventDataProvider() {
         return [
             [0, CoreEngine::ENVIRONMENT_INITIALIZE_EVENT, EnvironmentInitializeEvent::class],
-            [1, CoreEngine::PLUGIN_BOOT_EVENT, PluginBootEvent::class],
-            [2, CoreEngine::APP_EXECUTE_EVENT, AppExecuteEvent::class],
-            [3, CoreEngine::PLUGIN_CLEANUP_EVENT, PluginCleanupEvent::class]
+            [1, CoreEngine::APP_EXECUTE_EVENT, AppExecuteEvent::class],
+            [2, CoreEngine::APP_CLEANUP_EVENT, AppCleanupEvent::class]
         ];
     }
 
@@ -101,9 +99,9 @@ class CoreEngineTest extends UnitTestCase {
         $this->mockEventDispatcher->expects($this->at(2))
                                   ->method('emit')
                                   ->with(
-                                      CoreEngine::PLUGIN_CLEANUP_EVENT,
+                                      CoreEngine::APP_CLEANUP_EVENT,
                                       $this->callback(function($arg) {
-                                          return $arg[0] instanceof PluginCleanupEvent;
+                                          return $arg[0] instanceof AppCleanupEvent;
                                       })
                                   );
 
@@ -135,9 +133,8 @@ class CoreEngineTest extends UnitTestCase {
     public function eventEmitterProxyData() {
         return [
             ['onEnvironmentInitialize', Engine::ENVIRONMENT_INITIALIZE_EVENT],
-            ['onPluginBoot', Engine::PLUGIN_BOOT_EVENT],
             ['onAppExecute', Engine::APP_EXECUTE_EVENT],
-            ['onPluginCleanup', Engine::PLUGIN_CLEANUP_EVENT],
+            ['onAppCleanup', Engine::APP_CLEANUP_EVENT],
             ['onExceptionThrown', Engine::EXCEPTION_THROWN_EVENT]
         ];
     }

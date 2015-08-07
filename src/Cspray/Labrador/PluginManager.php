@@ -41,7 +41,7 @@ class PluginManager implements Pluggable {
         };
         $cb = $cb->bindTo($this);
 
-        $this->emitter->on(Engine::PLUGIN_BOOT_EVENT, $cb);
+        $this->emitter->on(Engine::ENVIRONMENT_INITIALIZE_EVENT, $cb);
     }
 
     public function registerPlugin(Plugin $plugin) {

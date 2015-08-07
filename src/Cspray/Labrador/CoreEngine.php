@@ -32,13 +32,14 @@ class CoreEngine implements Engine {
 
     /**
      * @param Environment $environment
-     * @param EventEmitterInterface $emitter
      * @param PluginManager $pluginManager
+     * @param EventEmitterInterface $emitter
+     * @param EventFactory $eventFactory
      */
     public function __construct(
         Environment $environment,
-        EventEmitterInterface $emitter,
         PluginManager $pluginManager,
+        EventEmitterInterface $emitter,
         EventFactory $eventFactory = null
     ) {
         $this->environment = $environment;
@@ -74,15 +75,6 @@ class CoreEngine implements Engine {
      * @param callable $cb
      * @return $this
      */
-    public function onPluginBoot(callable $cb) : self {
-        $this->emitter->on(self::PLUGIN_BOOT_EVENT, $cb);
-        return $this;
-    }
-
-    /**
-     * @param callable $cb
-     * @return $this
-     */
     public function onAppExecute(callable $cb) : self {
         $this->emitter->on(self::APP_EXECUTE_EVENT, $cb);
         return $this;
@@ -92,8 +84,8 @@ class CoreEngine implements Engine {
      * @param callable $cb
      * @return $this
      */
-    public function onPluginCleanup(callable $cb) : self {
-        $this->emitter->on(self::PLUGIN_CLEANUP_EVENT, $cb);
+    public function onAppCleanup(callable $cb) : self {
+        $this->emitter->on(self::APP_CLEANUP_EVENT, $cb);
         return $this;
     }
 
@@ -116,17 +108,14 @@ class CoreEngine implements Engine {
             $envInitEvent = $this->eventFactory->create(self::ENVIRONMENT_INITIALIZE_EVENT, $this->environment);
             $this->emitter->emit(self::ENVIRONMENT_INITIALIZE_EVENT, [$envInitEvent, $this]);
 
-            $pluginBootEvent = $this->eventFactory->create(self::PLUGIN_BOOT_EVENT);
-            $this->emitter->emit(self::PLUGIN_BOOT_EVENT, [$pluginBootEvent, $this]);
-
             $appExecuteEvent = $this->eventFactory->create(self::APP_EXECUTE_EVENT);
             $this->emitter->emit(self::APP_EXECUTE_EVENT, [$appExecuteEvent, $this]);
         } catch (\Exception $exception) {
             $exceptionEvent = $this->eventFactory->create(self::EXCEPTION_THROWN_EVENT, $exception);
             $this->emitter->emit(self::EXCEPTION_THROWN_EVENT, [$exceptionEvent, $this]);
         } finally {
-            $pluginCleanupEvent = $this->eventFactory->create(self::PLUGIN_CLEANUP_EVENT);
-            $this->emitter->emit(self::PLUGIN_CLEANUP_EVENT, [$pluginCleanupEvent, $this]);
+            $appCleanupEvent = $this->eventFactory->create(self::APP_CLEANUP_EVENT);
+            $this->emitter->emit(self::APP_CLEANUP_EVENT, [$appCleanupEvent, $this]);
         }
     }
 

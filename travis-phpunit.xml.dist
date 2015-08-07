@@ -19,6 +19,7 @@
     <testsuites>
         <testsuite name="All Tests Suite">
             <directory suffix="Test.php">./test</directory>
+            <directory suffix=".phpt">./test</directory>
         </testsuite>
     </testsuites>
     <logging>
@@ -30,7 +31,7 @@
             <directory suffix=".php">.composer</directory>
         </blacklist>
         <whitelist processUncoveredFilesFromWhitelist="true">
-            <directory suffix=".php">./src/Labrador</directory>
+            <directory suffix=".php">./src</directory>
         </whitelist>
     </filter>
 </phpunit>

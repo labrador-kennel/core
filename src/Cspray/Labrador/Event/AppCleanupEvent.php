@@ -12,12 +12,12 @@ declare(strict_types=1);
 
 namespace Cspray\Labrador\Event;
 
-use CSpray\Labrador\Engine;
+use Cspray\Labrador\Engine;
 
-class PluginCleanupEvent extends Event {
+class AppCleanupEvent extends Event {
 
     public function __construct() {
-        parent::__construct(Engine::PLUGIN_CLEANUP_EVENT);
+        parent::__construct(Engine::APP_CLEANUP_EVENT);
     }
 
 }
