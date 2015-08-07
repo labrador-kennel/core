@@ -50,8 +50,8 @@ could use the library.
 
 require_once __DIR__ . '/vendor/autoload.php';
 
-use Labrador\Services;
-use Labrador\CoreEngine;
+use Cspray\Labrador\Services;
+use Cspray\Labrador\CoreEngine;
 
 $injector = (new Services())->createInjector();
 $engine = $injector->make(CoreEngine::class);
@@ -70,8 +70,8 @@ $engine->run();
 
 require_once './vendor/autoload.php';
 
-use Labrador\Services;
-use Labrador\CoreEngine;
+use Cspray\Labrador\Services;
+use Cspray\Labrador\CoreEngine;
 use Evenement\EventEmitterInterface;
 
 class HelloWorldPlugin implements Plugin\EventAwarePlugin {

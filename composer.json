@@ -36,7 +36,12 @@
     },
     "autoload": {
         "psr-0": {
-            "Labrador\\": ["src/", "test/"]
+            "Cspray\\Labrador\\": ["src/"]
+        }
+    },
+    "autoload-dev": {
+        "psr-0": {
+            "Cspray\\Labrador\\Test\\": ["test/"]
         }
     }
 }
