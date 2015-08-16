@@ -5,17 +5,31 @@ Ensures basic integration works
 
 require_once dirname(dirname(dirname(dirname(dirname(__DIR__))))) . '/vendor/autoload.php';
 
-use Cspray\Labrador\Services;
-use Cspray\Labrador\CoreEngine;
+use Cspray\Labrador\Event\ExceptionThrownEvent;
+use function Cspray\Labrador\engine;
 
-$injector = (new Services())->createInjector();
-/** @var CoreEngine $engine */
-$engine = $injector->make(CoreEngine::class);
-
-$engine->onAppExecute(function() {
-    echo 'Hello World';
-});
-
-$engine->run();
+engine()
+->onEnvironmentInitialize(function() {
+    echo "init\n";
+})
+->onAppExecute(function() {
+    echo "execute\n";
+})
+->onAppExecute(function() {
+    echo "oops\n";
+    throw new Exception;
+})
+->onExceptionThrown(function(ExceptionThrownEvent $event) {
+    $exc = get_class($event->getException());
+    echo "handle {$exc}\n";
+})
+->onAppCleanup(function() {
+    echo "cleanup";
+})
+->run();
 --EXPECTF--
-Hello World
+init
+execute
+oops
+handle Exception
+cleanup

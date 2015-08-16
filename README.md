@@ -47,11 +47,9 @@ could use the library.
 
 require_once __DIR__ . '/vendor/autoload.php';
 
-use Cspray\Labrador\Services;
-use Cspray\Labrador\CoreEngine;
+use function Cspray\Labrador\engine;
 
-$injector = (new Services())->createInjector();
-$engine = $injector->make(CoreEngine::class);
+$engine = engine();
 
 $engine->onAppExecute(function() {
     echo 'Hello World';
@@ -67,9 +65,9 @@ $engine->run();
 
 require_once './vendor/autoload.php';
 
-use Cspray\Labrador\Services;
 use Cspray\Labrador\CoreEngine;
 use Evenement\EventEmitterInterface;
+use function Cspray\Labrador\engine;
 
 class HelloWorldPlugin implements Plugin\EventAwarePlugin {
 
@@ -91,8 +89,7 @@ class HelloWorldPlugin implements Plugin\EventAwarePlugin {
     
 }
 
-$injector = (new Services())->createInjector();
-$engine = $injector->make(CoreEngine::class);
+$engine = engine();
 
 $engine->registerPlugin(new HelloWorldPlugin());
 $engine->run();

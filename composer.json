@@ -37,7 +37,8 @@
     "autoload": {
         "psr-0": {
             "Cspray\\Labrador\\": ["src/"]
-        }
+        },
+        "files": ["src/Cspray/Labrador/_functions.php"]
     },
     "autoload-dev": {
         "psr-0": {
