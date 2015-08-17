@@ -41,7 +41,7 @@ class PluginManager implements Pluggable {
         };
         $cb = $cb->bindTo($this);
 
-        $this->emitter->addListener(Engine::ENVIRONMENT_INITIALIZE_EVENT, $cb);
+        $this->emitter->addListener(Engine::ENVIRONMENT_INITIALIZE_EVENT, $cb, EmitterInterface::P_HIGH);
     }
 
     public function registerPlugin(Plugin $plugin) {

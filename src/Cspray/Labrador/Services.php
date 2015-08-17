@@ -49,7 +49,7 @@ class Services {
             $emitter = $injector->make(EmitterInterface::class);
             $emitter->addListener(Engine::ENVIRONMENT_INITIALIZE_EVENT, function(EnvironmentInitializeEvent $event) {
                 $event->getEnvironment()->runInitializers();
-            });
+            }, EmitterInterface::P_HIGH);
         }
 
         return $injector;

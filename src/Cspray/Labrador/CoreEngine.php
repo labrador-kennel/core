@@ -56,8 +56,8 @@ class CoreEngine implements Engine {
         return $this->environment;
     }
 
-    public function onEnvironmentInitialize(callable $cb) : self {
-        $this->emitter->addListener(self::ENVIRONMENT_INITIALIZE_EVENT, $cb);
+    public function onEnvironmentInitialize(callable $cb, int $priority = EmitterInterface::P_NORMAL) : self {
+        $this->emitter->addListener(self::ENVIRONMENT_INITIALIZE_EVENT, $cb, $priority);
         return $this;
     }
 
@@ -65,8 +65,8 @@ class CoreEngine implements Engine {
      * @param callable $cb
      * @return $this
      */
-    public function onAppExecute(callable $cb) : self {
-        $this->emitter->addListener(self::APP_EXECUTE_EVENT, $cb);
+    public function onAppExecute(callable $cb, int $priority = EmitterInterface::P_NORMAL) : self {
+        $this->emitter->addListener(self::APP_EXECUTE_EVENT, $cb, $priority);
         return $this;
     }
 
@@ -74,8 +74,8 @@ class CoreEngine implements Engine {
      * @param callable $cb
      * @return $this
      */
-    public function onAppCleanup(callable $cb) : self {
-        $this->emitter->addListener(self::APP_CLEANUP_EVENT, $cb);
+    public function onAppCleanup(callable $cb, int $priority = EmitterInterface::P_NORMAL) : self {
+        $this->emitter->addListener(self::APP_CLEANUP_EVENT, $cb, $priority);
         return $this;
     }
 
@@ -83,8 +83,8 @@ class CoreEngine implements Engine {
      * @param callable $cb
      * @return $this
      */
-    public function onExceptionThrown(callable $cb) : self {
-        $this->emitter->addListener(self::EXCEPTION_THROWN_EVENT, $cb);
+    public function onExceptionThrown(callable $cb, int $priority = EmitterInterface::P_NORMAL) : self {
+        $this->emitter->addListener(self::EXCEPTION_THROWN_EVENT, $cb, $priority);
         return $this;
     }
 

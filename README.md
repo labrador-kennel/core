@@ -46,9 +46,12 @@ could use the library.
 
 require_once __DIR__ . '/vendor/autoload.php';
 
-use function Cspray\Labrador\engine;
+use Cspray\Labrador\Engine;
+use function Cspray\Labrador\bootstrap;
 
-$engine = engine();
+$injector = bootstrap();
+
+$engine = $injector->make(Engine::class);
 
 $engine->onAppExecute(function() {
     echo 'Hello World';
@@ -65,7 +68,7 @@ $engine->run();
 require_once './vendor/autoload.php';
 
 use Cspray\Labrador\CoreEngine;
-use Evenement\EventEmitterInterface;
+use League\Event\EmitterInterface;
 use function Cspray\Labrador\engine;
 
 class HelloWorldPlugin implements Plugin\EventAwarePlugin {
@@ -78,8 +81,8 @@ class HelloWorldPlugin implements Plugin\EventAwarePlugin {
         // our app is too simple to do anything here but yours might not be
     }
 
-    public function registerEventListeners(EventEmitterInterface $emitter) {
-        $emitter->on(CoreEngine::APP_EXECUTE_EVENT, function() {
+    public function registerEventListeners(EmitterInterface $emitter) {
+        $emitter->addListener(CoreEngine::APP_EXECUTE_EVENT, function() {
             echo 'Hello world!';
         });
     }
