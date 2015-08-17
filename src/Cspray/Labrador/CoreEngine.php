@@ -20,7 +20,7 @@ use Cspray\Labrador\Event\{
     StandardEventFactory
 };
 use Cspray\Labrador\Plugin\Plugin;
-use Evenement\EventEmitterInterface;
+use League\Event\EmitterInterface;
 use Telluris\Environment;
 
 class CoreEngine implements Engine {
@@ -33,13 +33,13 @@ class CoreEngine implements Engine {
     /**
      * @param Environment $environment
      * @param PluginManager $pluginManager
-     * @param EventEmitterInterface $emitter
+     * @param EmitterInterface $emitter
      * @param EventFactory $eventFactory
      */
     public function __construct(
         Environment $environment,
         PluginManager $pluginManager,
-        EventEmitterInterface $emitter,
+        EmitterInterface $emitter,
         EventFactory $eventFactory = null
     ) {
         $this->environment = $environment;
@@ -48,18 +48,8 @@ class CoreEngine implements Engine {
         $this->eventFactory = $eventFactory ?? new StandardEventFactory();
     }
 
-    /**
-     * @return string
-     */
-    public function getName() : string {
-        return 'labrador-core';
-    }
-
-    /**
-     * @return string
-     */
-    public function getVersion() : string {
-        return '0.1.0-alpha';
+    public function getEmitter() : EmitterInterface {
+        return $this->emitter;
     }
 
     public function getEnvironment() : Environment {
@@ -67,7 +57,7 @@ class CoreEngine implements Engine {
     }
 
     public function onEnvironmentInitialize(callable $cb) : self {
-        $this->emitter->on(self::ENVIRONMENT_INITIALIZE_EVENT, $cb);
+        $this->emitter->addListener(self::ENVIRONMENT_INITIALIZE_EVENT, $cb);
         return $this;
     }
 
@@ -76,7 +66,7 @@ class CoreEngine implements Engine {
      * @return $this
      */
     public function onAppExecute(callable $cb) : self {
-        $this->emitter->on(self::APP_EXECUTE_EVENT, $cb);
+        $this->emitter->addListener(self::APP_EXECUTE_EVENT, $cb);
         return $this;
     }
 
@@ -85,7 +75,7 @@ class CoreEngine implements Engine {
      * @return $this
      */
     public function onAppCleanup(callable $cb) : self {
-        $this->emitter->on(self::APP_CLEANUP_EVENT, $cb);
+        $this->emitter->addListener(self::APP_CLEANUP_EVENT, $cb);
         return $this;
     }
 
@@ -94,7 +84,7 @@ class CoreEngine implements Engine {
      * @return $this
      */
     public function onExceptionThrown(callable $cb) : self {
-        $this->emitter->on(self::EXCEPTION_THROWN_EVENT, $cb);
+        $this->emitter->addListener(self::EXCEPTION_THROWN_EVENT, $cb);
         return $this;
     }
 
@@ -106,16 +96,16 @@ class CoreEngine implements Engine {
     public function run() {
         try {
             $envInitEvent = $this->eventFactory->create(self::ENVIRONMENT_INITIALIZE_EVENT, $this->environment);
-            $this->emitter->emit(self::ENVIRONMENT_INITIALIZE_EVENT, [$envInitEvent, $this]);
+            $this->emitter->emit($envInitEvent, $this);
 
             $appExecuteEvent = $this->eventFactory->create(self::APP_EXECUTE_EVENT);
-            $this->emitter->emit(self::APP_EXECUTE_EVENT, [$appExecuteEvent, $this]);
+            $this->emitter->emit($appExecuteEvent, $this);
         } catch (\Exception $exception) {
             $exceptionEvent = $this->eventFactory->create(self::EXCEPTION_THROWN_EVENT, $exception);
-            $this->emitter->emit(self::EXCEPTION_THROWN_EVENT, [$exceptionEvent, $this]);
+            $this->emitter->emit($exceptionEvent, $this);
         } finally {
             $appCleanupEvent = $this->eventFactory->create(self::APP_CLEANUP_EVENT);
-            $this->emitter->emit(self::APP_CLEANUP_EVENT, [$appCleanupEvent, $this]);
+            $this->emitter->emit($appCleanupEvent, $this);
         }
     }
 

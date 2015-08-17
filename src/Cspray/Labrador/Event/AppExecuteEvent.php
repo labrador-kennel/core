@@ -12,6 +12,7 @@ declare(strict_types=1);
 namespace Cspray\Labrador\Event;
 
 use Cspray\Labrador\Engine;
+use League\Event\Event;
 
 class AppExecuteEvent extends Event {
 

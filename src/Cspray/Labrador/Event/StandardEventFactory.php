@@ -9,6 +9,7 @@ declare(strict_types = 1);
 namespace Cspray\Labrador\Event;
 
 use Cspray\Labrador\Engine;
+use League\Event\EventInterface;
 use Cspray\Labrador\Exception\InvalidArgumentException;
 
 class StandardEventFactory implements EventFactory {
@@ -20,7 +21,7 @@ class StandardEventFactory implements EventFactory {
         Engine::EXCEPTION_THROWN_EVENT => ExceptionThrownEvent::class
     ];
 
-    public function create(string $eventName, ...$args) : Event {
+    public function create(string $eventName, ...$args) : EventInterface {
         if (!isset($this->knownEventsMap[$eventName])) {
             throw new InvalidArgumentException("$eventName is not known to this factory at this time.");
         }
