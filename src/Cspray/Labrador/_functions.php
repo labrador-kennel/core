@@ -10,18 +10,17 @@ namespace Cspray\Labrador;
 
 use Cspray\Labrador\Event\ExceptionThrownEvent;
 use Auryn\Injector;
+use Whoops\Run;
 
-function bootstrap(callable $exceptionHandler = null ,callable $errorHandler = null) : Injector {
-    set_error_handler($errorHandler ?: new ErrorToExceptionHandler());
+function bootstrap(EnvironmentIntegrationConfig $config = null) : Injector {
+    $run = (new Run())->register();
 
-    $excHandler = $exceptionHandler ?: new UncaughtExceptionHandler();
-    set_exception_handler($excHandler);
-
-    $injector = (new Services())->createInjector();
+    $injector = (new Services($config))->createInjector();
+    $injector->share($run);
 
     $engine = $injector->make(Engine::class);
-    $engine->onExceptionThrown(function(ExceptionThrownEvent $event) use($excHandler) {
-        $excHandler($event->getException());
+    $engine->onExceptionThrown(function(ExceptionThrownEvent $event) use($run) {
+        $run->handleException($event->getException());
     });
 
     return $injector;

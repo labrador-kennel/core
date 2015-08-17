@@ -8,8 +8,7 @@ require_once dirname(dirname(dirname(dirname(dirname(__DIR__))))) . '/vendor/aut
 use Cspray\Labrador\Event\ExceptionThrownEvent;
 use function Cspray\Labrador\bootstrap;
 
-$noop = function() {};
-$injector = bootstrap($noop, $noop);
+$injector = bootstrap();
 $engine = $injector->make(\Cspray\Labrador\Engine::class);
 
 $engine->onEnvironmentInitialize(function() {
