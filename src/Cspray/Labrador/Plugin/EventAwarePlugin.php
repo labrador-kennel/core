@@ -3,7 +3,7 @@
 declare(strict_types=1);
 
 /**
- * A Plugin that responds to a triggered event.
+ * A Plugin that registers listeners with the Emitter.
  *
  * @license See LICENSE in source root
  */

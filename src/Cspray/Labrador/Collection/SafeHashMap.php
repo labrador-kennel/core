@@ -14,6 +14,11 @@ use Collections\HashMap;
 
 class SafeHashMap extends HashMap {
 
+    /**
+     * @param mixed $key
+     * @return mixed|null
+     * @throws \Collections\KeyException
+     */
     public function offsetGet($key) {
         if (!isset($this[$key])) {
             return null;
@@ -22,6 +27,10 @@ class SafeHashMap extends HashMap {
         return parent::offsetGet($key);
     }
 
+    /**
+     * @param $key
+     * @return mixed|null
+     */
     public function get($key) {
         return $this->offsetGet($key);
     }

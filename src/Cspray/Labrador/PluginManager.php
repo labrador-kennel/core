@@ -18,6 +18,11 @@ use Auryn\Injector;
 use Collections\HashMap;
 use League\Event\EmitterInterface;
 
+/**
+ * It is HIGHLY recommended that if you create a Plugin it winds up
+ * being registered with this Pluggable; the standard Labrador Engines
+ * proxy all Plugglable methods to an instance of this class.
+ */
 class PluginManager implements Pluggable {
 
     private $plugins;
@@ -26,6 +31,10 @@ class PluginManager implements Pluggable {
     private $booter;
     private $pluginsBooted = false;
 
+    /**
+     * @param Injector $injector
+     * @param EmitterInterface $emitter
+     */
     public function __construct(Injector $injector, EmitterInterface $emitter) {
         $this->emitter = $emitter;
         $this->injector = $injector;

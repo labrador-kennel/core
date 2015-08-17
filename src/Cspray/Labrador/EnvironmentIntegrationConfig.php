@@ -3,6 +3,13 @@
 declare(strict_types = 1);
 
 /**
+ * An object that dictates how Labrador integrates with Telluris.
+ *
+ * This implementation and the integration with Telluris has been designed in such a way that it is
+ * an opt-in figure. Nothing about Labrador is actually dependent upon the library, it is simply
+ * provided as a means to manage your environment. If you don't want to use the functionality you
+ * can safely ignore it and should have no impacts on your application.
+ *
  * @license See LICENSE file in project root
  */
 

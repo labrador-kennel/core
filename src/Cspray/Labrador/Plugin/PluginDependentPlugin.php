@@ -3,6 +3,10 @@
 declare(strict_types = 1);
 
 /**
+ * A Plugin that depends on another Plugin being present and loaded before this
+ * Plugin can be booted, services can be registered or event listeners can be
+ * added.
+ *
  * @license See LICENSE file in project root
  */
 

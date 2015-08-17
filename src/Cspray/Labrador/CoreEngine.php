@@ -3,7 +3,7 @@
 declare(strict_types=1);
 
 /**
- * A minimal implementation to trigger specific events and handle plugin registration.
+ * The standard Engine implementation triggering all required Labrador events.
  *
  * @license See LICENSE in source root
  */

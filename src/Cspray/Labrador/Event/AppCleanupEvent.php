@@ -3,9 +3,13 @@
 declare(strict_types=1);
 
 /**
- * An event triggered after the application has been executed; this is used to
- * ensure that if a Plugin needs to carry out any cleanup code it has the
- * ability to do so.
+ * Triggered after the application has been executed. Used to ensure that
+ * any necessary cleanup code has the ability to execute.
+ *
+ * It is anticipated that this event will be triggered even if an exception
+ * is thrown. It is possible that this event may not be triggered if the
+ * application code calls `exit` before the event is triggered or if
+ * a `labrador.exception-thrown` event listener throws an exception itself.
  *
  * @license See LICENSE in source root
  */

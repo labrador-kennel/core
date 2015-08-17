@@ -3,7 +3,7 @@
 declare(strict_types=1);
 
 /**
- * An interface for objects that allow plugins to be attached or associated with them.
+ * An interface for objects that allow Plugins to be attached or associated with them.
  *
  * @license See LICENSE in source root
  */
