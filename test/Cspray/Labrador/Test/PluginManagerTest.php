@@ -30,8 +30,8 @@ use Cspray\Labrador\Test\Stub\RequiresCircularDependentStub;
 use Cspray\Labrador\Test\Stub\RequiresNotPresentPlugin;
 use Cspray\Labrador\Test\Stub\ServicesRegisteredPlugin;
 
-use Evenement\EventEmitterInterface;
-use Evenement\EventEmitter;
+use League\Event\EmitterInterface;
+use League\Event\Emitter as EventEmitter;
 use Auryn\Injector;
 use PHPUnit_Framework_TestCase as UnitTestCase;
 use Telluris\Environment;
@@ -42,7 +42,7 @@ class PluginManagerTest extends UnitTestCase {
     private $mockInjector;
 
     public function setUp() {
-        $this->mockDispatcher = $this->getMock(EventEmitterInterface::class);
+        $this->mockDispatcher = $this->getMock(EmitterInterface::class);
         $this->mockInjector = $this->getMockBuilder(Injector::class)->disableOriginalConstructor()->getMock();
     }
 

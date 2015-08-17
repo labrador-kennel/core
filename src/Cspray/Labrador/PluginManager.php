@@ -16,7 +16,7 @@ use Cspray\Labrador\Plugin\{Pluggable, Plugin, ServiceAwarePlugin, EventAwarePlu
 use Cspray\Labrador\Exception\{CircularDependencyException, NotFoundException, PluginDependencyNotProvidedException};
 use Auryn\Injector;
 use Collections\HashMap;
-use Evenement\EventEmitterInterface;
+use League\Event\EmitterInterface;
 
 class PluginManager implements Pluggable {
 
@@ -26,7 +26,7 @@ class PluginManager implements Pluggable {
     private $booter;
     private $pluginsBooted = false;
 
-    public function __construct(Injector $injector, EventEmitterInterface $emitter) {
+    public function __construct(Injector $injector, EmitterInterface $emitter) {
         $this->emitter = $emitter;
         $this->injector = $injector;
         $this->plugins = new HashMap();
@@ -41,7 +41,7 @@ class PluginManager implements Pluggable {
         };
         $cb = $cb->bindTo($this);
 
-        $this->emitter->on(Engine::ENVIRONMENT_INITIALIZE_EVENT, $cb);
+        $this->emitter->addListener(Engine::ENVIRONMENT_INITIALIZE_EVENT, $cb);
     }
 
     public function registerPlugin(Plugin $plugin) {
@@ -81,7 +81,7 @@ class PluginManager implements Pluggable {
             private $injector;
             private $emitter;
 
-            public function __construct(Pluggable $pluggable, Injector $injector, EventEmitterInterface $emitter) {
+            public function __construct(Pluggable $pluggable, Injector $injector, EmitterInterface $emitter) {
                 $this->pluggable = $pluggable;
                 $this->injector = $injector;
                 $this->emitter = $emitter;

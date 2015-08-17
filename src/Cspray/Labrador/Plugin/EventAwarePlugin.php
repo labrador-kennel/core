@@ -10,16 +10,16 @@ declare(strict_types=1);
 
 namespace Cspray\Labrador\Plugin;
 
-use Evenement\EventEmitterInterface;
+use League\Event\EmitterInterface;
 
 interface EventAwarePlugin extends Plugin {
 
     /**
      * Register the event listeners your Plugin responds to.
      *
-     * @param EventEmitterInterface $emitter
+     * @param EmitterInterface $emitter
      * @return void
      */
-    public function registerEventListeners(EventEmitterInterface $emitter);
+    public function registerEventListeners(EmitterInterface $emitter);
 
 }

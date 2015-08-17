@@ -12,9 +12,9 @@ declare(strict_types=1);
 namespace Cspray\Labrador;
 
 use Cspray\Labrador\Event\EnvironmentInitializeEvent;
-use Cspray\Labrador\Event\HaltableEventEmitter;
 use Auryn\Injector;
-use Evenement\EventEmitterInterface;
+use League\Event\EmitterInterface;
+use League\Event\Emitter;
 use Telluris\Config\Storage;
 use Telluris\Environment;
 
@@ -30,8 +30,8 @@ class Services {
         $injector = new Injector();
 
         $injector->share($injector);
-        $injector->share(HaltableEventEmitter::class);
-        $injector->alias(EventEmitterInterface::class, HaltableEventEmitter::class);
+        $injector->share(Emitter::class);
+        $injector->alias(EmitterInterface::class, Emitter::class);
 
         $injector->share(PluginManager::class);
         $injector->share(CoreEngine::class);
@@ -45,9 +45,9 @@ class Services {
         $injector->alias(Storage::class, get_class($envStorage));
 
         if ($this->envInitConfig->runInitializers()) {
-            /** @var EventEmitterInterface $emitter */
-            $emitter = $injector->make(EventEmitterInterface::class);
-            $emitter->on(Engine::ENVIRONMENT_INITIALIZE_EVENT, function(EnvironmentInitializeEvent $event) {
+            /** @var EmitterInterface $emitter */
+            $emitter = $injector->make(EmitterInterface::class);
+            $emitter->addListener(Engine::ENVIRONMENT_INITIALIZE_EVENT, function(EnvironmentInitializeEvent $event) {
                 $event->getEnvironment()->runInitializers();
             });
         }

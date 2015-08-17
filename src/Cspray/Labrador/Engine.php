@@ -11,6 +11,7 @@ declare(strict_types=1);
 namespace Cspray\Labrador;
 
 use Cspray\Labrador\Plugin\Pluggable;
+use League\Event\EmitterInterface;
 
 interface Engine extends Pluggable {
 
@@ -22,18 +23,15 @@ interface Engine extends Pluggable {
     const EXCEPTION_THROWN_EVENT = 'labrador.exception_thrown';
 
     /**
-     * @return string
-     */
-    public function getName() : string;
-
-    /**
-     * Return the version of the Engine; this should be in semver format.
+     * Return the event emitter that will emit the events for this Engine.
      *
-     * @return string
+     * @return EmitterInterface
      */
-    public function getVersion() : string;
+    public function getEmitter() : EmitterInterface;
 
     /**
+     * Perform whatever actions are necessary for this implementation.
+     *
      * @return mixed
      */
     public function run();

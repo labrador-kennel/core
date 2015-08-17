@@ -23,7 +23,7 @@
     "require": {
         "php": "~7.0",
         "rdlowrey/auryn": "~1.0",
-        "evenement/evenement": "~2.0",
+        "league/event": "~2.1",
         "morrisonlevi/ardent": "dev-master",
         "cspray/telluris": "dev-master",
         "filp/whoops": "~1.1"

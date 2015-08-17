@@ -20,8 +20,8 @@ use Cspray\Labrador\Exception\Exception;
 use Cspray\Labrador\Test\Stub\BootCalledPlugin;
 use Cspray\Labrador\Test\Stub\PluginStub;
 use Auryn\Injector;
-use Evenement\EventEmitter;
-use Evenement\EventEmitterInterface;
+use League\Event\Emitter as EventEmitter;
+use League\Event\EmitterInterface;
 use Telluris\Environment;
 use PHPUnit_Framework_TestCase as UnitTestCase;
 
@@ -33,11 +33,11 @@ class CoreEngineTest extends UnitTestCase {
 
     public function setUp() {
         $this->mockEnvironment = $this->getMockBuilder(Environment::class)->disableOriginalConstructor()->getMock();
-        $this->mockEventDispatcher = $this->getMock(EventEmitterInterface::class);
+        $this->mockEventDispatcher = $this->getMock(EmitterInterface::class);
         $this->mockPluginManager = $this->getMockBuilder(PluginManager::class)->disableOriginalConstructor()->getMock();
     }
 
-    private function getEngine(EventEmitterInterface $eventEmitter = null, PluginManager $pluginManager = null) {
+    private function getEngine(EmitterInterface $eventEmitter = null, PluginManager $pluginManager = null) {
         $emitter = $eventEmitter ?: $this->mockEventDispatcher;
         $manager = $pluginManager ?: $this->mockPluginManager;
         return new CoreEngine($this->mockEnvironment, $manager, $emitter);
@@ -45,24 +45,25 @@ class CoreEngineTest extends UnitTestCase {
 
     public function normalProcessingEventDataProvider() {
         return [
-            [0, CoreEngine::ENVIRONMENT_INITIALIZE_EVENT, EnvironmentInitializeEvent::class],
-            [1, CoreEngine::APP_EXECUTE_EVENT, AppExecuteEvent::class],
-            [2, CoreEngine::APP_CLEANUP_EVENT, AppCleanupEvent::class]
+            [0, EnvironmentInitializeEvent::class],
+            [1, AppExecuteEvent::class],
+            [2, AppCleanupEvent::class]
         ];
     }
 
     /**
      * @dataProvider normalProcessingEventDataProvider
      */
-    public function testEventNormalProcessing($dispatchIndex, $eventName, $eventType) {
+    public function testEventNormalProcessing($dispatchIndex, $eventType) {
         $engine = $this->getEngine();
         $this->mockEventDispatcher->expects($this->at($dispatchIndex))
                                   ->method('emit')
                                   ->with(
-                                      $eventName,
-                                      $this->callback(function($arg) use($eventType, $engine) {
-                                          return $arg[0] instanceof $eventType &&
-                                                 $arg[1] === $engine;
+                                      $this->callback(function($arg) use($eventType) {
+                                          return $arg instanceof $eventType;
+                                      }),
+                                      $this->callback(function($arg) use($engine) {
+                                          return $arg === $engine;
                                       })
                                   );
         $engine->run();
@@ -76,10 +77,9 @@ class CoreEngineTest extends UnitTestCase {
         $this->mockEventDispatcher->expects($this->at(1))
                                   ->method('emit')
                                   ->with(
-                                      CoreEngine::EXCEPTION_THROWN_EVENT,
                                       $this->callback(function($arg) use($exception) {
-                                         if ($arg[0] instanceof ExceptionThrownEvent) {
-                                             return $arg[0]->getException() === $exception;
+                                         if ($arg instanceof ExceptionThrownEvent) {
+                                             return $arg->getException() === $exception;
                                          }
 
                                          return false;
@@ -94,18 +94,20 @@ class CoreEngineTest extends UnitTestCase {
         $this->mockEventDispatcher->expects($this->at(0))
                                   ->method('emit')
                                   ->willThrowException($exception = new Exception());
+        $engine = $this->getEngine();
 
         # Remember method invocation 1 is gonna be the exception event
         $this->mockEventDispatcher->expects($this->at(2))
                                   ->method('emit')
                                   ->with(
-                                      CoreEngine::APP_CLEANUP_EVENT,
                                       $this->callback(function($arg) {
-                                          return $arg[0] instanceof AppCleanupEvent;
+                                          return $arg instanceof AppCleanupEvent;
+                                      }),
+                                      $this->callback(function($arg) use($engine) {
+                                          return $arg === $engine;
                                       })
                                   );
 
-        $engine = $this->getEngine();
         $engine->run();
     }
 
@@ -122,14 +124,6 @@ class CoreEngineTest extends UnitTestCase {
         $this->assertTrue($plugin->wasCalled(), 'The Plugin::boot method was not called');
     }
 
-    public function testGettingEngineName() {
-        $this->assertSame('labrador-core', $this->getEngine()->getName());
-    }
-
-    public function testGettingEngineVersion() {
-        $this->assertSame('0.1.0-alpha', $this->getEngine()->getVersion());
-    }
-
     public function eventEmitterProxyData() {
         return [
             ['onEnvironmentInitialize', Engine::ENVIRONMENT_INITIALIZE_EVENT],
@@ -144,9 +138,9 @@ class CoreEngineTest extends UnitTestCase {
      */
     public function testProxyToEventEmitter($method, $event) {
         $cb = function() {};
-        $emitter = $this->getMock(EventEmitterInterface::class);
+        $emitter = $this->getMock(EmitterInterface::class);
         $emitter->expects($this->once())
-                ->method('on')
+                ->method('addListener')
                 ->with($event, $cb);
 
         $engine = $this->getEngine($emitter);
