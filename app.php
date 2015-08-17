@@ -2,11 +2,11 @@
 
 require_once __DIR__ . '/vendor/autoload.php';
 
-use Labrador\Services;
-use Labrador\CoreEngine;
+use Cspray\Labrador\CoreEngine;
+use function Cspray\Labrador\bootstrap;
 
-$injector = (new Services())->createInjector();
-/** @var CoreEngine $engine */
+$injector = bootstrap();
+
 $engine = $injector->make(CoreEngine::class);
 
 $engine->onAppExecute(function() {

@@ -6,10 +6,13 @@ Ensures basic integration works
 require_once dirname(dirname(dirname(dirname(dirname(__DIR__))))) . '/vendor/autoload.php';
 
 use Cspray\Labrador\Event\ExceptionThrownEvent;
-use function Cspray\Labrador\engine;
+use function Cspray\Labrador\bootstrap;
 
-engine()
-->onEnvironmentInitialize(function() {
+$noop = function() {};
+$injector = bootstrap($noop, $noop);
+$engine = $injector->make(\Cspray\Labrador\Engine::class);
+
+$engine->onEnvironmentInitialize(function() {
     echo "init\n";
 })
 ->onAppExecute(function() {

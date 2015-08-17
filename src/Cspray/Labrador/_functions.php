@@ -8,27 +8,21 @@ declare(strict_types = 1);
 
 namespace Cspray\Labrador;
 
+use Cspray\Labrador\Event\ExceptionThrownEvent;
 use Auryn\Injector;
-use function Cspray\Labrador\injector;
 
-/**
- * @return CoreEngine
- * @throws \Auryn\InjectionException
- */
-function engine() : CoreEngine {
-    static $engine;
-    if (!$engine) {
-        $engine = injector()->make(Engine::class);
-    }
+function bootstrap(callable $exceptionHandler = null ,callable $errorHandler = null) : Injector {
+    set_error_handler($errorHandler ?: new ErrorToExceptionHandler());
 
-    return $engine;
-}
+    $excHandler = $exceptionHandler ?: new UncaughtExceptionHandler();
+    set_exception_handler($excHandler);
 
-function injector() : Injector {
-    static $injector;
-    if (!$injector) {
-        $injector = (new Services)->createInjector();
-    }
+    $injector = (new Services())->createInjector();
+
+    $engine = $injector->make(Engine::class);
+    $engine->onExceptionThrown(function(ExceptionThrownEvent $event) use($excHandler) {
+        $excHandler($event->getException());
+    });
 
     return $injector;
 }
