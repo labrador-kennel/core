@@ -21,7 +21,7 @@
         "rdlowrey/auryn": "~1.0",
         "league/event": "~2.1",
         "morrisonlevi/ardent": "~0.14",
-        "cspray/telluris": "dev-master",
+        "cspray/telluris": "~0.1",
         "filp/whoops": "~1.1"
     },
     "require-dev": {

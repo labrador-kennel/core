@@ -4,20 +4,20 @@
         "Read more about it at https://getcomposer.org/doc/01-basic-usage.md#composer-lock-the-lock-file",
         "This file is @generated automatically"
     ],
-    "hash": "2489b78ae70a2b8c590b3709a0eb86a2",
+    "hash": "1c46041f6015a7f873ec3ae4e57cd9fb",
     "packages": [
         {
             "name": "cspray/telluris",
-            "version": "dev-master",
+            "version": "0.1.0",
             "source": {
                 "type": "git",
                 "url": "https://github.com/cspray/telluris.git",
-                "reference": "9f60de7df07c4525a6762ead45c70ed66b152cab"
+                "reference": "187b60e5c130c8a096f24f228bd98ac043e62e8b"
             },
             "dist": {
                 "type": "zip",
-                "url": "https://api.github.com/repos/cspray/telluris/zipball/9f60de7df07c4525a6762ead45c70ed66b152cab",
-                "reference": "9f60de7df07c4525a6762ead45c70ed66b152cab",
+                "url": "https://api.github.com/repos/cspray/telluris/zipball/187b60e5c130c8a096f24f228bd98ac043e62e8b",
+                "reference": "187b60e5c130c8a096f24f228bd98ac043e62e8b",
                 "shasum": ""
             },
             "require": {
@@ -30,10 +30,7 @@
             "type": "library",
             "autoload": {
                 "psr-0": {
-                    "Telluris\\": [
-                        "src/",
-                        "test/"
-                    ]
+                    "Cspray\\Telluris\\": "src/"
                 }
             },
             "notification-url": "https://packagist.org/downloads/",
@@ -41,7 +38,7 @@
                 "MIT"
             ],
             "description": "Helps manage your environment specific configuration and code.",
-            "time": "2015-07-26 19:52:30"
+            "time": "2015-08-17 03:55:57"
         },
         {
             "name": "filp/whoops",
@@ -1228,7 +1225,6 @@
     "aliases": [],
     "minimum-stability": "stable",
     "stability-flags": {
-        "cspray/telluris": 20,
         "phpunit/phpunit-mock-objects": 20
     },
     "prefer-stable": false,
