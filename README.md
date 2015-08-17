@@ -24,7 +24,7 @@ There's 2 supported ways to install Labrador:
 
 We recommend you install Labrador via Composer.
  
-`composer require cspray/labrador dev-master`
+`composer require cspray/labrador`
 
 2. Git
 
