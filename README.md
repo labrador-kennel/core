@@ -9,12 +9,11 @@ applications.
 - **Environment** Labrador is, unobtrusively, environment aware; providing environment specific configurations and initializers through the [Telluris](https://github.com/cspray/telluris) library.
 - **Data Structures** Provided through the [Ardent](https://github.com/morrisonlevi/Ardent) library.
 - **IoC Container** Provided through the [Auryn](https://github.com/rdlowrey/Auryn) library.
-- **Events** Provided through the [Evenement](https://github.com/igorw/evenement) library.
+- **Events** Provided through [The PHP League Event](https://github.com/thephpleague/event) library.
 - **Plugins** A series of simple to implement interfaces provided by Labrador. Plugins can register services to the IoC container, attach callbacks to events and perform bootup actions.
 - **Engines** A service that ties events and plugins together to execute your application's primary logic.
 
-You can checkout a "Hello World" example below to get started quickly. If you'd like more detailed
- information you can check out the [wiki](https://github.com/cspray/labrador/wiki).
+You can checkout a "Hello World" example below to get started quickly.
 
 ## Installation
 
