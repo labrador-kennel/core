@@ -8,10 +8,9 @@ php:
   - 7.0
 
 before_script:
-  - pecl install -f xdebug-2.3.3
   - composer self-update
-  - composer update
+  - composer update --ignore-platform-reqs
 script:
-  - vendor/bin/phpunit --coverage-clover=coverage.clover --configuration travis-phpunit.xml.dist
+  - vendor/bin/phpunit --coverage-clover=coverage.clover
   - wget https://scrutinizer-ci.com/ocular.phar
   - php ocular.phar code-coverage:upload --format=php-clover coverage.clover

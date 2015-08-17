@@ -14,17 +14,13 @@
         {
             "type": "vcs",
             "url": "https://github.com/cspray/phpunit-mock-objects"
-        },
-        {
-            "type": "vcs",
-            "url": "https://github.com/cspray/Ardent"
         }
     ],
     "require": {
         "php": "~7.0",
         "rdlowrey/auryn": "~1.0",
         "league/event": "~2.1",
-        "morrisonlevi/ardent": "dev-master",
+        "morrisonlevi/ardent": "~0.14",
         "cspray/telluris": "dev-master",
         "filp/whoops": "~1.1"
     },

@@ -4,7 +4,7 @@
         "Read more about it at https://getcomposer.org/doc/01-basic-usage.md#composer-lock-the-lock-file",
         "This file is @generated automatically"
     ],
-    "hash": "809959960cda651fb0a0f58c93ae83de",
+    "hash": "2489b78ae70a2b8c590b3709a0eb86a2",
     "packages": [
         {
             "name": "cspray/telluris",
@@ -153,20 +153,20 @@
         },
         {
             "name": "morrisonlevi/ardent",
-            "version": "dev-master",
+            "version": "0.14.0",
             "source": {
                 "type": "git",
-                "url": "https://github.com/cspray/Ardent.git",
-                "reference": "fa5e41022218d4cd876e0e79314d21ef8788d6db"
+                "url": "https://github.com/morrisonlevi/Ardent.git",
+                "reference": "0cc32e448436929787683a0aa1fdc45a2cadac9e"
             },
             "dist": {
                 "type": "zip",
-                "url": "https://api.github.com/repos/cspray/Ardent/zipball/fa5e41022218d4cd876e0e79314d21ef8788d6db",
-                "reference": "fa5e41022218d4cd876e0e79314d21ef8788d6db",
+                "url": "https://api.github.com/repos/morrisonlevi/Ardent/zipball/0cc32e448436929787683a0aa1fdc45a2cadac9e",
+                "reference": "0cc32e448436929787683a0aa1fdc45a2cadac9e",
                 "shasum": ""
             },
             "require": {
-                "php": "~7.0"
+                "php": "~5.4"
             },
             "type": "library",
             "extra": {
@@ -175,10 +175,11 @@
                 }
             },
             "autoload": {
-                "files": [
-                    "autoload.php"
+                "classmap": [
+                    "src/"
                 ]
             },
+            "notification-url": "https://packagist.org/downloads/",
             "license": [
                 "MIT"
             ],
@@ -199,10 +200,7 @@
                 "php",
                 "spl"
             ],
-            "support": {
-                "source": "https://github.com/cspray/Ardent/tree/master"
-            },
-            "time": "2015-06-27 13:41:54"
+            "time": "2014-04-10 17:06:39"
         },
         {
             "name": "rdlowrey/auryn",
@@ -1230,7 +1228,6 @@
     "aliases": [],
     "minimum-stability": "stable",
     "stability-flags": {
-        "morrisonlevi/ardent": 20,
         "cspray/telluris": 20,
         "phpunit/phpunit-mock-objects": 20
     },
