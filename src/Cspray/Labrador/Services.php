@@ -15,8 +15,8 @@ use Cspray\Labrador\Event\EnvironmentInitializeEvent;
 use Auryn\Injector;
 use League\Event\EmitterInterface;
 use League\Event\Emitter;
-use Telluris\Config\Storage;
-use Telluris\Environment;
+use Cspray\Telluris\Config\Storage;
+use Cspray\Telluris\Environment;
 
 class Services {
 

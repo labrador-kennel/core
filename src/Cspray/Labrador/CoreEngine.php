@@ -21,7 +21,7 @@ use Cspray\Labrador\Event\{
 };
 use Cspray\Labrador\Plugin\Plugin;
 use League\Event\EmitterInterface;
-use Telluris\Environment;
+use Cspray\Telluris\Environment;
 
 class CoreEngine implements Engine {
 

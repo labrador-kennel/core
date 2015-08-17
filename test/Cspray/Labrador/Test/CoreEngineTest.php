@@ -22,7 +22,7 @@ use Cspray\Labrador\Test\Stub\PluginStub;
 use Auryn\Injector;
 use League\Event\Emitter as EventEmitter;
 use League\Event\EmitterInterface;
-use Telluris\Environment;
+use Cspray\Telluris\Environment;
 use PHPUnit_Framework_TestCase as UnitTestCase;
 
 class CoreEngineTest extends UnitTestCase {

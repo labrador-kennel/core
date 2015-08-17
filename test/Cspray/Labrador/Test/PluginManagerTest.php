@@ -11,7 +11,6 @@ namespace Cspray\Labrador\Test;
 
 use Cspray\Labrador\Engine;
 use Cspray\Labrador\Event\EnvironmentInitializeEvent;
-use Cspray\Labrador\Event\PluginBootEvent;
 use Cspray\Labrador\Plugin\Plugin;
 use Cspray\Labrador\PluginManager;
 
@@ -34,7 +33,7 @@ use League\Event\EmitterInterface;
 use League\Event\Emitter as EventEmitter;
 use Auryn\Injector;
 use PHPUnit_Framework_TestCase as UnitTestCase;
-use Telluris\Environment;
+use Cspray\Telluris\Environment;
 
 class PluginManagerTest extends UnitTestCase {
 

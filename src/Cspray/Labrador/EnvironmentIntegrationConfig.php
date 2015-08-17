@@ -15,9 +15,9 @@ declare(strict_types = 1);
 
 namespace Cspray\Labrador;
 
-use Telluris\Config\Storage;
-use Telluris\Config\NullStorage;
-use Telluris\Environment;
+use Cspray\Telluris\Config\Storage;
+use Cspray\Telluris\Config\NullStorage;
+use Cspray\Telluris\Environment;
 
 class EnvironmentIntegrationConfig {
 

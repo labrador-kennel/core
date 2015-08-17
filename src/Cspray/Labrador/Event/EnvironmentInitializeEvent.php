@@ -17,7 +17,7 @@ declare(strict_types = 1);
 namespace Cspray\Labrador\Event;
 
 use Cspray\Labrador\Engine;
-use Telluris\Environment;
+use Cspray\Telluris\Environment;
 use League\Event\Event;
 
 class EnvironmentInitializeEvent extends Event {
