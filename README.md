@@ -1,7 +1,8 @@
 # Labrador
 
-[![Build Status](https://travis-ci.org/cspray/labrador.svg?branch=master)](https://travis-ci.org/cspray/labrador)
-[![License](https://poser.pugx.org/cspray/labrador/license.png)](https://packagist.org/packages/cspray/labrador)
+[![Travis](https://img.shields.io/travis/cspray/labrador.svg?style=flat-square)](https://travis-ci.org/cspray/labrador)
+[![GitHub license](https://img.shields.io/github/license/cspray/labrador.svg?style=flat-square)](http://opensource.org/licenses/MIT)
+[![GitHub release](https://img.shields.io/github/release/cspray/labrador.svg?style=flat-square)](https://github.com/cspray/labrador/releases/latest)
 
 A minimalist PHP 7.0+ library that provides core "modules" to facilitate creating small-to-medium sized PHP 
 applications.
