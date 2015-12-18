@@ -31,10 +31,10 @@
         "cspray/telluris": "For managing your environment configuration."
     },
     "autoload": {
-        "psr-0": {
+        "psr-4": {
             "Cspray\\Labrador\\": ["src/"]
         },
-        "files": ["src/Cspray/Labrador/_functions.php"]
+        "files": ["src/_functions.php"]
     },
     "autoload-dev": {
         "psr-0": {
