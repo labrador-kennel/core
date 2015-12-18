@@ -15,24 +15,21 @@ use Cspray\Labrador\PluginManager;
 use Cspray\Labrador\Event\AppExecuteEvent;
 use Cspray\Labrador\Event\ExceptionThrownEvent;
 use Cspray\Labrador\Event\AppCleanupEvent;
-use Cspray\Labrador\Event\EnvironmentInitializeEvent;
+use Cspray\Labrador\Event\EngineBootupEvent;
 use Cspray\Labrador\Exception\Exception;
 use Cspray\Labrador\Test\Stub\BootCalledPlugin;
 use Cspray\Labrador\Test\Stub\PluginStub;
 use Auryn\Injector;
 use League\Event\Emitter as EventEmitter;
 use League\Event\EmitterInterface;
-use Cspray\Telluris\Environment;
 use PHPUnit_Framework_TestCase as UnitTestCase;
 
 class CoreEngineTest extends UnitTestCase {
 
-    private $mockEnvironment;
     private $mockEventDispatcher;
     private $mockPluginManager;
 
     public function setUp() {
-        $this->mockEnvironment = $this->getMockBuilder(Environment::class)->disableOriginalConstructor()->getMock();
         $this->mockEventDispatcher = $this->getMock(EmitterInterface::class);
         $this->mockPluginManager = $this->getMockBuilder(PluginManager::class)->disableOriginalConstructor()->getMock();
     }
@@ -40,12 +37,12 @@ class CoreEngineTest extends UnitTestCase {
     private function getEngine(EmitterInterface $eventEmitter = null, PluginManager $pluginManager = null) {
         $emitter = $eventEmitter ?: $this->mockEventDispatcher;
         $manager = $pluginManager ?: $this->mockPluginManager;
-        return new CoreEngine($this->mockEnvironment, $manager, $emitter);
+        return new CoreEngine($manager, $emitter);
     }
 
     public function normalProcessingEventDataProvider() {
         return [
-            [0, EnvironmentInitializeEvent::class],
+            [0, EngineBootupEvent::class],
             [1, AppExecuteEvent::class],
             [2, AppCleanupEvent::class]
         ];
@@ -126,7 +123,7 @@ class CoreEngineTest extends UnitTestCase {
 
     public function eventEmitterProxyData() {
         return [
-            ['onEnvironmentInitialize', Engine::ENVIRONMENT_INITIALIZE_EVENT],
+            ['onEngineBootup', Engine::ENGINE_BOOTUP_EVENT],
             ['onAppExecute', Engine::APP_EXECUTE_EVENT],
             ['onAppCleanup', Engine::APP_CLEANUP_EVENT],
             ['onExceptionThrown', Engine::EXCEPTION_THROWN_EVENT]

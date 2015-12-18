@@ -17,7 +17,7 @@ interface Engine extends Pluggable {
 
     // These are the bare MINIMUM amount of events that an engine should trigger
     // An Engine MAY trigger more events but at least these should be
-    const ENVIRONMENT_INITIALIZE_EVENT = 'labrador.environment_initialize';
+    const ENGINE_BOOTUP_EVENT = 'labrador.engine_bootup';
     const APP_EXECUTE_EVENT = 'labrador.app_execute';
     const APP_CLEANUP_EVENT = 'labrador.app_cleanup';
     const EXCEPTION_THROWN_EVENT = 'labrador.exception_thrown';

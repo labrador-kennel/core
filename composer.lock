@@ -4,43 +4,9 @@
         "Read more about it at https://getcomposer.org/doc/01-basic-usage.md#composer-lock-the-lock-file",
         "This file is @generated automatically"
     ],
-    "hash": "c60c7476fd41bf98b23530db8cf856fe",
-    "content-hash": "3d71e00b197d9431b1e6610eda9f38a0",
+    "hash": "7ca792383b579e4423ec80af559595c7",
+    "content-hash": "8f49dbf9b27ba592bdcd80bab811f605",
     "packages": [
-        {
-            "name": "cspray/telluris",
-            "version": "0.1.0",
-            "source": {
-                "type": "git",
-                "url": "https://github.com/cspray/telluris.git",
-                "reference": "187b60e5c130c8a096f24f228bd98ac043e62e8b"
-            },
-            "dist": {
-                "type": "zip",
-                "url": "https://api.github.com/repos/cspray/telluris/zipball/187b60e5c130c8a096f24f228bd98ac043e62e8b",
-                "reference": "187b60e5c130c8a096f24f228bd98ac043e62e8b",
-                "shasum": ""
-            },
-            "require": {
-                "php": "~7.0"
-            },
-            "require-dev": {
-                "adlawson/vfs": "dev-master",
-                "phpunit/phpunit": "4.5.*"
-            },
-            "type": "library",
-            "autoload": {
-                "psr-0": {
-                    "Cspray\\Telluris\\": "src/"
-                }
-            },
-            "notification-url": "https://packagist.org/downloads/",
-            "license": [
-                "MIT"
-            ],
-            "description": "Helps manage your environment specific configuration and code.",
-            "time": "2015-08-17 03:55:57"
-        },
         {
             "name": "filp/whoops",
             "version": "dev-master",
@@ -272,6 +238,40 @@
         }
     ],
     "packages-dev": [
+        {
+            "name": "cspray/telluris",
+            "version": "0.1.0",
+            "source": {
+                "type": "git",
+                "url": "https://github.com/cspray/telluris.git",
+                "reference": "187b60e5c130c8a096f24f228bd98ac043e62e8b"
+            },
+            "dist": {
+                "type": "zip",
+                "url": "https://api.github.com/repos/cspray/telluris/zipball/187b60e5c130c8a096f24f228bd98ac043e62e8b",
+                "reference": "187b60e5c130c8a096f24f228bd98ac043e62e8b",
+                "shasum": ""
+            },
+            "require": {
+                "php": "~7.0"
+            },
+            "require-dev": {
+                "adlawson/vfs": "dev-master",
+                "phpunit/phpunit": "4.5.*"
+            },
+            "type": "library",
+            "autoload": {
+                "psr-0": {
+                    "Cspray\\Telluris\\": "src/"
+                }
+            },
+            "notification-url": "https://packagist.org/downloads/",
+            "license": [
+                "MIT"
+            ],
+            "description": "Helps manage your environment specific configuration and code.",
+            "time": "2015-08-17 03:55:57"
+        },
         {
             "name": "doctrine/instantiator",
             "version": "1.0.5",

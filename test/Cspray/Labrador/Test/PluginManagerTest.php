@@ -1,7 +1,7 @@
 <?php
 
 /**
- * 
+ *
  * @license See LICENSE in source root
  * @version 1.0
  * @since   1.0
@@ -10,7 +10,7 @@
 namespace Cspray\Labrador\Test;
 
 use Cspray\Labrador\Engine;
-use Cspray\Labrador\Event\EnvironmentInitializeEvent;
+use Cspray\Labrador\Event\EngineBootupEvent;
 use Cspray\Labrador\Plugin\Plugin;
 use Cspray\Labrador\PluginManager;
 
@@ -120,7 +120,7 @@ class PluginManagerTest extends UnitTestCase {
         $engine = $this->getMockBuilder(Engine::class)->disableOriginalConstructor()->getMock();
 
         $env = $this->getMockBuilder(Environment::class)->disableOriginalConstructor()->getMock();
-        $eventDispatcher->emit(Engine::ENVIRONMENT_INITIALIZE_EVENT, [new EnvironmentInitializeEvent($env), $engine]);
+        $eventDispatcher->emit(Engine::ENGINE_BOOTUP_EVENT, [new EngineBootupEvent(), $engine]);
         $this->assertTrue($plugin->wasCalled());
     }
 
@@ -196,7 +196,7 @@ class PluginManagerTest extends UnitTestCase {
         $emitter = new EventEmitter();
         $manager = new PluginManager($this->mockInjector, $emitter);
 
-        $emitter->emit(Engine::ENVIRONMENT_INITIALIZE_EVENT);
+        $emitter->emit(Engine::ENGINE_BOOTUP_EVENT);
 
         $plugin = new BootCalledPlugin();
 

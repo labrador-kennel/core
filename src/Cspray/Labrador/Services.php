@@ -20,12 +20,6 @@ use Cspray\Telluris\Environment;
 
 class Services {
 
-    private $envInitConfig;
-
-    public function __construct(EnvironmentIntegrationConfig $envInitConfig = null) {
-        $this->envInitConfig = $envInitConfig ?? new EnvironmentIntegrationConfig();
-    }
-
     public function createInjector() : Injector {
         $injector = new Injector();
 
@@ -36,21 +30,6 @@ class Services {
         $injector->share(PluginManager::class);
         $injector->share(CoreEngine::class);
         $injector->alias(Engine::class, CoreEngine::class);
-
-        $injector->share(Environment::class);
-        $injector->define(Environment::class, [':env' => $this->envInitConfig->getEnv()]);
-
-        $envStorage = $this->envInitConfig->getStorage();
-        $injector->share($envStorage);
-        $injector->alias(Storage::class, get_class($envStorage));
-
-        if ($this->envInitConfig->runInitializers()) {
-            /** @var EmitterInterface $emitter */
-            $emitter = $injector->make(EmitterInterface::class);
-            $emitter->addListener(Engine::ENVIRONMENT_INITIALIZE_EVENT, function(EnvironmentInitializeEvent $event) {
-                $event->getEnvironment()->runInitializers();
-            }, EmitterInterface::P_HIGH);
-        }
 
         return $injector;
     }

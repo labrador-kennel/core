@@ -20,23 +20,13 @@ use Cspray\Labrador\Engine;
 use Cspray\Telluris\Environment;
 use League\Event\Event;
 
-class EnvironmentInitializeEvent extends Event {
-
-    private $environment;
+class EngineBootupEvent extends Event {
 
     /**
      * @param Environment $environment
      */
-    public function __construct(Environment $environment) {
-        parent::__construct(Engine::ENVIRONMENT_INITIALIZE_EVENT);
-        $this->environment = $environment;
-    }
-
-    /**
-     * @return Environment
-     */
-    public function getEnvironment() : Environment {
-        return $this->environment;
+    public function __construct() {
+        parent::__construct(Engine::ENGINE_BOOTUP_EVENT);
     }
 
 }

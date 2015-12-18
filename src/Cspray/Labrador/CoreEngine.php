@@ -10,39 +10,26 @@ declare(strict_types=1);
 
 namespace Cspray\Labrador;
 
-use Cspray\Labrador\Event\{
-    EnvironmentInitializeEvent,
-    PluginBootEvent,
-    AppExecuteEvent,
-    PluginCleanupEvent,
-    ExceptionThrownEvent,
-    EventFactory,
-    StandardEventFactory
-};
+use Cspray\Labrador\Event\{EventFactory, StandardEventFactory};
 use Cspray\Labrador\Plugin\Plugin;
 use League\Event\EmitterInterface;
-use Cspray\Telluris\Environment;
 
 class CoreEngine implements Engine {
 
-    private $environment;
     private $emitter;
     private $pluginManager;
     private $eventFactory;
 
     /**
-     * @param Environment $environment
      * @param PluginManager $pluginManager
      * @param EmitterInterface $emitter
      * @param EventFactory $eventFactory
      */
     public function __construct(
-        Environment $environment,
         PluginManager $pluginManager,
         EmitterInterface $emitter,
         EventFactory $eventFactory = null
     ) {
-        $this->environment = $environment;
         $this->emitter = $emitter;
         $this->pluginManager = $pluginManager;
         $this->eventFactory = $eventFactory ?? new StandardEventFactory();
@@ -52,12 +39,8 @@ class CoreEngine implements Engine {
         return $this->emitter;
     }
 
-    public function getEnvironment() : Environment {
-        return $this->environment;
-    }
-
-    public function onEnvironmentInitialize(callable $cb, int $priority = EmitterInterface::P_NORMAL) : self {
-        $this->emitter->addListener(self::ENVIRONMENT_INITIALIZE_EVENT, $cb, $priority);
+    public function onEngineBootup(callable $cb, int $priority = EmitterInterface::P_NORMAL) : self {
+        $this->emitter->addListener(self::ENGINE_BOOTUP_EVENT, $cb, $priority);
         return $this;
     }
 
@@ -95,7 +78,7 @@ class CoreEngine implements Engine {
      */
     public function run() {
         try {
-            $envInitEvent = $this->eventFactory->create(self::ENVIRONMENT_INITIALIZE_EVENT, $this->environment);
+            $envInitEvent = $this->eventFactory->create(self::ENGINE_BOOTUP_EVENT);
             $this->emitter->emit($envInitEvent, $this);
 
             $appExecuteEvent = $this->eventFactory->create(self::APP_EXECUTE_EVENT);

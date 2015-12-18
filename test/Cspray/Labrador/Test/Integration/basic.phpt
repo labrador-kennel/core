@@ -11,7 +11,7 @@ use function Cspray\Labrador\bootstrap;
 $injector = bootstrap();
 $engine = $injector->make(\Cspray\Labrador\Engine::class);
 
-$engine->onEnvironmentInitialize(function() {
+$engine->onEngineBootup(function() {
     echo "init\n";
 })
 ->onAppExecute(function() {

@@ -15,7 +15,7 @@ use Cspray\Labrador\Exception\InvalidArgumentException;
 class StandardEventFactory implements EventFactory {
 
     private $knownEventsMap = [
-        Engine::ENVIRONMENT_INITIALIZE_EVENT => EnvironmentInitializeEvent::class,
+        Engine::ENGINE_BOOTUP_EVENT => EngineBootupEvent::class,
         Engine::APP_EXECUTE_EVENT => AppExecuteEvent::class,
         Engine::APP_CLEANUP_EVENT => AppCleanupEvent::class,
         Engine::EXCEPTION_THROWN_EVENT => ExceptionThrownEvent::class
