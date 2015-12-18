@@ -15,7 +15,7 @@ namespace Cspray\Labrador;
 use Cspray\Labrador\Plugin\{Pluggable, Plugin, ServiceAwarePlugin, EventAwarePlugin, PluginDependentPlugin};
 use Cspray\Labrador\Exception\{CircularDependencyException, NotFoundException, PluginDependencyNotProvidedException};
 use Auryn\Injector;
-use Collections\HashMap;
+use Ardent\Collection\HashMap;
 use League\Event\EmitterInterface;
 
 /**
@@ -69,7 +69,7 @@ class PluginManager implements Pluggable {
     }
 
     public function getPlugins() : array {
-        return $this->plugins->toArray();
+        return iterator_to_array($this->plugins);
     }
 
     public function getPlugin(string $name) : Plugin {

@@ -16,8 +16,7 @@ class ImmutableSafeHashMapTest extends UnitTestCase {
 
     public function settingDataProvider() {
         return [
-            ['offsetSet', 'offsetGet'],
-            ['set', 'get']
+            ['offsetSet', 'offsetGet']
         ];
     }
 
@@ -40,7 +39,6 @@ class ImmutableSafeHashMapTest extends UnitTestCase {
 
     public function unsettingDataProvider() {
         return [
-            ['remove'],
             ['offsetUnset']
         ];
     }

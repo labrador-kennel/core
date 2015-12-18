@@ -18,15 +18,14 @@
     ],
     "require": {
         "php": "~7.0",
-        "rdlowrey/auryn": "~1.0",
+        "rdlowrey/auryn": "~1.1",
         "league/event": "~2.1",
         "morrisonlevi/ardent": "~0.14",
         "cspray/telluris": "~0.1",
-        "filp/whoops": "~1.1"
+        "filp/whoops": "dev-master"
     },
     "require-dev": {
-        "phpunit/phpunit": "~4.7",
-        "phpunit/phpunit-mock-objects": "dev-master"
+        "phpunit/phpunit": "5.1.3"
     },
     "autoload": {
         "psr-0": {

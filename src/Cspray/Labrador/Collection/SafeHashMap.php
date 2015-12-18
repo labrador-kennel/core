@@ -10,14 +10,14 @@ declare(strict_types=1);
 
 namespace Cspray\Labrador\Collection;
 
-use Collections\HashMap;
+use Ardent\Collection\HashMap;
 
 class SafeHashMap extends HashMap {
 
     /**
      * @param mixed $key
      * @return mixed|null
-     * @throws \Collections\KeyException
+     * @throws \Ardent\Collection\KeyException
      */
     public function offsetGet($key) {
         if (!isset($this[$key])) {
@@ -25,14 +25,6 @@ class SafeHashMap extends HashMap {
         }
 
         return parent::offsetGet($key);
-    }
-
-    /**
-     * @param $key
-     * @return mixed|null
-     */
-    public function get($key) {
-        return $this->offsetGet($key);
     }
 
 }

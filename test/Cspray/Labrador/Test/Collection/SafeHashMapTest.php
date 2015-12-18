@@ -23,14 +23,14 @@ class SafeHashMapTest extends UnitTestCase {
     public function testMapAccessWithKeyNotPresentReturnsNull() {
         $map = new SafeHashMap();
 
-        $this->assertNull($map->get('not_present'));
+        $this->assertNull($map['not_present']);
     }
 
     public function testMapAccessWithKeyPresentReturnsValue() {
         $map = new SafeHashMap();
-        $map->set('foo', 'bar');
+        $map['foo'] = 'bar';
 
-        $this->assertSame('bar', $map->get('foo'));
+        $this->assertSame('bar', $map['foo']);
     }
 
 }
