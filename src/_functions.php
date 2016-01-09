@@ -12,10 +12,10 @@ use Cspray\Labrador\Event\ExceptionThrownEvent;
 use Auryn\Injector;
 use Whoops\Run;
 
-function bootstrap(EnvironmentIntegrationConfig $config = null) : Injector {
+function bootstrap() : Injector {
     $run = (new Run())->register();
 
-    $injector = (new Services($config))->createInjector();
+    $injector = (new Services())->createInjector();
     $injector->share($run);
 
     $engine = $injector->make(Engine::class);
