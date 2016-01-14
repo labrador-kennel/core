@@ -41,3 +41,10 @@
 ## v0.3.1 - 2016-01-08
 
 - Update dependencies to use Whoops 2.0 over dev-master
+
+## v1.0.0 - 2016-01-13
+
+- **BC BREAK** Removes SafeHashMap and ImmutableSafeHashMap as they were not used in the codebase
+- Moves test suite to PSR-4 autoloading
+- Cleans up use statements to use PHP7 syntax
+- Fixes a couple typos
