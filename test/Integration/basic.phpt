@@ -3,7 +3,7 @@ Ensures basic integration works
 --FILE--
 <?php
 
-require_once dirname(dirname(dirname(dirname(dirname(__DIR__))))) . '/vendor/autoload.php';
+require_once dirname(dirname(__DIR__)) . '/vendor/autoload.php';
 
 use Cspray\Labrador\Event\ExceptionThrownEvent;
 use function Cspray\Labrador\bootstrap;
