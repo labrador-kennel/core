@@ -9,31 +9,32 @@
 
 namespace Cspray\Labrador\Test;
 
-use Cspray\Labrador\Engine;
+use Cspray\Labrador\{Engine, PluginManager};
 use Cspray\Labrador\Event\EngineBootupEvent;
 use Cspray\Labrador\Plugin\Plugin;
-use Cspray\Labrador\PluginManager;
 
-use Cspray\Labrador\Exception\NotFoundException;
-use Cspray\Labrador\Exception\CircularDependencyException;
-use Cspray\Labrador\Exception\PluginDependencyNotProvidedException;
+use Cspray\Labrador\Exception\{
+    NotFoundException,
+    CircularDependencyException,
+    PluginDependencyNotProvidedException
+};
 
-use Cspray\Labrador\Test\Stub\BootCalledPlugin;
-use Cspray\Labrador\Test\Stub\CircularDependencyPluginStub;
-use Cspray\Labrador\Test\Stub\EventsRegisteredPlugin;
-use Cspray\Labrador\Test\Stub\FooPluginDependentStub;
-use Cspray\Labrador\Test\Stub\FooPluginStub;
-use Cspray\Labrador\Test\Stub\PluginStub;
-use Cspray\Labrador\Test\Stub\RecusivelyDependentPluginStub;
-use Cspray\Labrador\Test\Stub\RequiresCircularDependentStub;
-use Cspray\Labrador\Test\Stub\RequiresNotPresentPlugin;
-use Cspray\Labrador\Test\Stub\ServicesRegisteredPlugin;
+use Cspray\Labrador\Test\Stub\{
+    BootCalledPlugin,
+    CircularDependencyPluginStub,
+    EventsRegisteredPlugin,
+    FooPluginDependentStub,
+    FooPluginStub,
+    PluginStub,
+    RecursivelyDependentPluginStub,
+    RequiresCircularDependentStub,
+    RequiresNotPresentPlugin,
+    ServicesRegisteredPlugin
+};
 
-use League\Event\EmitterInterface;
-use League\Event\Emitter as EventEmitter;
+use League\Event\{EmitterInterface, Emitter as EventEmitter};
 use Auryn\Injector;
 use PHPUnit_Framework_TestCase as UnitTestCase;
-use Cspray\Telluris\Environment;
 
 class PluginManagerTest extends UnitTestCase {
 
@@ -155,7 +156,7 @@ class PluginManagerTest extends UnitTestCase {
         $manager = new PluginManager($injector, $this->mockDispatcher);
         $booter = $this->getPluginBooter($manager);
 
-        $manager->registerPlugin($plugin = new RecusivelyDependentPluginStub($injector));
+        $manager->registerPlugin($plugin = new RecursivelyDependentPluginStub($injector));
         $manager->registerPlugin(new FooPluginDependentStub($injector));
         $manager->registerPlugin(new FooPluginStub());
 

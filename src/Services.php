@@ -11,12 +11,8 @@ declare(strict_types=1);
 
 namespace Cspray\Labrador;
 
-use Cspray\Labrador\Event\EnvironmentInitializeEvent;
 use Auryn\Injector;
-use League\Event\EmitterInterface;
-use League\Event\Emitter;
-use Cspray\Telluris\Config\Storage;
-use Cspray\Telluris\Environment;
+use League\Event\{EmitterInterface, Emitter};
 
 class Services {
 

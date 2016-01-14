@@ -9,19 +9,17 @@
 
 namespace Cspray\Labrador\Test;
 
-use Cspray\Labrador\CoreEngine;
-use Cspray\Labrador\Engine;
-use Cspray\Labrador\PluginManager;
-use Cspray\Labrador\Event\AppExecuteEvent;
-use Cspray\Labrador\Event\ExceptionThrownEvent;
-use Cspray\Labrador\Event\AppCleanupEvent;
-use Cspray\Labrador\Event\EngineBootupEvent;
+use Cspray\Labrador\{Engine, CoreEngine, PluginManager};
+use Cspray\Labrador\Event\{
+    AppExecuteEvent,
+    ExceptionThrownEvent,
+    AppCleanupEvent,
+    EngineBootupEvent
+};
 use Cspray\Labrador\Exception\Exception;
-use Cspray\Labrador\Test\Stub\BootCalledPlugin;
-use Cspray\Labrador\Test\Stub\PluginStub;
+use Cspray\Labrador\Test\Stub\{PluginStub, BootCalledPlugin};
 use Auryn\Injector;
-use League\Event\Emitter as EventEmitter;
-use League\Event\EmitterInterface;
+use League\Event\{EmitterInterface, Emitter as EventEmitter};
 use PHPUnit_Framework_TestCase as UnitTestCase;
 
 class CoreEngineTest extends UnitTestCase {

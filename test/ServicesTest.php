@@ -3,8 +3,7 @@
 
 namespace Cspray\Labrador\Test;
 
-use Cspray\Labrador\CoreEngine;
-use Cspray\Labrador\Services;
+use Cspray\Labrador\{CoreEngine, Services};
 use Auryn\Injector;
 use PHPUnit_Framework_TestCase as UnitTestCase;
 
