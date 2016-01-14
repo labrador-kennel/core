@@ -11,7 +11,7 @@ namespace Cspray\Labrador\Test\Stub;
 use Cspray\Labrador\Plugin\PluginDependentPlugin;
 use Auryn\Injector;
 
-class RecusivelyDependentPluginStub implements PluginDependentPlugin {
+class RecursivelyDependentPluginStub implements PluginDependentPlugin {
 
     private $injector;
     private $dependsOnProvided;
