@@ -20,7 +20,7 @@
         "php": "~7.0",
         "rdlowrey/auryn": "~1.1",
         "league/event": "~2.1",
-        "morrisonlevi/ardent": "~0.14",
+        "morrisonlevi/ardent": "~0.20",
         "filp/whoops": "~2.0.0"
     },
     "require-dev": {
