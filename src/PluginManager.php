@@ -21,7 +21,7 @@ use League\Event\EmitterInterface;
 /**
  * It is HIGHLY recommended that if you create a Plugin it winds up
  * being registered with this Pluggable; the standard Labrador Engines
- * proxy all Plugglable methods to an instance of this class.
+ * proxy all Pluggable methods to an instance of this class.
  */
 class PluginManager implements Pluggable {
 
