@@ -20,6 +20,8 @@ use Cspray\Labrador\Exception\Exception;
 use Cspray\Labrador\Test\Stub\{PluginStub, BootCalledPlugin};
 use Auryn\Injector;
 use League\Event\{EmitterInterface, Emitter as EventEmitter};
+use Cspray\Labrador\Test\Stub\ExtraEventEmitArgs;
+use League\Event\Emitter;
 use PHPUnit_Framework_TestCase as UnitTestCase;
 
 class CoreEngineTest extends UnitTestCase {
@@ -32,7 +34,7 @@ class CoreEngineTest extends UnitTestCase {
         $this->mockPluginManager = $this->getMockBuilder(PluginManager::class)->disableOriginalConstructor()->getMock();
     }
 
-    private function getEngine(EmitterInterface $eventEmitter = null, PluginManager $pluginManager = null) {
+    private function getEngine(EmitterInterface $eventEmitter = null, PluginManager $pluginManager = null) : CoreEngine {
         $emitter = $eventEmitter ?: $this->mockEventDispatcher;
         $manager = $pluginManager ?: $this->mockPluginManager;
         return new CoreEngine($manager, $emitter);
@@ -144,6 +146,28 @@ class CoreEngineTest extends UnitTestCase {
         $engine->run();
     }
 
+    /**
+     * @dataProvider eventEmitterProxyData
+     */
+    public function testEventEmitArguments($engineMethod, $eventType) {
+        $emitter = new Emitter();
+        $actual = null;
+        $emitter->addListener($eventType, function(...$args) use(&$actual) {
+            array_shift($args); // we expect the first argument to be an event
+            $actual = $args;
+        });
+
+        $engine = new ExtraEventEmitArgs($this->mockPluginManager, $emitter);
+        if ($eventType === Engine::EXCEPTION_THROWN_EVENT) {
+            $engine->onAppExecute(function() {
+                throw new \Exception();
+            });
+        }
+        $engine->run();
+
+        $this->assertSame([$engine, 1, 'foo', 'bar'], $actual);
+    }
+
     public function pluginManagerProxyData() {
         return [
             ['removePlugin', PluginStub::class, null],
@@ -172,6 +196,22 @@ class CoreEngineTest extends UnitTestCase {
         }
 
         $this->getEngine(null, $pluginManager)->$method($arg);
+    }
+
+    public function testEngineBootupOnlyInvokedOnceForMultipleRuns() {
+        $emitter = new Emitter();
+        $engine = $this->getEngine($emitter);
+
+        $count = 0;
+        $engine->onEngineBootup(function() use(&$count) {
+            $count++;
+        });
+
+        $engine->run();
+        $this->assertSame(1, $count);
+
+        $engine->run();
+        $this->assertSame(1, $count);
     }
 
 }

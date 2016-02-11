@@ -7,7 +7,6 @@
 A minimalist PHP 7.0+ library that provides core "modules" to facilitate creating small-to-medium sized PHP 
 applications.
 
-- **Environment** Labrador is, unobtrusively, environment aware; providing environment specific configurations and initializers through the [Telluris](https://github.com/cspray/telluris) library.
 - **Data Structures** Provided through the [Ardent](https://github.com/morrisonlevi/Ardent) library.
 - **IoC Container** Provided through the [Auryn](https://github.com/rdlowrey/Auryn) library.
 - **Events** Provided through [The PHP League Event](https://github.com/thephpleague/event) library.
@@ -69,10 +68,11 @@ $engine->run();
 require_once './vendor/autoload.php';
 
 use Cspray\Labrador\CoreEngine;
+use Cspray\Labrador\Plugin\EventAwarePlugin;
 use League\Event\EmitterInterface;
-use function Cspray\Labrador\engine;
+use function Cspray\Labrador\bootstrap;
 
-class HelloWorldPlugin implements Plugin\EventAwarePlugin {
+class HelloWorldPlugin implements EventAwarePlugin {
 
     public function getName() {
         return 'labrador.hello_world';
@@ -92,7 +92,9 @@ class HelloWorldPlugin implements Plugin\EventAwarePlugin {
     
 }
 
-$engine = engine();
+$injector = bootstrap();
+
+$engine = $injector->make(Engine::class);
 
 $engine->registerPlugin(new HelloWorldPlugin());
 $engine->run();

@@ -13,12 +13,15 @@ namespace Cspray\Labrador;
 use Cspray\Labrador\Event\{EventFactory, StandardEventFactory};
 use Cspray\Labrador\Plugin\Plugin;
 use League\Event\EmitterInterface;
+use Exception as PhpException;
 
 class CoreEngine implements Engine {
 
     private $emitter;
     private $pluginManager;
     private $eventFactory;
+
+    private $engineBooted = false;
 
     /**
      * @param PluginManager $pluginManager
@@ -78,18 +81,41 @@ class CoreEngine implements Engine {
      */
     public function run() {
         try {
-            $envInitEvent = $this->eventFactory->create(self::ENGINE_BOOTUP_EVENT);
-            $this->emitter->emit($envInitEvent, $this);
+            if (!$this->engineBooted) {
+                $this->bootEngine();
+            }
 
-            $appExecuteEvent = $this->eventFactory->create(self::APP_EXECUTE_EVENT);
-            $this->emitter->emit($appExecuteEvent, $this);
-        } catch (\Exception $exception) {
-            $exceptionEvent = $this->eventFactory->create(self::EXCEPTION_THROWN_EVENT, $exception);
-            $this->emitter->emit($exceptionEvent, $this);
+            $this->executeApp();
+        } catch (PhpException $exception) {
+            $this->handleException($exception);
         } finally {
-            $appCleanupEvent = $this->eventFactory->create(self::APP_CLEANUP_EVENT);
-            $this->emitter->emit($appCleanupEvent, $this);
+            $this->cleanupApp();
         }
+    }
+
+    private function bootEngine() {
+        $envInitEvent = $this->eventFactory->create(self::ENGINE_BOOTUP_EVENT);
+        $eventArgs = $this->eventArgs(self::ENGINE_BOOTUP_EVENT);
+        $this->emitter->emit($envInitEvent, $this, ...$eventArgs);
+        $this->engineBooted = true;
+    }
+
+    private function executeApp() {
+        $appExecuteEvent = $this->eventFactory->create(self::APP_EXECUTE_EVENT);
+        $eventArgs = $this->eventArgs(self::APP_EXECUTE_EVENT);
+        $this->emitter->emit($appExecuteEvent, $this, ...$eventArgs);
+    }
+
+    private function handleException(PhpException $exception) {
+        $exceptionEvent = $this->eventFactory->create(self::EXCEPTION_THROWN_EVENT, $exception);
+        $eventArgs = $this->eventArgs(self::EXCEPTION_THROWN_EVENT);
+        $this->emitter->emit($exceptionEvent, $this, ...$eventArgs);
+    }
+
+    private function cleanupApp() {
+        $appCleanupEvent = $this->eventFactory->create(self::APP_CLEANUP_EVENT);
+        $eventArgs = $this->eventArgs(self::APP_CLEANUP_EVENT);
+        $this->emitter->emit($appCleanupEvent, $this, ...$eventArgs);
     }
 
     /**
@@ -133,6 +159,10 @@ class CoreEngine implements Engine {
      */
     public function getPlugins() : array {
         return $this->pluginManager->getPlugins();
+    }
+
+    protected function eventArgs(string $event) : array {
+        return [];
     }
 
 }
