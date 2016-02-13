@@ -1,10 +1,10 @@
 # Changelog
 
-## v1.1.0 - 2016-??-??
+## v1.1.0 - 2016-02-13
 
 - **BC BREAK** Removes UnsupportedOperationException and EventStub as they were not used in the codebase
-- Adds support for classes extending CoreEngine to append arguments passed to listeners for all triggered events. 
-- Fixes a bug where the Engine::ENGINE_BOOTUP_EVENT could possibly be triggered multiple times if `CoreEngine::run()` is 
+- Adds support for classes extending CoreEngine to append arguments passed to listeners for all triggered events.
+- Fixes a bug where the Engine::ENGINE_BOOTUP_EVENT could possibly be triggered multiple times if `CoreEngine::run()` is
   called multiple times.
 - Fixes README to no longer reflect the Telluris library which is no longer used in the codebase
 
