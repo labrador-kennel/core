@@ -15,7 +15,7 @@ use Whoops\Run;
 function bootstrap() : Injector {
     $run = (new Run())->register();
 
-    $injector = (new Services())->createInjector();
+    $injector = (new Services())->wireObjectGraph();
     $injector->share($run);
 
     $engine = $injector->make(Engine::class);

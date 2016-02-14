@@ -16,8 +16,8 @@ use League\Event\{EmitterInterface, Emitter};
 
 class Services {
 
-    public function createInjector() : Injector {
-        $injector = new Injector();
+    public function wireObjectGraph(Injector $injector = null) : Injector {
+        $injector = $injector ?? new Injector();
 
         $injector->share($injector);
         $injector->share(Emitter::class);
