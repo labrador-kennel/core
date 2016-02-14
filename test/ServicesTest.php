@@ -10,13 +10,13 @@ use PHPUnit_Framework_TestCase as UnitTestCase;
 class ServicesTest extends UnitTestCase {
 
     public function testInjectorInstanceCreated() {
-        $injector = (new Services())->createInjector();
+        $injector = (new Services())->wireObjectGraph();
 
         $this->assertInstanceOf(Injector::class, $injector);
     }
 
     public function testInjectorCreatesEngine() {
-        $injector = (new Services())->createInjector();
+        $injector = (new Services())->wireObjectGraph();
 
         $this->assertInstanceOf(CoreEngine::class, $injector->make(CoreEngine::class));
     }
