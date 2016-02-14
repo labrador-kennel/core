@@ -1,5 +1,14 @@
 # Changelog
 
+## v1.2.0 - 2016-02-14
+
+- **BC BREAK** Renames the `Services::createInjector` to `Services::wireObjectGraph` and allows the passing of an Auryn\Injector 
+  that services will be added to instead of simply creating a service container.
+- Adds the ability to create a custom event object with the StandardEventFactory through the `StandardEventFactory::register(eventName, factoryFn)` 
+  method. The `factoryFn` MUST return an instance of `League\Event\EventInterface` with a name that matches `eventName`. An 
+  exception will be thrown if an invalid value is returned.
+- Minor cleanup of composer.json impacting require-dev and suggests
+
 ## v1.1.0 - 2016-02-13
 
 - **BC BREAK** Removes UnsupportedOperationException and EventStub as they were not used in the codebase
