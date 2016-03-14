@@ -79,7 +79,10 @@ class PluginManagerTest extends UnitTestCase {
     public function testGettingUnregisteredPluginThrowsException() {
         $manager = $this->getPluginManager();
         $msg = 'Could not find a registered plugin named "%s"';
-        $this->setExpectedException(NotFoundException::class, sprintf($msg, PluginStub::class));
+
+        $this->expectException(NotFoundException::class);
+        $this->expectExceptionMessage(sprintf($msg, PluginStub::class));
+
         $manager->getPlugin(PluginStub::class);
     }
 
@@ -120,7 +123,6 @@ class PluginManagerTest extends UnitTestCase {
 
         $engine = $this->getMockBuilder(Engine::class)->disableOriginalConstructor()->getMock();
 
-        $env = $this->getMockBuilder(Environment::class)->disableOriginalConstructor()->getMock();
         $eventDispatcher->emit(Engine::ENGINE_BOOTUP_EVENT, [new EngineBootupEvent(), $engine]);
         $this->assertTrue($plugin->wasCalled());
     }
@@ -175,7 +177,10 @@ class PluginManagerTest extends UnitTestCase {
 
         $exc = CircularDependencyException::class;
         $msg = "A circular dependency was found with Cspray\\Labrador\\Test\\Stub\\RequiresCircularDependentStub requiring Cspray\\Labrador\\Test\\Stub\\CircularDependencyPluginStub.";
-        $this->setExpectedException($exc, $msg);
+
+        $this->expectException($exc);
+        $this->expectExceptionMessage($msg);
+
         $booter->bootPlugins();
     }
 
@@ -188,7 +193,9 @@ class PluginManagerTest extends UnitTestCase {
 
         $exc = PluginDependencyNotProvidedException::class;
         $msg = 'Cspray\\Labrador\\Test\\Stub\\RequiresNotPresentPlugin requires a plugin that is not registered: SomeAwesomePlugin.';
-        $this->setExpectedException($exc, $msg);
+
+        $this->expectException($exc);
+        $this->expectExceptionMessage($msg);
 
         $booter->bootPlugins();
     }

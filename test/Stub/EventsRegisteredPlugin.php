@@ -23,11 +23,4 @@ class EventsRegisteredPlugin implements EventAwarePlugin {
         $this->called = true;
     }
 
-    /**
-     * Perform any actions that should be
-     */
-    public function boot() {
-        // TODO: Implement boot() method.
-    }
-
 }

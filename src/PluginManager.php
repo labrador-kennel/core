@@ -12,8 +12,19 @@ declare(strict_types=1);
 
 namespace Cspray\Labrador;
 
-use Cspray\Labrador\Plugin\{Pluggable, Plugin, ServiceAwarePlugin, EventAwarePlugin, PluginDependentPlugin};
-use Cspray\Labrador\Exception\{CircularDependencyException, NotFoundException, PluginDependencyNotProvidedException};
+use Cspray\Labrador\Plugin\{
+    BootablePlugin,
+    Pluggable,
+    Plugin,
+    ServiceAwarePlugin,
+    EventAwarePlugin,
+    PluginDependentPlugin
+};
+use Cspray\Labrador\Exception\{
+    CircularDependencyException,
+    NotFoundException,
+    PluginDependencyNotProvidedException
+};
 use Auryn\Injector;
 use Ardent\Collection\HashMap;
 use League\Event\EmitterInterface;
@@ -108,8 +119,9 @@ class PluginManager implements Pluggable {
                     $this->handlePluginDependencies($plugin);
                     $this->handlePluginServices($plugin);
                     $this->handlePluginEvents($plugin);
-                    $plugin->boot();
+                    $this->bootPlugin($plugin);
                     $this->finishLoading($plugin);
+
                 }
             }
 
@@ -158,6 +170,12 @@ class PluginManager implements Pluggable {
             private function handlePluginEvents(Plugin $plugin) {
                 if ($plugin instanceof EventAwarePlugin) {
                     $plugin->registerEventListeners($this->emitter);
+                }
+            }
+
+            private function bootPlugin(Plugin $plugin) {
+                if ($plugin instanceof BootablePlugin) {
+                    $plugin->boot();
                 }
             }
         };

@@ -16,13 +16,6 @@ class ServicesRegisteredPlugin implements ServiceAwarePlugin {
     }
 
     /**
-     * Perform any actions that should be
-     */
-    public function boot() {
-        // TODO: Implement boot() method.
-    }
-
-    /**
      * Register any services that the Plugin provides.
      *
      * @param Injector $injector
