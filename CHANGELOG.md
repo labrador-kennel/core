@@ -1,5 +1,11 @@
 # Changelog
 
+## v1.2.1 - 2016-03-??
+
+- Updates Auryn to 1.2.
+- Updates several dev dependencies.
+- Updates README.md to appropriately reflect move to labrador-kennel organization.
+
 ## v1.2.0 - 2016-02-14
 
 - **BC BREAK** Renames the `Services::createInjector` to `Services::wireObjectGraph` and allows the passing of an Auryn\Injector 

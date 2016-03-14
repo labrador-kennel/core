@@ -12,7 +12,7 @@
     ],
     "require": {
         "php": "~7.0",
-        "rdlowrey/auryn": "~1.1",
+        "rdlowrey/auryn": "1.2.0",
         "league/event": "~2.1",
         "morrisonlevi/ardent": "~0.20",
         "filp/whoops": "~2.0.0"
