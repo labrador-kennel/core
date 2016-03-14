@@ -1,6 +1,7 @@
 # Labrador
 
 [![Travis](https://travis-ci.org/labrador-kennel/core.svg?branch=master)](https://travis-ci.org/labrador-kennel/core)
+[![Scrutinizer Coverage](https://img.shields.io/scrutinizer/coverage/g/labrador-kennel/core.svg?style=flat-square)](https://scrutinizer-ci.com/g/labrador-kennel/core/)
 [![GitHub license](https://img.shields.io/github/license/labrador-kennel/core.svg?style=flat-square)](http://opensource.org/licenses/MIT)
 [![GitHub release](https://img.shields.io/github/release/labrador-kennel/core.svg?style=flat-square)](https://github.com/cspray/labrador/releases/latest)
 
