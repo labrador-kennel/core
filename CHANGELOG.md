@@ -1,6 +1,6 @@
 # Changelog
 
-## v1.2.1 - 2016-03-??
+## v1.2.1 - 2016-03-13
 
 - Updates Auryn to 1.2.
 - Updates several dev dependencies.
