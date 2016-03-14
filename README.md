@@ -18,19 +18,11 @@ You can checkout a "Hello World" example below to get started quickly.
 
 ## Installation
 
-There's 2 supported ways to install Labrador:
-
-1. Composer
-
-We recommend you install Labrador via Composer.
+We only support installing Labrador via [Composer](https://getcomposer.org)
  
-`composer require cspray/labrador`
-
-2. Git
-
-If Composer is too fancy for your blood you can always clone this repo.
-
-`git clone git@github.com/cspray/labrador`
+```
+composer require cspray/labrador
+```
 
 ## Hello World
 
