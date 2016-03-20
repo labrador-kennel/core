@@ -12,8 +12,4 @@ use Cspray\Labrador\Plugin\Plugin;
 
 class PluginStub implements Plugin {
 
-    public function boot() {
-
-    }
-
 }

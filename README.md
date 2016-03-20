@@ -1,9 +1,10 @@
-# Labrador
+# Labrador Core
 
 [![Travis](https://travis-ci.org/labrador-kennel/core.svg?branch=master)](https://travis-ci.org/labrador-kennel/core)
 [![Scrutinizer Coverage](https://img.shields.io/scrutinizer/coverage/g/labrador-kennel/core.svg?style=flat-square)](https://scrutinizer-ci.com/g/labrador-kennel/core/)
 [![GitHub license](https://img.shields.io/github/license/labrador-kennel/core.svg?style=flat-square)](http://opensource.org/licenses/MIT)
 [![GitHub release](https://img.shields.io/github/release/labrador-kennel/core.svg?style=flat-square)](https://github.com/cspray/labrador/releases/latest)
+[![Dependency Status](https://www.versioneye.com/user/projects/56ee922735630e0029dafb5f/badge.svg?style=flat)](https://www.versioneye.com/user/projects/56ee922735630e0029dafb5f)
 
 A minimalist PHP 7.0+ library that provides core "modules" to facilitate creating small-to-medium sized PHP 
 applications.
@@ -11,7 +12,7 @@ applications.
 - **Data Structures** Provided through the [Ardent](https://github.com/morrisonlevi/Ardent) library.
 - **IoC Container** Provided through the [Auryn](https://github.com/rdlowrey/Auryn) library.
 - **Events** Provided through [The PHP League Event](https://github.com/thephpleague/event) library.
-- **Plugins** A series of simple to implement interfaces provided by Labrador. Plugins can register services to the IoC container, attach callbacks to events and perform bootup actions.
+- **Plugins** A series of simple to implement interfaces provided by Labrador. Plugins can register services to the IoC container, attach callbacks to events, perform bootup actions, and depend on other Plugins!
 - **Engines** A service that ties events and plugins together to execute your application's primary logic.
 
 You can checkout a "Hello World" example below to get started quickly.

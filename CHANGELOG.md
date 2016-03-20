@@ -1,5 +1,15 @@
 # Changelog
 
+## v2.0.0 - 2016-??-??
+
+- **BC BREAK** Removes the `Plugin::boot` method and introduces a new `BootablePlugin` interface. In practice very few
+  Plugins actually needed to use the `boot` method. If your Plugin *does*  make use of this method you'll need to make 
+  sure that you implement this new interface otherwise your Plugin **WILL NOT** boot. If you *don't* make use of this 
+  method you can now remove the useless code from your codebase.
+- Updates Auryn to 1.4.0
+- Updates Whoops to 2.1.0
+- Fixes deprecated uses of `setExpectedException` in test suite.
+
 ## v1.2.1 - 2016-03-13
 
 - Updates Auryn to 1.2.

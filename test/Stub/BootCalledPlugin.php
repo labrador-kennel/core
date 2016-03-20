@@ -1,7 +1,7 @@
 <?php
 
 /**
- * 
+ *
  * @license See LICENSE in source root
  * @version 1.0
  * @since   1.0
@@ -9,9 +9,9 @@
 
 namespace Cspray\Labrador\Test\Stub;
 
-use Cspray\Labrador\Plugin\Plugin;
+use Cspray\Labrador\Plugin\BootablePlugin;
 
-class BootCalledPlugin implements Plugin {
+class BootCalledPlugin implements BootablePlugin {
 
     private $bootCalled = false;
 
@@ -23,4 +23,4 @@ class BootCalledPlugin implements Plugin {
         $this->bootCalled = true;
     }
 
-} 
+}

@@ -8,11 +8,11 @@ declare(strict_types = 1);
 
 namespace Cspray\Labrador\Test\Stub;
 
-use Cspray\Labrador\Plugin\PluginDependentPlugin;
+use Cspray\Labrador\Plugin\{BootablePlugin, PluginDependentPlugin};
 use Auryn\Injector;
 
 
-class FooPluginDependentStub implements PluginDependentPlugin {
+class FooPluginDependentStub implements PluginDependentPlugin, BootablePlugin {
 
     private $injector;
     private $dependsOnProvided;

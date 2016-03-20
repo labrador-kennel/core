@@ -3,21 +3,17 @@
 declare(strict_types=1);
 
 /**
- * Objects that interact with the Labrador engine or an application written on top
- * of Labrador; primarily this will involve making use of the EventAwarePlugin and
- * ServiceAwarePlugin interfaces to respond to triggered events or provide services.
+ * An identifying interface for objects that extend or hook into Labrador provided functionality; typically you would
+ * not implement this interface directly but implement one of the interfaces that extend Plugin.
  *
  * @license See LICENSE in source root
+ * 
+ * @see \Cspray\Labrador\Plugin\BootablePlugin
+ * @see \Cspray\Labrador\Plugin\EventAwarePlugin
+ * @see \Cspray\Labrador\Plugin\PluginDependentPlugin
+ * @see \Cspray\Labrador\Plugin\ServiceAwarePlugin
  */
 
 namespace Cspray\Labrador\Plugin;
 
-interface Plugin {
-
-    /**
-     * Perform any actions that should be completed by your Plugin before the
-     * primary execution of your app is kicked off.
-     */
-    public function boot();
-
-}
+interface Plugin {}

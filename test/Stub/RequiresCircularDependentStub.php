@@ -13,14 +13,6 @@ use Cspray\Labrador\Plugin\PluginDependentPlugin;
 class RequiresCircularDependentStub implements PluginDependentPlugin {
 
     /**
-     * Perform any actions that should be completed by your Plugin before the
-     * primary execution of your app is kicked off.
-     */
-    public function boot() {
-
-    }
-
-    /**
      * Return an array of plugin names that this plugin depends on.
      *
      * @return array
