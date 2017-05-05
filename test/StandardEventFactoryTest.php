@@ -15,7 +15,7 @@ use Cspray\Labrador\Exception\InvalidArgumentException;
 use Cspray\Labrador\Test\Stub\FooEventStub;
 use League\Event\Event;
 use League\Event\EventInterface;
-use PHPUnit_Framework_TestCase as UnitTestCase;
+use PHPUnit\Framework\TestCase as UnitTestCase;
 
 class StandardEventFactoryTest extends UnitTestCase {
 

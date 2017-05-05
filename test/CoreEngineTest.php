@@ -22,7 +22,7 @@ use Auryn\Injector;
 use League\Event\{EmitterInterface, Emitter as EventEmitter};
 use Cspray\Labrador\Test\Stub\ExtraEventEmitArgs;
 use League\Event\Emitter;
-use PHPUnit_Framework_TestCase as UnitTestCase;
+use PHPUnit\Framework\TestCase as UnitTestCase;
 
 class CoreEngineTest extends UnitTestCase {
 
@@ -30,7 +30,7 @@ class CoreEngineTest extends UnitTestCase {
     private $mockPluginManager;
 
     public function setUp() {
-        $this->mockEventDispatcher = $this->getMock(EmitterInterface::class);
+        $this->mockEventDispatcher = $this->createMock(EmitterInterface::class);
         $this->mockPluginManager = $this->getMockBuilder(PluginManager::class)->disableOriginalConstructor()->getMock();
     }
 
@@ -110,7 +110,7 @@ class CoreEngineTest extends UnitTestCase {
 
     public function testRegisteredPluginsGetBooted() {
         $emitter = new EventEmitter();
-        $pluginManager = new PluginManager($this->getMock(Injector::class), $emitter);
+        $pluginManager = new PluginManager($this->createMock(Injector::class), $emitter);
         $engine = $this->getEngine($emitter, $pluginManager);
 
         $plugin = new BootCalledPlugin('boot_called_plugin');
@@ -135,7 +135,7 @@ class CoreEngineTest extends UnitTestCase {
      */
     public function testProxyToEventEmitter($method, $event) {
         $cb = function() {};
-        $emitter = $this->getMock(EmitterInterface::class);
+        $emitter = $this->createMock(EmitterInterface::class);
         $emitter->expects($this->once())
                 ->method('addListener')
                 ->with($event, $cb);

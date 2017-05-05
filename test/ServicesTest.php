@@ -5,7 +5,7 @@ namespace Cspray\Labrador\Test;
 
 use Cspray\Labrador\{CoreEngine, Services};
 use Auryn\Injector;
-use PHPUnit_Framework_TestCase as UnitTestCase;
+use PHPUnit\Framework\TestCase as UnitTestCase;
 
 class ServicesTest extends UnitTestCase {
 
