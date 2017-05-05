@@ -34,7 +34,7 @@ use Cspray\Labrador\Test\Stub\{
 
 use League\Event\{EmitterInterface, Emitter as EventEmitter};
 use Auryn\Injector;
-use PHPUnit_Framework_TestCase as UnitTestCase;
+use PHPUnit\Framework\TestCase as UnitTestCase;
 
 class PluginManagerTest extends UnitTestCase {
 
@@ -42,7 +42,7 @@ class PluginManagerTest extends UnitTestCase {
     private $mockInjector;
 
     public function setUp() {
-        $this->mockDispatcher = $this->getMock(EmitterInterface::class);
+        $this->mockDispatcher = $this->createMock(EmitterInterface::class);
         $this->mockInjector = $this->getMockBuilder(Injector::class)->disableOriginalConstructor()->getMock();
     }
 
