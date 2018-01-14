@@ -1,6 +1,6 @@
 # Changelog
 
-## v3.0.0-rc1 - 2018-01-14
+## v3.0.0-beta - 2018-01-14
 
 **This release represents a major BC Break as we incorporate Amphp's Event Loop support 
 and move to an async architecture.** It should be assumed that most items below will 
