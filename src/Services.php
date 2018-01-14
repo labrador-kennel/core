@@ -12,7 +12,7 @@ declare(strict_types=1);
 namespace Cspray\Labrador;
 
 use Auryn\Injector;
-use League\Event\{EmitterInterface, Emitter};
+use Cspray\Labrador\AsyncEvent\{Emitter, AmpEmitter};
 
 class Services {
 
@@ -20,8 +20,8 @@ class Services {
         $injector = $injector ?? new Injector();
 
         $injector->share($injector);
-        $injector->share(Emitter::class);
-        $injector->alias(EmitterInterface::class, Emitter::class);
+        $injector->share(AmpEmitter::class);
+        $injector->alias(Emitter::class, AmpEmitter::class);
 
         $injector->share(PluginManager::class);
         $injector->share(CoreEngine::class);

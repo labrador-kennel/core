@@ -8,6 +8,7 @@ declare(strict_types=1);
  * directly to satisfy the Pluggable interface.
  *
  * @license See LICENSE in source root
+ * @internal It is not recommended you instantiate this yourself and let the framework handle interactions with this object.
  */
 
 namespace Cspray\Labrador;
@@ -22,12 +23,14 @@ use Cspray\Labrador\Plugin\{
 };
 use Cspray\Labrador\Exception\{
     CircularDependencyException,
+    InvalidArgumentException,
     NotFoundException,
     PluginDependencyNotProvidedException
 };
+use Cspray\Labrador\AsyncEvent\Emitter;
 use Auryn\Injector;
-use Ardent\Collection\HashMap;
-use League\Event\EmitterInterface;
+use ArrayObject;
+
 
 /**
  * It is HIGHLY recommended that if you create a Plugin it winds up
@@ -44,12 +47,12 @@ class PluginManager implements Pluggable {
 
     /**
      * @param Injector $injector
-     * @param EmitterInterface $emitter
+     * @param Emitter $emitter
      */
-    public function __construct(Injector $injector, EmitterInterface $emitter) {
+    public function __construct(Injector $injector, Emitter $emitter) {
         $this->emitter = $emitter;
         $this->injector = $injector;
-        $this->plugins = new HashMap();
+        $this->plugins = new ArrayObject();
         $this->booter = $this->getBooter();
         $this->registerBooter();
     }
@@ -61,17 +64,24 @@ class PluginManager implements Pluggable {
         };
         $cb = $cb->bindTo($this);
 
-        $this->emitter->addListener(Engine::ENGINE_BOOTUP_EVENT, $cb, EmitterInterface::P_HIGH);
+        $this->emitter->on(Engine::ENGINE_BOOTUP_EVENT, $cb);
     }
 
-    public function registerPlugin(Plugin $plugin) {
-        $this->plugins[get_class($plugin)] = $plugin;
+    public function registerPlugin(Plugin $plugin) : Pluggable {
+        $pluginName = get_class($plugin);
+        if ($this->hasPlugin($pluginName)) {
+            throw new InvalidArgumentException("A Plugin with name $pluginName has already been registered and may not be registered again.");
+        }
+
+        $this->plugins[$pluginName] = $plugin;
         if ($this->pluginsBooted) {
             $this->booter->loadPlugin($plugin);
         }
+
+        return $this;
     }
 
-    public function removePlugin(string $name) {
+    public function removePlugin(string $name) : void {
         unset($this->plugins[$name]);
     }
 
@@ -79,8 +89,8 @@ class PluginManager implements Pluggable {
         return isset($this->plugins[$name]);
     }
 
-    public function getPlugins() : array {
-        return iterator_to_array($this->plugins);
+    public function getPlugins() : iterable {
+        return $this->plugins;
     }
 
     public function getPlugin(string $name) : Plugin {
@@ -101,7 +111,7 @@ class PluginManager implements Pluggable {
             private $injector;
             private $emitter;
 
-            public function __construct(Pluggable $pluggable, Injector $injector, EmitterInterface $emitter) {
+            public function __construct(Pluggable $pluggable, Injector $injector, Emitter $emitter) {
                 $this->pluggable = $pluggable;
                 $this->injector = $injector;
                 $this->emitter = $emitter;
@@ -121,7 +131,6 @@ class PluginManager implements Pluggable {
                     $this->handlePluginEvents($plugin);
                     $this->bootPlugin($plugin);
                     $this->finishLoading($plugin);
-
                 }
             }
 

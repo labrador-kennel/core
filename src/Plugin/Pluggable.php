@@ -16,12 +16,12 @@ interface Pluggable {
      * @param Plugin $plugin
      * @return $this
      */
-    public function registerPlugin(Plugin $plugin);
+    public function registerPlugin(Plugin $plugin) : Pluggable;
 
     /**
      * @param string $name
      */
-    public function removePlugin(string $name);
+    public function removePlugin(string $name) : void;
 
     /**
      * @param string $name
@@ -40,6 +40,6 @@ interface Pluggable {
      *
      * @return Plugin[]
      */
-    public function getPlugins() : array;
+    public function getPlugins() : iterable;
 
 }

@@ -11,14 +11,15 @@
         }
     ],
     "require": {
-        "php": "~7.0",
+        "php": "~7.1",
+        "amphp/amp": "~2.0.5",
+        "cspray/labrador-async-event": "~1.2",
         "rdlowrey/auryn": "~1.4",
-        "league/event": "~2.1",
-        "morrisonlevi/ardent": "~0.20",
         "filp/whoops": "~2.1"
     },
     "require-dev": {
-        "phpunit/phpunit": "~6.1"
+      "amphp/phpunit-util": "~1.0",
+      "phpunit/phpunit": "~6.5"
     },
     "autoload": {
         "psr-4": {

@@ -3,7 +3,7 @@
 namespace Cspray\Labrador\Test\Stub;
 
 use Cspray\Labrador\Plugin\EventAwarePlugin;
-use League\Event\EmitterInterface;
+use Cspray\Labrador\AsyncEvent\Emitter;
 
 class EventsRegisteredPlugin implements EventAwarePlugin {
 
@@ -16,10 +16,10 @@ class EventsRegisteredPlugin implements EventAwarePlugin {
     /**
      * Register the event listeners your Plugin responds to.
      *
-     * @param EmitterInterface $emitter
+     * @param Emitter $emitter
      * @return void
      */
-    public function registerEventListeners(EmitterInterface $emitter) {
+    public function registerEventListeners(Emitter $emitter) : void {
         $this->called = true;
     }
 

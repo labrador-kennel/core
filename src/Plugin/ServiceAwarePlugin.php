@@ -5,7 +5,7 @@ declare(strict_types=1);
 /**
  * A Plugin that provides a service, as an object, to the Auryn IoC container powering
  * the Labrador application.
- * 
+ *
  * @license See LICENSE in source root
  */
 
@@ -21,6 +21,6 @@ interface ServiceAwarePlugin extends Plugin {
      * @param Injector $injector
      * @return void
      */
-    public function registerServices(Injector $injector);
+    public function registerServices(Injector $injector) : void;
 
-} 
+}

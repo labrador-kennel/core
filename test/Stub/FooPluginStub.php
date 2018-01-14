@@ -19,7 +19,7 @@ class FooPluginStub implements ServiceAwarePlugin, BootablePlugin {
      * Perform any actions that should be completed by your Plugin before the
      * primary execution of your app is kicked off.
      */
-    public function boot() {
+    public function boot() : void {
         $this->numBootCalled++;
     }
 
@@ -33,7 +33,7 @@ class FooPluginStub implements ServiceAwarePlugin, BootablePlugin {
      * @param Injector $injector
      * @return void
      */
-    public function registerServices(Injector $injector) {
+    public function registerServices(Injector $injector) : void {
         $injector->share(FooService::class);
     }
 

@@ -5,7 +5,6 @@ Ensures basic integration works
 
 require_once dirname(dirname(__DIR__)) . '/vendor/autoload.php';
 
-use Cspray\Labrador\Event\ExceptionThrownEvent;
 use function Cspray\Labrador\bootstrap;
 
 $injector = bootstrap();
@@ -14,24 +13,26 @@ $engine = $injector->make(\Cspray\Labrador\Engine::class);
 $engine->onEngineBootup(function() {
     echo "init\n";
 })
-->onAppExecute(function() {
-    echo "execute\n";
-})
-->onAppExecute(function() {
-    echo "oops\n";
-    throw new Exception;
-})
-->onExceptionThrown(function(ExceptionThrownEvent $event) {
-    $exc = get_class($event->getException());
-    echo "handle {$exc}\n";
-})
 ->onAppCleanup(function() {
     echo "cleanup";
-})
-->run();
+});
+
+$app = new \Cspray\Labrador\Test\Stub\ExceptionHandlerApplication(
+    function() {
+        echo "oops in app\n";
+        throw new RuntimeException('exception in app');
+    },
+    function(Throwable $event) {
+        $exc = get_class($event);
+        echo "handle {$exc}\n";
+    }
+);
+
+
+$engine->run($app);
+?>
 --EXPECTF--
 init
-execute
-oops
-handle Exception
+oops in app
+handle RuntimeException
 cleanup

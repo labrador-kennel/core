@@ -8,12 +8,12 @@ declare(strict_types = 1);
 
 namespace Cspray\Labrador\Test\Stub;
 
-use League\Event\Event;
+use Cspray\Labrador\AsyncEvent\StandardEvent;
 
-class FooEventStub extends Event {
+class FooEventStub extends StandardEvent {
 
-    public function __construct() {
-        parent::__construct('foo.event');
+    public function __construct($target) {
+        parent::__construct('foo.event', $target);
     }
 
 }
