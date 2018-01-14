@@ -9,8 +9,6 @@ $injector = bootstrap();
 
 $engine = $injector->make(Engine::class);
 
-$engine->onAppExecute(function() {
-    echo 'Hello World';
-});
+$application = new \Cspray\Labrador\HelloWorldApplication();
 
-$engine->run();
+$engine->run($application);

@@ -7,6 +7,7 @@ use Amp\Loop;
 use Amp\Promise;
 use Auryn\Injector;
 use Cspray\Labrador\AsyncEvent\Emitter;
+use Throwable;
 
 class HelloWorldApplication implements Application {
 
@@ -15,6 +16,7 @@ class HelloWorldApplication implements Application {
 
         Loop::defer(function() use($deferred) {
             echo 'Hello world!';
+            echo PHP_EOL;
             $deferred->resolve();
         });
 
@@ -54,7 +56,11 @@ class HelloWorldApplication implements Application {
      * @param Injector $injector
      * @return void
      */
-    public function registerServices(Injector $injector) {
+    public function registerServices(Injector $injector) : void {
         // noop
+    }
+
+    public function exceptionHandler(Throwable $throwable) : void {
+        throw $throwable;
     }
 }
