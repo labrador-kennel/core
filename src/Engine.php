@@ -10,30 +10,28 @@ declare(strict_types=1);
 
 namespace Cspray\Labrador;
 
+use Cspray\Labrador\AsyncEvent\Emitter;
 use Cspray\Labrador\Plugin\Pluggable;
-use League\Event\EmitterInterface;
 
 interface Engine extends Pluggable {
 
     // These are the bare MINIMUM amount of events that an engine should trigger
-    // An Engine MAY trigger more events but at least these should be
+    // An Engine MAY trigger more events but at least these
     const ENGINE_BOOTUP_EVENT = 'labrador.engine_bootup';
-    const APP_EXECUTE_EVENT = 'labrador.app_execute';
     const APP_CLEANUP_EVENT = 'labrador.app_cleanup';
-    const EXCEPTION_THROWN_EVENT = 'labrador.exception_thrown';
 
     /**
      * Return the event emitter that will emit the events for this Engine.
      *
-     * @return EmitterInterface
+     * @return Emitter
      */
-    public function getEmitter() : EmitterInterface;
+    public function getEmitter() : Emitter;
 
     /**
-     * Perform whatever actions are necessary for this implementation.
+     * Execute the application's primary logic.
      *
-     * @return mixed
+     * @return void
      */
-    public function run();
+    public function run(Application $application) : void;
 
 }

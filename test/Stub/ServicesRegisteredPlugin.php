@@ -21,7 +21,7 @@ class ServicesRegisteredPlugin implements ServiceAwarePlugin {
      * @param Injector $injector
      * @return void
      */
-    public function registerServices(Injector $injector) {
+    public function registerServices(Injector $injector) : void {
         $this->called = true;
     }
 }

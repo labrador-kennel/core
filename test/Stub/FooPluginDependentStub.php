@@ -25,7 +25,7 @@ class FooPluginDependentStub implements PluginDependentPlugin, BootablePlugin {
      * Perform any actions that should be completed by your Plugin before the
      * primary execution of your app is kicked off.
      */
-    public function boot() {
+    public function boot() : void {
         $shares = $this->injector->inspect();
         $this->dependsOnProvided = array_key_exists('cspray\labrador\test\stub\fooservice', $shares[Injector::I_SHARES]);
     }
@@ -39,7 +39,7 @@ class FooPluginDependentStub implements PluginDependentPlugin, BootablePlugin {
      *
      * @return array
      */
-    public function dependsOn() : array {
+    public function dependsOn() : iterable {
         return [FooPluginStub::class];
     }
 }

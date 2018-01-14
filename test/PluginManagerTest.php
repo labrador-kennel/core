@@ -9,14 +9,12 @@
 
 namespace Cspray\Labrador\Test;
 
+use Amp\Loop;
 use Cspray\Labrador\{Engine, PluginManager};
-use Cspray\Labrador\Event\EngineBootupEvent;
 use Cspray\Labrador\Plugin\Plugin;
 
 use Cspray\Labrador\Exception\{
-    NotFoundException,
-    CircularDependencyException,
-    PluginDependencyNotProvidedException
+    InvalidArgumentException, NotFoundException, CircularDependencyException, PluginDependencyNotProvidedException
 };
 
 use Cspray\Labrador\Test\Stub\{
@@ -31,8 +29,9 @@ use Cspray\Labrador\Test\Stub\{
     RequiresNotPresentPlugin,
     ServicesRegisteredPlugin
 };
-
-use League\Event\{EmitterInterface, Emitter as EventEmitter};
+use Cspray\Labrador\AsyncEvent\{
+    Emitter, AmpEmitter as EventEmitter, Event, StandardEvent
+};
 use Auryn\Injector;
 use PHPUnit\Framework\TestCase as UnitTestCase;
 
@@ -42,7 +41,7 @@ class PluginManagerTest extends UnitTestCase {
     private $mockInjector;
 
     public function setUp() {
-        $this->mockDispatcher = $this->createMock(EmitterInterface::class);
+        $this->mockDispatcher = $this->createMock(Emitter::class);
         $this->mockInjector = $this->getMockBuilder(Injector::class)->disableOriginalConstructor()->getMock();
     }
 
@@ -55,6 +54,10 @@ class PluginManagerTest extends UnitTestCase {
         $m = $r->getMethod('getBooter');
         $m->setAccessible(true);
         return $m->invoke($mgr);
+    }
+
+    private function standardEvent(string $name, $target, array $eventData = []) : Event {
+        return new StandardEvent($name, $target, $eventData);
     }
 
     public function testManagerHasRegisteredPlugin() {
@@ -117,13 +120,16 @@ class PluginManagerTest extends UnitTestCase {
      * @dataProvider correctPluginMethodsCalledProvider
      */
     public function testPluginMethodsCalled(Plugin $plugin) {
-        $eventDispatcher = new EventEmitter();
-        $manager = new PluginManager($this->mockInjector, $eventDispatcher);
+        $emitter = new EventEmitter();
+        $manager = new PluginManager($this->mockInjector, $emitter);
         $manager->registerPlugin($plugin);
 
         $engine = $this->getMockBuilder(Engine::class)->disableOriginalConstructor()->getMock();
 
-        $eventDispatcher->emit(Engine::ENGINE_BOOTUP_EVENT, [new EngineBootupEvent(), $engine]);
+        Loop::run(function() use($emitter, $engine) {
+            $emitter->emit($this->standardEvent(Engine::ENGINE_BOOTUP_EVENT, $engine));
+        });
+
         $this->assertTrue($plugin->wasCalled());
     }
 
@@ -204,7 +210,9 @@ class PluginManagerTest extends UnitTestCase {
         $emitter = new EventEmitter();
         $manager = new PluginManager($this->mockInjector, $emitter);
 
-        $emitter->emit(Engine::ENGINE_BOOTUP_EVENT);
+        Loop::run(function() use($emitter) {
+            $emitter->emit($this->standardEvent(Engine::ENGINE_BOOTUP_EVENT, new \stdClass()));
+        });
 
         $plugin = new BootCalledPlugin();
 
@@ -213,4 +221,16 @@ class PluginManagerTest extends UnitTestCase {
         $this->assertTrue($plugin->wasCalled());
     }
 
+    public function testRegisteringSamePluginThrowsException() {
+        $injector = new Injector();
+        $manager = new PluginManager($injector, $this->mockDispatcher);
+
+        $plugin = new FooPluginStub();
+        $manager->registerPlugin($plugin);
+
+        $this->expectException(InvalidArgumentException::class);
+        $this->expectExceptionMessage('A Plugin with name ' . FooPluginStub::class . ' has already been registered and may not be registered again.');
+
+        $manager->registerPlugin($plugin);
+    }
 }

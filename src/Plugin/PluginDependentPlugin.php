@@ -17,8 +17,8 @@ interface PluginDependentPlugin extends Plugin {
     /**
      * Return an array of plugin names that this plugin depends on.
      *
-     * @return array
+     * @return iterable
      */
-    public function dependsOn() : array;
+    public function dependsOn() : iterable;
 
 }

@@ -23,9 +23,12 @@ If it is a bugfix your PR should include, at minimum, a unit test that indicates
 unit test that indicates the bug has been fixed. If it is a new feature ensure that all of the functionality 
 has been appropriately covered.
 
-## Update CHANGELOG appropriately
+## Update CHANGELOG and docs/ appropriately
 
 The CHANGELOG should have an upcoming minor and bugfix version placeholder. If you are submitting a fix 
 add an entry to the bugfix version with the change made. If you are submitting a new feature or removing 
 something add an entry to the minor version.
+
+If you added new features or substantially refactored existing functionality please ensure 
+the `docs/` directory is up to date.
 

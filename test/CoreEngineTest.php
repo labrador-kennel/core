@@ -9,114 +9,149 @@
 
 namespace Cspray\Labrador\Test;
 
-use Cspray\Labrador\{Engine, CoreEngine, PluginManager};
-use Cspray\Labrador\Event\{
-    AppExecuteEvent,
-    ExceptionThrownEvent,
-    AppCleanupEvent,
-    EngineBootupEvent
+use Amp\Deferred;
+use Amp\Delayed;
+use Amp\Loop;
+use Amp\Success;
+use Cspray\Labrador\{
+    Application, Engine, CoreEngine, Exception\InvalidEngineStateException, PluginManager
 };
 use Cspray\Labrador\Exception\Exception;
-use Cspray\Labrador\Test\Stub\{PluginStub, BootCalledPlugin};
+use Cspray\Labrador\Test\Stub\{
+    CallbackApplication, ExceptionHandlerApplication, NoopApplication, PluginStub, BootCalledPlugin
+};
 use Auryn\Injector;
-use League\Event\{EmitterInterface, Emitter as EventEmitter};
+use Cspray\Labrador\AsyncEvent\{
+    AmpEmitter, Emitter, AmpEmitter as EventEmitter, Event
+};
 use Cspray\Labrador\Test\Stub\ExtraEventEmitArgs;
-use League\Event\Emitter;
 use PHPUnit\Framework\TestCase as UnitTestCase;
 
 class CoreEngineTest extends UnitTestCase {
 
-    private $mockEventDispatcher;
+    /**
+     * @var Emitter
+     */
+    private $emitter;
     private $mockPluginManager;
 
     public function setUp() {
-        $this->mockEventDispatcher = $this->createMock(EmitterInterface::class);
+        $this->emitter = new AmpEmitter();
         $this->mockPluginManager = $this->getMockBuilder(PluginManager::class)->disableOriginalConstructor()->getMock();
     }
 
-    private function getEngine(EmitterInterface $eventEmitter = null, PluginManager $pluginManager = null) : CoreEngine {
-        $emitter = $eventEmitter ?: $this->mockEventDispatcher;
+    private function getEngine(Emitter $eventEmitter = null, PluginManager $pluginManager = null) : CoreEngine {
+        $emitter = $eventEmitter ?: $this->emitter;
         $manager = $pluginManager ?: $this->mockPluginManager;
         return new CoreEngine($manager, $emitter);
     }
 
-    public function normalProcessingEventDataProvider() {
-        return [
-            [0, EngineBootupEvent::class],
-            [1, AppExecuteEvent::class],
-            [2, AppCleanupEvent::class]
-        ];
+    private function noopApp() : Application {
+        return new NoopApplication();
     }
 
-    /**
-     * @dataProvider normalProcessingEventDataProvider
-     */
-    public function testEventNormalProcessing($dispatchIndex, $eventType) {
-        $engine = $this->getEngine();
-        $this->mockEventDispatcher->expects($this->at($dispatchIndex))
-                                  ->method('emit')
-                                  ->with(
-                                      $this->callback(function($arg) use($eventType) {
-                                          return $arg instanceof $eventType;
-                                      }),
-                                      $this->callback(function($arg) use($engine) {
-                                          return $arg === $engine;
-                                      })
-                                  );
-        $engine->run();
+    private function callbackApp(callable $callback) : Application {
+        return new CallbackApplication($callback);
     }
 
-    public function testExceptionThrownEventDispatched() {
-        $this->mockEventDispatcher->expects($this->at(0))
-                                  ->method('emit')
-                                  ->willThrowException($exception = new Exception());
-
-        $this->mockEventDispatcher->expects($this->at(1))
-                                  ->method('emit')
-                                  ->with(
-                                      $this->callback(function($arg) use($exception) {
-                                         if ($arg instanceof ExceptionThrownEvent) {
-                                             return $arg->getException() === $exception;
-                                         }
-
-                                         return false;
-                                      })
-                                  );
-
-        $engine = $this->getEngine();
-        $engine->run();
+    private function exceptionHandlerApp(callable $appCallback, callable $handler) : Application {
+        return new ExceptionHandlerApplication($appCallback, $handler);
     }
 
-    public function testPluginCleanupEventDispatchedWhenExceptionCaught() {
-        $this->mockEventDispatcher->expects($this->at(0))
-                                  ->method('emit')
-                                  ->willThrowException($exception = new Exception());
+    public function testEventsExecutedInOrder() {
+        $data = new \stdClass();
+        $data->data = [];
+        $bootUpCb = function() use($data) {
+            $data->data[] = 1;
+            yield new Delayed(0);
+            $data->data[] = 2;
+            yield new Delayed(0);
+            $data->data[] = 3;
+            yield new Delayed(0);
+        };
+
+        $cleanupCb = function() use($data) {
+            $data->data[] = 4;
+            yield new Delayed(0);
+            $data->data[] = 5;
+            yield new Delayed(0);
+            $data->data[] = 6;
+            yield new Delayed(0);
+        };
+
         $engine = $this->getEngine();
+        $engine->onEngineBootup($bootUpCb);
+        $engine->onAppCleanup($cleanupCb);
 
-        # Remember method invocation 1 is gonna be the exception event
-        $this->mockEventDispatcher->expects($this->at(2))
-                                  ->method('emit')
-                                  ->with(
-                                      $this->callback(function($arg) {
-                                          return $arg instanceof AppCleanupEvent;
-                                      }),
-                                      $this->callback(function($arg) use($engine) {
-                                          return $arg === $engine;
-                                      })
-                                  );
+        $engine->run(new NoopApplication());
 
-        $engine->run();
+        $this->assertSame([1,2,3,4,5,6], $data->data);
+    }
+
+    public function testExecuteAppFinishesBeforeAppCleanup() {
+        $data = new \stdClass();
+        $data->data = [];
+        $executeAppCb = function() use($data) {
+            $data->data[] = 1;
+            yield new Delayed(0);
+            $data->data[] = 2;
+            yield new Delayed(0);
+            $data->data[] = 3;
+            yield new Delayed(0);
+            return new Success();
+        };
+
+        $cleanupCb = function() use($data) {
+            $data->data[] = 4;
+            yield new Delayed(0);
+            $data->data[] = 5;
+            yield new Delayed(0);
+            $data->data[] = 6;
+            yield new Delayed(0);
+        };
+
+        $app = $this->callbackApp($executeAppCb);
+
+        $engine = $this->getEngine();
+        $engine->onAppCleanup($cleanupCb);
+
+        $engine->run($app);
+
+        $this->assertSame([1,2,3,4,5,6], $data->data);
+    }
+
+    public function testApplicationHandlerInvokedIfApplicationExecuteThrowsException() {
+        $engine = $this->getEngine();
+        $data = new \stdClass();
+        $data->exception = null;
+
+        $throwExceptionCb = function() {
+            throw new Exception('Exception thrown in app');
+        };
+
+        $handler = function(\Throwable $error) use($data) {
+            $data->exception = $error;
+        };
+
+        $app = $this->exceptionHandlerApp($throwExceptionCb, $handler);
+
+        $engine->run($app);
+
+        /** @var $event Event */
+        $exception = $data->exception;
+
+        $this->assertInstanceOf(Exception::class, $exception);
+        $this->assertSame('Exception thrown in app', $exception->getMessage());
     }
 
     public function testRegisteredPluginsGetBooted() {
-        $emitter = new EventEmitter();
-        $pluginManager = new PluginManager($this->createMock(Injector::class), $emitter);
-        $engine = $this->getEngine($emitter, $pluginManager);
+        $pluginManager = new PluginManager($this->createMock(Injector::class), $this->emitter);
+        $engine = $this->getEngine($this->emitter, $pluginManager);
 
         $plugin = new BootCalledPlugin('boot_called_plugin');
         $engine->registerPlugin($plugin);
 
-        $engine->run();
+        $engine->run($this->noopApp());
 
         $this->assertTrue($plugin->wasCalled(), 'The Plugin::boot method was not called');
     }
@@ -124,9 +159,7 @@ class CoreEngineTest extends UnitTestCase {
     public function eventEmitterProxyData() {
         return [
             ['onEngineBootup', Engine::ENGINE_BOOTUP_EVENT],
-            ['onAppExecute', Engine::APP_EXECUTE_EVENT],
-            ['onAppCleanup', Engine::APP_CLEANUP_EVENT],
-            ['onExceptionThrown', Engine::EXCEPTION_THROWN_EVENT]
+            ['onAppCleanup', Engine::APP_CLEANUP_EVENT]
         ];
     }
 
@@ -135,37 +168,25 @@ class CoreEngineTest extends UnitTestCase {
      */
     public function testProxyToEventEmitter($method, $event) {
         $cb = function() {};
-        $emitter = $this->createMock(EmitterInterface::class);
-        $emitter->expects($this->once())
-                ->method('addListener')
-                ->with($event, $cb);
-
-        $engine = $this->getEngine($emitter);
+        $engine = $this->getEngine($this->emitter);
         $engine->$method($cb);
 
-        $engine->run();
+        $this->assertSame(1, $this->emitter->listenerCount($event));
+        // the empty array is listener data
+        $this->assertSame($cb, array_values($this->emitter->listeners($event))[0][0]);
     }
 
-    /**
-     * @dataProvider eventEmitterProxyData
-     */
-    public function testEventEmitArguments($engineMethod, $eventType) {
-        $emitter = new Emitter();
-        $actual = null;
-        $emitter->addListener($eventType, function(...$args) use(&$actual) {
-            array_shift($args); // we expect the first argument to be an event
-            $actual = $args;
+    public function testAppCleanupEventHasCorrectTarget() {
+        $data = new \stdClass();
+        $data->data = null;
+        $this->emitter->on(Engine::APP_CLEANUP_EVENT, function(Event $event) use($data) {
+            $data->data = $event->target();
         });
 
-        $engine = new ExtraEventEmitArgs($this->mockPluginManager, $emitter);
-        if ($eventType === Engine::EXCEPTION_THROWN_EVENT) {
-            $engine->onAppExecute(function() {
-                throw new \Exception();
-            });
-        }
-        $engine->run();
+        $engine = $this->getEngine();
+        $engine->run($app = $this->noopApp());
 
-        $this->assertSame([$engine, 1, 'foo', 'bar'], $actual);
+        $this->assertSame($app, $data->data);
     }
 
     public function pluginManagerProxyData() {
@@ -198,20 +219,70 @@ class CoreEngineTest extends UnitTestCase {
         $this->getEngine(null, $pluginManager)->$method($arg);
     }
 
-    public function testEngineBootupOnlyInvokedOnceForMultipleRuns() {
-        $emitter = new Emitter();
-        $engine = $this->getEngine($emitter);
+    public function testCallingRunMultipleTimesThrowsException() {
+        $data = new \stdClass();
+        $data->data = null;
 
-        $count = 0;
-        $engine->onEngineBootup(function() use(&$count) {
-            $count++;
+        $engine = $this->getEngine();
+        $handlerCb = function(\Throwable $throwable) use($data) {
+            $data->data = $throwable;
+        };
+        $appCb = function() use($engine) {
+            $engine->run($this->noopApp());
+            return new Success();
+        };
+        $app = $this->exceptionHandlerApp($appCb, $handlerCb);
+        $engine->run($app);
+
+        $this->assertInstanceOf(InvalidEngineStateException::class, $data->data);
+        $this->assertSame('Engine::run() MUST NOT be called while already running.', $data->data->getMessage());
+    }
+
+    public function testEngineStateAfterRunIsIdle() {
+        $engine = $this->getEngine();
+        $app = new NoopApplication();
+        $engine->run($app);
+
+        $this->assertAttributeSame('idle', 'engineState', $engine);
+    }
+
+    public function testEngineBootupEventCalledOnceOnMultipleRunCalls() {
+        $data = new \stdClass();
+        $data->data = [];
+        $this->emitter->on(Engine::ENGINE_BOOTUP_EVENT, function() use($data) {
+            $data->data[] = 1;
         });
 
-        $engine->run();
-        $this->assertSame(1, $count);
+        $engine = $this->getEngine();
+        $engine->run($this->noopApp());
+        $engine->run($this->noopApp());
 
-        $engine->run();
-        $this->assertSame(1, $count);
+        $this->assertSame([1], $data->data);
+    }
+
+    public function testApplicationRegisteredAsPluginOnRun() {
+        $engine = $this->getEngine(null, new PluginManager(new Injector(), $this->emitter));
+        $data = new \stdClass();
+        $data->data = false;
+        $app = $this->callbackApp(function() use($engine, $data) {
+            $data->data = $engine->hasPlugin(CallbackApplication::class);
+        });
+        $engine->run($app);
+
+        $this->assertTrue($data->data);
+    }
+
+    public function testHandlesApplicationAlreadyRegisteredAsPlugin() {
+        $engine = $this->getEngine(null, new PluginManager(new Injector(), $this->emitter));
+        $data = new \stdClass();
+        $data->data = false;
+        $app = $this->callbackApp(function() use($engine, $data) {
+            $data->data = $engine->hasPlugin(CallbackApplication::class);
+        });
+        $engine->registerPlugin($app);
+        $engine->run($app);
+
+        $this->assertTrue($data->data);
     }
 
 }

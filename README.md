@@ -1,21 +1,20 @@
 # Labrador Core
 
 [![Travis](https://travis-ci.org/labrador-kennel/core.svg?branch=master)](https://travis-ci.org/labrador-kennel/core)
-[![Scrutinizer Coverage](https://img.shields.io/scrutinizer/coverage/g/labrador-kennel/core.svg?style=flat-square)](https://scrutinizer-ci.com/g/labrador-kennel/core/)
 [![GitHub license](https://img.shields.io/github/license/labrador-kennel/core.svg?style=flat-square)](http://opensource.org/licenses/MIT)
 [![GitHub release](https://img.shields.io/github/release/labrador-kennel/core.svg?style=flat-square)](https://github.com/cspray/labrador/releases/latest)
 [![Dependency Status](https://www.versioneye.com/user/projects/56ee922735630e0029dafb5f/badge.svg?style=flat)](https://www.versioneye.com/user/projects/56ee922735630e0029dafb5f)
 
-A minimalist PHP 7.0+ library that provides core "modules" to facilitate creating small-to-medium sized PHP 
-applications.
+A minimalist PHP 7.1+ library that provides core "modules" to facilitate creating small-to-medium sized asynchronous
+applications intended to run within an Amp event loop.
 
-- **Data Structures** Provided through the [Ardent](https://github.com/morrisonlevi/Ardent) library.
 - **IoC Container** Provided through the [Auryn](https://github.com/rdlowrey/Auryn) library.
-- **Events** Provided through [The PHP League Event](https://github.com/thephpleague/event) library.
-- **Plugins** A series of simple to implement interfaces provided by Labrador. Plugins can register services to the IoC container, attach callbacks to events, perform bootup actions, and depend on other Plugins!
-- **Engines** A service that ties events and plugins together to execute your application's primary logic.
+- **Event** An event library designed to execute asynchronously in an Amp event loop. A part of Labrador, you can check out [its repo](https://github.com/labrador-kennel/async-event) for more information.
+- **Plugin** A series of simple to implement interfaces provided by Labrador. Plugins can register services to the IoC container, attach callbacks to events, perform bootup actions, and depend on other Plugins!
+- **Application** An interface that you implement that provides the primary integration point for your code and Labrador.
+- **Engine** A service that ties Events, Plugins, and your Application to execute your code.
 
-You can checkout a "Hello World" example below to get started quickly.
+For more information please check out the docs/.
 
 ## Installation
 
@@ -25,74 +24,10 @@ We only support installing Labrador via [Composer](https://getcomposer.org)
 composer require cspray/labrador
 ```
 
-## Hello World
+## Documentation
 
-Here are 2 examples of a Hello World application; one using Labrador directly and the other by implementing 
-a Plugin to do the work for us. Clearly Labrador is overkill for something this simple but it explains how you 
-could use the library.
-
-### Using Labrador Directly
-
-> If you've already installed Labrador you can execute this example by running `php app.php` from the install directory.
-
-```php
-<?php
-
-require_once __DIR__ . '/vendor/autoload.php';
-
-use Cspray\Labrador\Engine;
-use function Cspray\Labrador\bootstrap;
-
-$injector = bootstrap();
-
-$engine = $injector->make(Engine::class);
-
-$engine->onAppExecute(function() {
-    echo 'Hello World';
-});
-
-$engine->run();
-```
-
-### As a Plugin
-
-```php
-<?php
-
-require_once './vendor/autoload.php';
-
-use Cspray\Labrador\CoreEngine;
-use Cspray\Labrador\Plugin\EventAwarePlugin;
-use League\Event\EmitterInterface;
-use function Cspray\Labrador\bootstrap;
-
-class HelloWorldPlugin implements EventAwarePlugin {
-
-    public function getName() {
-        return 'labrador.hello_world';
-    }
-
-    public function boot() {
-        // our app is too simple to do anything here but yours might not be
-    }
-
-    public function registerEventListeners(EmitterInterface $emitter) {
-        $emitter->addListener(CoreEngine::APP_EXECUTE_EVENT, function() {
-            echo 'Hello world!';
-        });
-    }
-
-    // Check out the Plugin\ServiceAwarePlugin if you need to provide services
-    
-}
-
-$injector = bootstrap();
-
-$engine = $injector->make(Engine::class);
-
-$engine->registerPlugin(new HelloWorldPlugin());
-$engine->run();
-```
+Labrador is thoroughly documented in-repo in the `docs/` directory. Please check this out 
+if you'd like to learn more about using Labrador.
 
 ### What's up with the name?
 

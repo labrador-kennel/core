@@ -18,10 +18,5 @@ function bootstrap() : Injector {
     $injector = (new Services())->wireObjectGraph();
     $injector->share($run);
 
-    $engine = $injector->make(Engine::class);
-    $engine->onExceptionThrown(function(ExceptionThrownEvent $event) use($run) {
-        $run->handleException($event->getException());
-    });
-
     return $injector;
 }
