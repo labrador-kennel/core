@@ -12,10 +12,10 @@
     ],
     "require": {
         "php": ">=7.1",
-        "amphp/amp": "~2.0.5",
+        "amphp/amp": "~2.1",
         "cspray/labrador-async-event": "~1.2",
         "rdlowrey/auryn": "~1.4",
-        "filp/whoops": "~2.1"
+        "filp/whoops": "~2.3"
     },
     "require-dev": {
       "amphp/phpunit-util": "~1.0",

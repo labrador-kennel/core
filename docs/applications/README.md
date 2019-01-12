@@ -52,8 +52,7 @@ interface Application extends BootablePlugin, EventAwarePlugin, PluginDependentP
 
 By implementing the available Plugin interfaces you can easily integrate your code into Labrador. 
 The other methods are really the meat of your application; execute() is where you actually 
-do your stuff, registering plugins is anticipated to be something all Applications do, and 
-your Application::exceptionHandler will be used to handle exceptions thrown in the event loop.
+do your stuff and your Application::exceptionHandler will be used to handle exceptions thrown in the event loop.
 
 If you extend your Application from `Cspray\Labrador\StandardApplication` the only method 
 you'll need to implement is `execute()`; leaving the others to be implemented as you need them.
@@ -63,5 +62,5 @@ thrown.
 
 <hr>
 
-You should take a look at the [Engines](./engines) documentation next to learn more 
+You should take a look at the [Engines](../engines) documentation next to learn more 
 about executing your Application.

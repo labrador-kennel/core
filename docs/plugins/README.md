@@ -170,5 +170,5 @@ each method will be called. Plugins are loaded in the following order:
 4. Call `Plugin::boot()` and allow your Plugin to go through any necessary bootstrapping.
  
 
-You should take a look at the [Application](./application) documentation next to learn more 
+You should take a look at the [Application](../application) documentation next to learn more 
 about actually executing your application code.
