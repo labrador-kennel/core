@@ -2,6 +2,8 @@
 
 namespace Cspray\Labrador;
 
+require_once dirname(__DIR__) . '/vendor/autoload.php';
+
 use Amp\Deferred;
 use Amp\Loop;
 use Amp\Promise;
@@ -64,3 +66,9 @@ class HelloWorldApplication implements Application {
         throw $throwable;
     }
 }
+
+$app = new HelloWorldApplication();
+$injector = (new Services())->wireObjectGraph();
+
+$engine = $injector->make(CoreEngine::class);
+$engine->run($app);
