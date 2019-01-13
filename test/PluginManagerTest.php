@@ -17,9 +17,10 @@ use Cspray\Labrador\Exception\{
     InvalidArgumentException, NotFoundException, CircularDependencyException, PluginDependencyNotProvidedException
 };
 
-use Cspray\Labrador\Test\Stub\{
-    BootCalledPlugin,
+use Cspray\Labrador\Test\Stub\{BootCalledPlugin,
     CircularDependencyPluginStub,
+    CustomPluginOrderStub,
+    CustomPluginStub,
     EventsRegisteredPlugin,
     FooPluginDependentStub,
     FooPluginStub,
@@ -27,8 +28,7 @@ use Cspray\Labrador\Test\Stub\{
     RecursivelyDependentPluginStub,
     RequiresCircularDependentStub,
     RequiresNotPresentPlugin,
-    ServicesRegisteredPlugin
-};
+    ServicesRegisteredPlugin};
 use Cspray\Labrador\AsyncEvent\{
     Emitter, AmpEmitter as EventEmitter, Event, StandardEvent
 };
@@ -51,9 +51,9 @@ class PluginManagerTest extends UnitTestCase {
 
     private function getPluginBooter(PluginManager $mgr) {
         $r = new \ReflectionClass($mgr);
-        $m = $r->getMethod('getBooter');
-        $m->setAccessible(true);
-        return $m->invoke($mgr);
+        $p = $r->getProperty('booter');
+        $p->setAccessible(true);
+        return $p->getValue($mgr);
     }
 
     private function standardEvent(string $name, $target, array $eventData = []) : Event {
@@ -232,5 +232,75 @@ class PluginManagerTest extends UnitTestCase {
         $this->expectExceptionMessage('A Plugin with name ' . FooPluginStub::class . ' has already been registered and may not be registered again.');
 
         $manager->registerPlugin($plugin);
+    }
+
+    public function testRegisterCustomPluginHandler() {
+        $injector = new Injector();
+        $manager = new PluginManager($injector, $this->mockDispatcher);
+
+        $plugin = new CustomPluginStub();
+        $manager->registerPluginHandler(CustomPluginStub::class, function(CustomPluginStub $pluginStub) {
+            $pluginStub->myCustomPlugin();
+        });
+        $manager->registerPlugin($plugin);
+
+        $booter = $this->getPluginBooter($manager);
+        $booter->bootPlugins();
+
+        $this->assertSame(1, $plugin->getTimesCalled(), 'Expected method from custom plugin handler to have been invoked');
+    }
+
+    public function testRegisteringMultipleCustomPluginHandlers() {
+        $injector = new Injector();
+        $manager = new PluginManager($injector, $this->mockDispatcher);
+
+        $plugin = new CustomPluginStub();
+        $manager->registerPluginHandler(CustomPluginStub::class, function(CustomPluginStub $pluginStub) {
+            $pluginStub->myCustomPlugin();
+        });
+        $manager->registerPluginHandler(CustomPluginStub::class, function(CustomPluginStub $pluginStub) {
+            $pluginStub->myCustomPlugin();
+        });
+        $manager->registerPlugin($plugin);
+
+        $booter = $this->getPluginBooter($manager);
+        $booter->bootPlugins();
+
+        $this->assertSame(2, $plugin->getTimesCalled(), 'Expected method from custom plugin handler to have been invoked');
+    }
+
+    public function testCustomHandlerInvokedAfterSystemHandlers() {
+        $injector = new Injector();
+        $manager = new PluginManager($injector, $this->mockDispatcher);
+
+        $plugin = new CustomPluginOrderStub();
+        $manager->registerPluginHandler(CustomPluginOrderStub::class, function(CustomPluginOrderStub $pluginStub) {
+            $pluginStub->customOp();
+        });
+        $manager->registerPlugin($plugin);
+
+        $booter = $this->getPluginBooter($manager);
+        $booter->bootPlugins();
+
+        $expected = ['depends', 'services', 'events', 'custom', 'boot'];
+        $this->assertSame($expected, $plugin->getCallOrder(), 'Expected plugin handlers to be invoked in a specific order and they were not');
+    }
+
+    public function testCustomHandlerPassedArgumentsAfterPlugin() {
+        $injector = new Injector();
+        $manager = new PluginManager($injector, $this->mockDispatcher);
+
+        $handlerArgs = new \stdClass();
+        $handlerArgs->data = null;
+        $plugin = new CustomPluginStub();
+        $manager->registerPluginHandler(CustomPluginStub::class, function(CustomPluginStub $pluginStub, ...$arguments) use($handlerArgs) {
+            $handlerArgs->data = $arguments;
+        }, 'a', 'b', 'c');
+        $manager->registerPlugin($plugin);
+
+        $booter = $this->getPluginBooter($manager);
+        $booter->bootPlugins();
+
+        $this->assertSame(['a', 'b', 'c'], $handlerArgs->data, 'Expected the arguments passed to handler registration to be passed to handler');
     }
 }
