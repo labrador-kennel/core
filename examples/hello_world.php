@@ -68,7 +68,7 @@ class HelloWorldApplication implements Application {
 }
 
 $app = new HelloWorldApplication();
-$injector = (new Services())->wireObjectGraph();
+$injector = bootstrap();
 
-$engine = $injector->make(CoreEngine::class);
+$engine = $injector->make(Engine::class);
 $engine->run($app);
