@@ -61,6 +61,7 @@ class CoreEngine implements Engine {
      * Ensures that the appropriate plugins are booted and then executes the application.
      *
      * @return void
+     * @throws InvalidEngineStateException
      */
     public function run(Application $application) : void {
         if ($this->engineState !== 'idle') {
@@ -104,6 +105,10 @@ class CoreEngine implements Engine {
         return $promise;
     }
 
+    public function registerPluginHandler(string $pluginType, callable $pluginHandler, ...$arguments): void {
+        $this->pluginManager->registerPluginHandler($pluginType, $pluginHandler, $arguments);
+    }
+
     /**
      * @param Plugin $plugin
      * @return $this
@@ -116,7 +121,7 @@ class CoreEngine implements Engine {
 
     /**
      * @param string $name
-     * @return $this
+     * @return void
      */
     public function removePlugin(string $name) : void {
         $this->pluginManager->removePlugin($name);

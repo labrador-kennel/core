@@ -67,6 +67,10 @@ class PluginManager implements Pluggable {
         $this->emitter->on(Engine::ENGINE_BOOTUP_EVENT, $cb);
     }
 
+    public function registerPluginHandler(string $pluginType, callable $handler, ...$arguments) : void {
+        $this->booter->registerPluginHandler($pluginType, $handler, ...$arguments);
+    }
+
     public function registerPlugin(Plugin $plugin) : Pluggable {
         $pluginName = get_class($plugin);
         if ($this->hasPlugin($pluginName)) {
@@ -110,11 +114,21 @@ class PluginManager implements Pluggable {
             private $pluggable;
             private $injector;
             private $emitter;
+            private $pluginHandlers = [
+                'custom' => []
+            ];
 
             public function __construct(Pluggable $pluggable, Injector $injector, Emitter $emitter) {
                 $this->pluggable = $pluggable;
                 $this->injector = $injector;
                 $this->emitter = $emitter;
+            }
+
+            public function registerPluginHandler(string $pluginType, callable $handler, ...$arguments) {
+                if (!isset($this->pluginHandlers['custom'][$pluginType])) {
+                    $this->pluginHandlers['custom'][$pluginType] = [];
+                }
+                $this->pluginHandlers['custom'][$pluginType][] = [$handler, $arguments];
             }
 
             public function bootPlugins() {
@@ -129,6 +143,7 @@ class PluginManager implements Pluggable {
                     $this->handlePluginDependencies($plugin);
                     $this->handlePluginServices($plugin);
                     $this->handlePluginEvents($plugin);
+                    $this->handleCustomPluginHandlers($plugin);
                     $this->bootPlugin($plugin);
                     $this->finishLoading($plugin);
                 }
@@ -179,6 +194,18 @@ class PluginManager implements Pluggable {
             private function handlePluginEvents(Plugin $plugin) {
                 if ($plugin instanceof EventAwarePlugin) {
                     $plugin->registerEventListeners($this->emitter);
+                }
+            }
+
+            private function handleCustomPluginHandlers(Plugin $plugin) {
+                $pluginClass = get_class($plugin);
+                $pluginHasHandler = isset($this->pluginHandlers['custom'][$pluginClass]);
+                if ($pluginHasHandler) {
+                    foreach ($this->pluginHandlers['custom'][$pluginClass] as $pluginHandlerData) {
+                        $pluginHandler = $pluginHandlerData[0];
+                        $pluginHandlerArgs = $pluginHandlerData[1];
+                        $pluginHandler($plugin, ...$pluginHandlerArgs);
+                    }
                 }
             }
 

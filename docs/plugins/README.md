@@ -111,6 +111,14 @@ namespace Cspray\Labrador\Plugin;
 interface Pluggable {
     
     /**
+     * @param string $pluginType
+     * @param callable $handler
+     * @param mixed ...$arguments
+     * @return void
+     */
+    public function registerPluginHandler(string $pluginType, callable $handler, ...$arguments);
+    
+    /**
      * @param Plugin $plugin
      * @return $this
      */
@@ -163,11 +171,13 @@ each method will be called. Plugins are loaded in the following order:
 
 1. Call `Plugin::dependsOn()` and load any dependent Plugins; meaning all of the plugins
    returned from this iterable will go through this process before the calling Plugin does.
-2. Call `Plugin::registerServices(Injector)` and wire up any object graph that your Plugin 
+1. Call `Plugin::registerServices(Injector)` and wire up any object graph that your Plugin 
    requires.
-3. Call `Plugin::registerEventListeners(Emitter)` and register any listeners for 
+1. Call `Plugin::registerEventListeners(Emitter)` and register any listeners for 
    emitted events.
-4. Call `Plugin::boot()` and allow your Plugin to go through any necessary bootstrapping.
+1. Invoke any handlers that have been registered with `Pluggable::registerPluginHandler` that 
+matches the specific type of Plugin being loaded.
+1. Call `Plugin::boot()` and allow your Plugin to go through any necessary bootstrapping.
  
 
 You should take a look at the [Application](../application) documentation next to learn more 

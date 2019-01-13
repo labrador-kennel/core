@@ -17,9 +17,12 @@ use Cspray\Labrador\{
     Application, Engine, CoreEngine, Exception\InvalidEngineStateException, PluginManager
 };
 use Cspray\Labrador\Exception\Exception;
-use Cspray\Labrador\Test\Stub\{
-    CallbackApplication, ExceptionHandlerApplication, NoopApplication, PluginStub, BootCalledPlugin
-};
+use Cspray\Labrador\Test\Stub\{CallbackApplication,
+    CustomPluginStub,
+    ExceptionHandlerApplication,
+    NoopApplication,
+    PluginStub,
+    BootCalledPlugin};
 use Auryn\Injector;
 use Cspray\Labrador\AsyncEvent\{
     AmpEmitter, Emitter, AmpEmitter as EventEmitter, Event
@@ -148,7 +151,7 @@ class CoreEngineTest extends UnitTestCase {
         $pluginManager = new PluginManager($this->createMock(Injector::class), $this->emitter);
         $engine = $this->getEngine($this->emitter, $pluginManager);
 
-        $plugin = new BootCalledPlugin('boot_called_plugin');
+        $plugin = new BootCalledPlugin();
         $engine->registerPlugin($plugin);
 
         $engine->run($this->noopApp());
@@ -194,7 +197,7 @@ class CoreEngineTest extends UnitTestCase {
             ['removePlugin', PluginStub::class, null],
             ['hasPlugin', PluginStub::class, true],
             ['getPlugin', PluginStub::class, new PluginStub()],
-            ['getPlugins', null, []]
+            ['getPlugins', null, []],
         ];
     }
 
@@ -217,6 +220,24 @@ class CoreEngineTest extends UnitTestCase {
         }
 
         $this->getEngine(null, $pluginManager)->$method($arg);
+    }
+
+    public function testCustomPluginHandlersProxiedToPluginManager() {
+        $pluginManager = $this->getMockBuilder(PluginManager::class)
+                              ->disableOriginalConstructor()
+                              ->getMock();
+
+        $pluginManager->expects($this->once())->method('registerPluginHandler')->with(
+            CustomPluginStub::class,
+            $this->callback(function($argument) {
+                return is_callable($argument) && $argument() === 'my special return value';
+            })
+        );
+
+        $engine = $this->getEngine(null, $pluginManager);
+        $engine->registerPluginHandler(CustomPluginStub::class, function() {
+            return 'my special return value';
+        });
     }
 
     public function testCallingRunMultipleTimesThrowsException() {
