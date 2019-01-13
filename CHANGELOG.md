@@ -1,5 +1,16 @@
 # Changelog
 
+## v3.0.0-beta2 - 2019-01-13
+
+#### Added
+
+- Added a `Pluggable::registerPluginHandler` method that allows developers to assign their 
+own custom function to be executed when a Plugin of a specific type is initialized. This 
+custom handler executes after the plugin's dependencies, services, and events have been 
+registered but _before_ the `Plugin::boot` method is called. Not only can you assign additional 
+handlers to Plugins provided by Labrador out of the box but you can assign your own 
+handlers to Plugins that you provided specifically for your Application or project.
+
 ## v3.0.0-beta - 2018-01-14
 
 **This release represents a major BC Break as we incorporate Amphp's Event Loop support 
