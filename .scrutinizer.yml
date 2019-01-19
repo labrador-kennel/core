@@ -5,6 +5,12 @@ before_commands:
 filter:
   excluded_paths: ["vendor/*"]
 
+build:
+  nodes:
+    analysis:
+      override:
+        - php-scrutinizer-run
+
 tools:
   php_code_coverage:
     enabled: true
