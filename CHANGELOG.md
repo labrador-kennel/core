@@ -1,5 +1,14 @@
 # Changelog
 
+## v3.0.0-beta3 - 2019-01-19
+
+#### Fixed
+
+- Fixed a bug in the `PluginManager` handling custom Plugin types that are instances of an 
+interface. Previously only custom Plugins that were direct instances of the custom type would 
+properly be loaded. Now all custom Plugin handlers will properly be invoked, even for Plugins 
+implementing an interface for a register Plugin handler.
+
 ## v3.0.0-beta2 - 2019-01-13
 
 #### Added

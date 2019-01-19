@@ -199,12 +199,13 @@ class PluginManager implements Pluggable {
 
             private function handleCustomPluginHandlers(Plugin $plugin) {
                 $pluginClass = get_class($plugin);
-                $pluginHasHandler = isset($this->pluginHandlers['custom'][$pluginClass]);
-                if ($pluginHasHandler) {
-                    foreach ($this->pluginHandlers['custom'][$pluginClass] as $pluginHandlerData) {
-                        $pluginHandler = $pluginHandlerData[0];
-                        $pluginHandlerArgs = $pluginHandlerData[1];
-                        $pluginHandler($plugin, ...$pluginHandlerArgs);
+                foreach ($this->pluginHandlers['custom'] as $type => $pluginHandlers) {
+                    if ($pluginClass === $type || $plugin instanceof $type) {
+                        foreach ($pluginHandlers as $pluginHandlerData) {
+                            $pluginHandler = $pluginHandlerData[0];
+                            $pluginHandlerArgs = $pluginHandlerData[1];
+                            $pluginHandler($plugin, ...$pluginHandlerArgs);
+                        }
                     }
                 }
             }
