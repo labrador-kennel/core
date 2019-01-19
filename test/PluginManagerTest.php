@@ -19,6 +19,7 @@ use Cspray\Labrador\Exception\{
 
 use Cspray\Labrador\Test\Stub\{BootCalledPlugin,
     CircularDependencyPluginStub,
+    CustomPluginInterface,
     CustomPluginOrderStub,
     CustomPluginStub,
     EventsRegisteredPlugin,
@@ -302,5 +303,23 @@ class PluginManagerTest extends UnitTestCase {
         $booter->bootPlugins();
 
         $this->assertSame(['a', 'b', 'c'], $handlerArgs->data, 'Expected the arguments passed to handler registration to be passed to handler');
+    }
+
+    public function testCustomHandlerHandlesPluginTypesThatAreInterfaces() {
+        $injector = new Injector();
+        $manager = new PluginManager($injector, $this->mockDispatcher);
+
+        $handlerArgs = new \stdClass();
+        $handlerArgs->data = null;
+        $manager->registerPluginHandler(CustomPluginInterface::class, function(CustomPluginInterface $plugin) use($handlerArgs) {
+            $handlerArgs->data = $plugin;
+        });
+        $plugin = $this->createMock(CustomPluginInterface::class);
+        $manager->registerPlugin($plugin);
+
+        $booter = $this->getPluginBooter($manager);
+        $booter->bootPlugins();
+
+        $this->assertSame($plugin, $handlerArgs->data);
     }
 }
