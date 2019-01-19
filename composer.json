@@ -1,35 +1,41 @@
 {
-    "name": "cspray/labrador",
-    "description": "A microframework providing a plugin and event system to build PHP powered applications.",
-    "license": "MIT",
-    "authors": [
-        {
-            "name": "Charles Sprayberry",
-            "email": "cspray+labrador@gmail.com",
-            "homepage": "http://labrador.cspray.net",
-            "role": "Benevolent Dictator For Life"
-        }
-    ],
-    "require": {
-        "php": ">=7.2",
-        "amphp/amp": "~2.1",
-        "cspray/labrador-async-event": "~1.2",
-        "rdlowrey/auryn": "~1.4",
-        "filp/whoops": "~2.3"
-    },
-    "require-dev": {
-      "amphp/phpunit-util": "~1.0",
-      "phpunit/phpunit": "~6.5"
-    },
-    "autoload": {
-        "psr-4": {
-            "Cspray\\Labrador\\": ["src/"]
-        },
-        "files": ["src/_functions.php"]
-    },
-    "autoload-dev": {
-        "psr-4": {
-            "Cspray\\Labrador\\Test\\": ["test/"]
-        }
+  "name": "cspray/labrador",
+  "description": "A microframework providing a plugin and event system to build PHP powered applications.",
+  "license": "MIT",
+  "authors": [
+    {
+      "name": "Charles Sprayberry",
+      "email": "cspray+labrador@gmail.com",
+      "homepage": "http://labrador.cspray.net",
+      "role": "Benevolent Dictator For Life"
     }
+  ],
+  "require": {
+    "php": ">=7.2",
+    "amphp/amp": "~2.1",
+    "cspray/labrador-async-event": "~1.2",
+    "rdlowrey/auryn": "~1.4",
+    "filp/whoops": "~2.3"
+  },
+  "require-dev": {
+    "amphp/phpunit-util": "~1.0",
+    "phpunit/phpunit": "~6.5"
+  },
+  "autoload": {
+    "psr-4": {
+      "Cspray\\Labrador\\": [
+        "src/"
+      ]
+    },
+    "files": [
+      "src/_functions.php"
+    ]
+  },
+  "autoload-dev": {
+    "psr-4": {
+      "Cspray\\Labrador\\Test\\": [
+        "test/"
+      ]
+    }
+  }
 }
