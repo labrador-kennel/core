@@ -22,5 +22,4 @@ class EventsRegisteredPlugin implements EventAwarePlugin {
     public function registerEventListeners(Emitter $emitter) : void {
         $this->called = true;
     }
-
 }

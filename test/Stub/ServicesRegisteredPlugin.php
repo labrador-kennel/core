@@ -6,7 +6,6 @@ namespace Cspray\Labrador\Test\Stub;
 use Cspray\Labrador\Plugin\ServiceAwarePlugin;
 use Auryn\Injector;
 
-
 class ServicesRegisteredPlugin implements ServiceAwarePlugin {
 
     private $called = false;

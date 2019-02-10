@@ -15,5 +15,4 @@ class FooEventStub extends StandardEvent {
     public function __construct($target) {
         parent::__construct('foo.event', $target);
     }
-
 }

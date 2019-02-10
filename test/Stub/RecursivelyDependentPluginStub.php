@@ -8,7 +8,8 @@ declare(strict_types = 1);
 
 namespace Cspray\Labrador\Test\Stub;
 
-use Cspray\Labrador\Plugin\{BootablePlugin, PluginDependentPlugin};
+use Cspray\Labrador\Plugin\BootablePlugin;
+use Cspray\Labrador\Plugin\PluginDependentPlugin;
 use Auryn\Injector;
 
 class RecursivelyDependentPluginStub implements PluginDependentPlugin, BootablePlugin {
@@ -27,7 +28,6 @@ class RecursivelyDependentPluginStub implements PluginDependentPlugin, BootableP
     public function boot() : void {
         $shares = $this->injector->inspect();
         $this->dependsOnProvided = array_key_exists('cspray\labrador\test\stub\fooservice', $shares[Injector::I_SHARES]);
-
     }
 
     public function wasDependsOnProvided() {
@@ -42,5 +42,4 @@ class RecursivelyDependentPluginStub implements PluginDependentPlugin, BootableP
     public function dependsOn() : iterable {
         return [FooPluginDependentStub::class];
     }
-
 }

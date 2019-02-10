@@ -4,7 +4,7 @@
         "Read more about it at https://getcomposer.org/doc/01-basic-usage.md#installing-dependencies",
         "This file is @generated automatically"
     ],
-    "content-hash": "10ed815172b7676da10c02fe3eeff9e0",
+    "content-hash": "6335401396ca6b8cd6d583d3c435eddc",
     "packages": [
         {
             "name": "amphp/amp",
@@ -127,11 +127,17 @@
         },
         {
             "name": "cspray/labrador-coding-standard",
-            "version": "dev-master",
+            "version": "0.1.0",
             "source": {
                 "type": "git",
-                "url": "/home/cspray/Projects/labrador-kennel/coding-standard",
-                "reference": "6b96d549e058c4c2fb6967cf38344503b283082e"
+                "url": "https://github.com/labrador-kennel/coding-standard.git",
+                "reference": "6a6f1ff875c1508fd39420c5eb75c6fd2304a9ee"
+            },
+            "dist": {
+                "type": "zip",
+                "url": "https://api.github.com/repos/labrador-kennel/coding-standard/zipball/6a6f1ff875c1508fd39420c5eb75c6fd2304a9ee",
+                "reference": "6a6f1ff875c1508fd39420c5eb75c6fd2304a9ee",
+                "shasum": ""
             },
             "require": {
                 "squizlabs/php_codesniffer": "^3.4"
@@ -141,11 +147,17 @@
                 "bin/composer/labrador-cbf"
             ],
             "type": "library",
+            "notification-url": "https://packagist.org/downloads/",
             "license": [
                 "MIT"
             ],
             "description": "A PHP_CodeSniffer ruleset for the coding style in all Labrador packages",
-            "time": "2019-02-10T15:58:24+00:00"
+            "keywords": [
+                "Labrador",
+                "coding-style",
+                "php"
+            ],
+            "time": "2019-02-10T16:09:08+00:00"
         },
         {
             "name": "cspray/labrador-exceptions",
@@ -1970,9 +1982,7 @@
     ],
     "aliases": [],
     "minimum-stability": "stable",
-    "stability-flags": {
-        "cspray/labrador-coding-standard": 20
-    },
+    "stability-flags": [],
     "prefer-stable": false,
     "prefer-lowest": false,
     "platform": {

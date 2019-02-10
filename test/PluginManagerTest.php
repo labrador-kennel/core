@@ -10,29 +10,32 @@
 namespace Cspray\Labrador\Test;
 
 use Amp\Loop;
-use Cspray\Labrador\{Engine, PluginManager};
+use Cspray\Labrador\Engine;
+use Cspray\Labrador\PluginManager;
 use Cspray\Labrador\Plugin\Plugin;
 
-use Cspray\Labrador\Exception\{
-    InvalidArgumentException, NotFoundException, CircularDependencyException, PluginDependencyNotProvidedException
-};
+use Cspray\Labrador\Exception\InvalidArgumentException;
+use Cspray\Labrador\Exception\NotFoundException;
+use Cspray\Labrador\Exception\CircularDependencyException;
+use Cspray\Labrador\Exception\PluginDependencyNotProvidedException;
 
-use Cspray\Labrador\Test\Stub\{BootCalledPlugin,
-    CircularDependencyPluginStub,
-    CustomPluginInterface,
-    CustomPluginOrderStub,
-    CustomPluginStub,
-    EventsRegisteredPlugin,
-    FooPluginDependentStub,
-    FooPluginStub,
-    PluginStub,
-    RecursivelyDependentPluginStub,
-    RequiresCircularDependentStub,
-    RequiresNotPresentPlugin,
-    ServicesRegisteredPlugin};
-use Cspray\Labrador\AsyncEvent\{
-    Emitter, AmpEmitter as EventEmitter, Event, StandardEvent
-};
+use Cspray\Labrador\Test\Stub\BootCalledPlugin;
+use Cspray\Labrador\Test\Stub\CircularDependencyPluginStub;
+use Cspray\Labrador\Test\Stub\CustomPluginInterface;
+use Cspray\Labrador\Test\Stub\CustomPluginOrderStub;
+use Cspray\Labrador\Test\Stub\CustomPluginStub;
+use Cspray\Labrador\Test\Stub\EventsRegisteredPlugin;
+use Cspray\Labrador\Test\Stub\FooPluginDependentStub;
+use Cspray\Labrador\Test\Stub\FooPluginStub;
+use Cspray\Labrador\Test\Stub\PluginStub;
+use Cspray\Labrador\Test\Stub\RecursivelyDependentPluginStub;
+use Cspray\Labrador\Test\Stub\RequiresCircularDependentStub;
+use Cspray\Labrador\Test\Stub\RequiresNotPresentPlugin;
+use Cspray\Labrador\Test\Stub\ServicesRegisteredPlugin;
+use Cspray\Labrador\AsyncEvent\Emitter;
+use Cspray\Labrador\AsyncEvent\AmpEmitter as EventEmitter;
+use Cspray\Labrador\AsyncEvent\Event;
+use Cspray\Labrador\AsyncEvent\StandardEvent;
 use Auryn\Injector;
 use PHPUnit\Framework\TestCase as UnitTestCase;
 

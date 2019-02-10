@@ -15,5 +15,4 @@ class ExtraEventEmitArgs extends CoreEngine {
     protected function eventArgs(string $eventName) : array {
         return [1, 'foo', 'bar'];
     }
-
 }

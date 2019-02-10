@@ -8,9 +8,9 @@ declare(strict_types = 1);
 
 namespace Cspray\Labrador\Test\Stub;
 
-use Cspray\Labrador\Plugin\{BootablePlugin, PluginDependentPlugin};
+use Cspray\Labrador\Plugin\BootablePlugin;
+use Cspray\Labrador\Plugin\PluginDependentPlugin;
 use Auryn\Injector;
-
 
 class FooPluginDependentStub implements PluginDependentPlugin, BootablePlugin {
 

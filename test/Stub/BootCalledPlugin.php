@@ -22,5 +22,4 @@ class BootCalledPlugin implements BootablePlugin {
     public function boot() : void {
         $this->bootCalled = true;
     }
-
 }

@@ -20,5 +20,4 @@ class RequiresCircularDependentStub implements PluginDependentPlugin {
     public function dependsOn() : iterable {
         return [CircularDependencyPluginStub::class];
     }
-
 }

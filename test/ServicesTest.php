@@ -3,7 +3,8 @@
 
 namespace Cspray\Labrador\Test;
 
-use Cspray\Labrador\{CoreEngine, Services};
+use Cspray\Labrador\CoreEngine;
+use Cspray\Labrador\Services;
 use Auryn\Injector;
 use PHPUnit\Framework\TestCase as UnitTestCase;
 
@@ -20,5 +21,4 @@ class ServicesTest extends UnitTestCase {
 
         $this->assertInstanceOf(CoreEngine::class, $injector->make(CoreEngine::class));
     }
-
 }
