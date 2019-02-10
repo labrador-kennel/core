@@ -26,8 +26,9 @@ class FooPluginDependentStub implements PluginDependentPlugin, BootablePlugin {
      * primary execution of your app is kicked off.
      */
     public function boot() : void {
-        $shares = $this->injector->inspect();
-        $this->dependsOnProvided = array_key_exists('cspray\labrador\test\stub\fooservice', $shares[Injector::I_SHARES]);
+        $injectorInfo = $this->injector->inspect();
+        $shares = $injectorInfo[Injector::I_SHARES];
+        $this->dependsOnProvided = array_key_exists('cspray\labrador\test\stub\fooservice', $shares);
     }
 
     public function wasDependsOnProvided() {

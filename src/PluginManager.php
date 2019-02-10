@@ -8,7 +8,7 @@ declare(strict_types=1);
  * directly to satisfy the Pluggable interface.
  *
  * @license See LICENSE in source root
- * @internal It is not recommended you instantiate this yourself and let the framework handle interactions with this object.
+ * @internal Specifically for use by internal Engine implementations
  */
 
 namespace Cspray\Labrador;
@@ -69,7 +69,8 @@ class PluginManager implements Pluggable {
     public function registerPlugin(Plugin $plugin) : Pluggable {
         $pluginName = get_class($plugin);
         if ($this->hasPlugin($pluginName)) {
-            throw new InvalidArgumentException("A Plugin with name $pluginName has already been registered and may not be registered again.");
+            $msg = "A Plugin with name $pluginName has already been registered and may not be registered again.";
+            throw new InvalidArgumentException($msg);
         }
 
         $this->plugins[$pluginName] = $plugin;
@@ -167,7 +168,8 @@ class PluginManager implements Pluggable {
                     foreach ($plugin->dependsOn() as $reqPluginName) {
                         if (!$this->pluggable->hasPlugin($reqPluginName)) {
                             $msg = '%s requires a plugin that is not registered: %s.';
-                            throw new PluginDependencyNotProvidedException(sprintf($msg, get_class($plugin), $reqPluginName));
+                            $msg = sprintf($msg, get_class($plugin), $reqPluginName);
+                            throw new PluginDependencyNotProvidedException($msg);
                         }
 
                         $reqPlugin = $this->pluggable->getPlugin($reqPluginName);

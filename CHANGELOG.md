@@ -1,5 +1,9 @@
 # Changelog
 
+## 3.0.0-rc1 - 2019-02-??
+
+- Updates the code style to match the Labrador Coding Standard.
+
 ## v3.0.0-beta3 - 2019-01-19
 
 #### Fixed
