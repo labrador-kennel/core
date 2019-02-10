@@ -29,11 +29,8 @@ composer require cspray/labrador
 Labrador is thoroughly documented in-repo in the `docs/` directory. Please check this out 
 if you'd like to learn more about using Labrador.
 
-### What's up with the name?
+## Governance
 
-Right around the time I started this project my wife and I acquired a new family member; 
-Nick, a chocolate Labrador Retriever, came bounding into our lives. I'm horrible at naming 
-things and Labrador was an obvious choice at the time. You can think of Labrador the library 
-as similar to the dog; friendly, eager to please, and lets you lead the way.
+All Labrador packages adhere to the rules laid out in the [Labrador Governance repo](https://github.com/labrador-kennel/governance)
 
 > Organization logo made by [Freepik](http://www.freepik.com) from [www.flaticon.com](http://www.flaticon.com) is licensed by [CC 3.0 BY](http://creativecommons.org/licenses/by/3.0/)

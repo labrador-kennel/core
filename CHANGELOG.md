@@ -2,7 +2,14 @@
 
 ## 3.0.0-rc1 - 2019-02-??
 
-- Updates the code style to match the Labrador Coding Standard.
+#### Added
+
+- Adds a `CODE_OF_CONDUCT.md` which directs users to the Labrador Governance repository.
+
+#### Changed
+
+- Updates the code style to match the Labrador Coding Standard. 
+- Changed the Contributing guide to point to the Labrador Governance repository.
 
 ## v3.0.0-beta3 - 2019-01-19
 
