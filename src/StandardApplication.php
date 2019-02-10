@@ -50,5 +50,4 @@ abstract class StandardApplication implements Application {
     public function exceptionHandler(Throwable $throwable) : void {
         throw $throwable;
     }
-
 }

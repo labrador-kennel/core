@@ -12,7 +12,8 @@ declare(strict_types=1);
 namespace Cspray\Labrador;
 
 use Auryn\Injector;
-use Cspray\Labrador\AsyncEvent\{Emitter, AmpEmitter};
+use Cspray\Labrador\AsyncEvent\Emitter;
+use Cspray\Labrador\AsyncEvent\AmpEmitter;
 
 class Services {
 
@@ -29,5 +30,4 @@ class Services {
 
         return $injector;
     }
-
 }

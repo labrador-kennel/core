@@ -8,7 +8,8 @@ declare(strict_types = 1);
 
 namespace Cspray\Labrador\Test\Stub;
 
-use Cspray\Labrador\Plugin\{BootablePlugin, PluginDependentPlugin};
+use Cspray\Labrador\Plugin\BootablePlugin;
+use Cspray\Labrador\Plugin\PluginDependentPlugin;
 use Auryn\Injector;
 
 class RecursivelyDependentPluginStub implements PluginDependentPlugin, BootablePlugin {
@@ -25,9 +26,9 @@ class RecursivelyDependentPluginStub implements PluginDependentPlugin, BootableP
      * primary execution of your app is kicked off.
      */
     public function boot() : void {
-        $shares = $this->injector->inspect();
-        $this->dependsOnProvided = array_key_exists('cspray\labrador\test\stub\fooservice', $shares[Injector::I_SHARES]);
-
+        $injectorInfo = $this->injector->inspect();
+        $shares = $injectorInfo[Injector::I_SHARES];
+        $this->dependsOnProvided = array_key_exists('cspray\labrador\test\stub\fooservice', $shares);
     }
 
     public function wasDependsOnProvided() {
@@ -42,5 +43,4 @@ class RecursivelyDependentPluginStub implements PluginDependentPlugin, BootableP
     public function dependsOn() : iterable {
         return [FooPluginDependentStub::class];
     }
-
 }

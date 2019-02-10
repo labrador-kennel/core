@@ -8,7 +8,8 @@ declare(strict_types = 1);
 
 namespace Cspray\Labrador\Test\Stub;
 
-use Cspray\Labrador\Plugin\{BootablePlugin, ServiceAwarePlugin};
+use Cspray\Labrador\Plugin\BootablePlugin;
+use Cspray\Labrador\Plugin\ServiceAwarePlugin;
 use Auryn\Injector;
 
 class FooPluginStub implements ServiceAwarePlugin, BootablePlugin {
@@ -36,5 +37,4 @@ class FooPluginStub implements ServiceAwarePlugin, BootablePlugin {
     public function registerServices(Injector $injector) : void {
         $injector->share(FooService::class);
     }
-
 }

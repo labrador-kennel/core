@@ -23,5 +23,4 @@ class ExceptionHandlerApplication extends CallbackApplication {
         $handler = $this->handler;
         $handler($throwable);
     }
-
 }

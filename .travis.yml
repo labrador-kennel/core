@@ -9,8 +9,8 @@ php:
 
 before_script:
   - composer self-update
-  - composer update
+  - composer install --no-progress --no-suggest --dev
 script:
-  - vendor/bin/phpunit --coverage-clover=coverage.clover
+  - vendor/bin/labrador-cs src/ test/ && vendor/bin/phpunit --coverage-clover=coverage.clover
   - wget https://scrutinizer-ci.com/ocular.phar
   - php ocular.phar code-coverage:upload --format=php-clover coverage.clover

@@ -13,20 +13,23 @@ use Amp\Deferred;
 use Amp\Delayed;
 use Amp\Loop;
 use Amp\Success;
-use Cspray\Labrador\{
-    Application, Engine, CoreEngine, Exception\InvalidEngineStateException, PluginManager
-};
+use Cspray\Labrador\Application;
+use Cspray\Labrador\Engine;
+use Cspray\Labrador\CoreEngine;
+use Cspray\Labrador\Exception\InvalidEngineStateException;
+use Cspray\Labrador\PluginManager;
 use Cspray\Labrador\Exception\Exception;
-use Cspray\Labrador\Test\Stub\{CallbackApplication,
-    CustomPluginStub,
-    ExceptionHandlerApplication,
-    NoopApplication,
-    PluginStub,
-    BootCalledPlugin};
+use Cspray\Labrador\Test\Stub\CallbackApplication;
+use Cspray\Labrador\Test\Stub\CustomPluginStub;
+use Cspray\Labrador\Test\Stub\ExceptionHandlerApplication;
+use Cspray\Labrador\Test\Stub\NoopApplication;
+use Cspray\Labrador\Test\Stub\PluginStub;
+use Cspray\Labrador\Test\Stub\BootCalledPlugin;
 use Auryn\Injector;
-use Cspray\Labrador\AsyncEvent\{
-    AmpEmitter, Emitter, AmpEmitter as EventEmitter, Event
-};
+use Cspray\Labrador\AsyncEvent\AmpEmitter;
+use Cspray\Labrador\AsyncEvent\Emitter;
+use Cspray\Labrador\AsyncEvent\AmpEmitter as EventEmitter;
+use Cspray\Labrador\AsyncEvent\Event;
 use Cspray\Labrador\Test\Stub\ExtraEventEmitArgs;
 use PHPUnit\Framework\TestCase as UnitTestCase;
 
@@ -170,7 +173,8 @@ class CoreEngineTest extends UnitTestCase {
      * @dataProvider eventEmitterProxyData
      */
     public function testProxyToEventEmitter($method, $event) {
-        $cb = function() {};
+        $cb = function() {
+        };
         $engine = $this->getEngine($this->emitter);
         $engine->$method($cb);
 
@@ -305,5 +309,4 @@ class CoreEngineTest extends UnitTestCase {
 
         $this->assertTrue($data->data);
     }
-
 }

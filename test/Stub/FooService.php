@@ -8,4 +8,5 @@ declare(strict_types = 1);
 
 namespace Cspray\Labrador\Test\Stub;
 
-class FooService {}
+class FooService {
+}

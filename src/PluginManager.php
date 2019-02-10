@@ -8,29 +8,24 @@ declare(strict_types=1);
  * directly to satisfy the Pluggable interface.
  *
  * @license See LICENSE in source root
- * @internal It is not recommended you instantiate this yourself and let the framework handle interactions with this object.
+ * @internal Specifically for use by internal Engine implementations
  */
 
 namespace Cspray\Labrador;
 
-use Cspray\Labrador\Plugin\{
-    BootablePlugin,
-    Pluggable,
-    Plugin,
-    ServiceAwarePlugin,
-    EventAwarePlugin,
-    PluginDependentPlugin
-};
-use Cspray\Labrador\Exception\{
-    CircularDependencyException,
-    InvalidArgumentException,
-    NotFoundException,
-    PluginDependencyNotProvidedException
-};
+use Cspray\Labrador\Plugin\BootablePlugin;
+use Cspray\Labrador\Plugin\Pluggable;
+use Cspray\Labrador\Plugin\Plugin;
+use Cspray\Labrador\Plugin\ServiceAwarePlugin;
+use Cspray\Labrador\Plugin\EventAwarePlugin;
+use Cspray\Labrador\Plugin\PluginDependentPlugin;
+use Cspray\Labrador\Exception\CircularDependencyException;
+use Cspray\Labrador\Exception\InvalidArgumentException;
+use Cspray\Labrador\Exception\NotFoundException;
+use Cspray\Labrador\Exception\PluginDependencyNotProvidedException;
 use Cspray\Labrador\AsyncEvent\Emitter;
 use Auryn\Injector;
 use ArrayObject;
-
 
 /**
  * It is HIGHLY recommended that if you create a Plugin it winds up
@@ -74,7 +69,8 @@ class PluginManager implements Pluggable {
     public function registerPlugin(Plugin $plugin) : Pluggable {
         $pluginName = get_class($plugin);
         if ($this->hasPlugin($pluginName)) {
-            throw new InvalidArgumentException("A Plugin with name $pluginName has already been registered and may not be registered again.");
+            $msg = "A Plugin with name $pluginName has already been registered and may not be registered again.";
+            throw new InvalidArgumentException($msg);
         }
 
         $this->plugins[$pluginName] = $plugin;
@@ -132,7 +128,7 @@ class PluginManager implements Pluggable {
             }
 
             public function bootPlugins() {
-                foreach($this->pluggable->getPlugins() as $plugin) {
+                foreach ($this->pluggable->getPlugins() as $plugin) {
                     $this->loadPlugin($plugin);
                 }
             }
@@ -172,7 +168,8 @@ class PluginManager implements Pluggable {
                     foreach ($plugin->dependsOn() as $reqPluginName) {
                         if (!$this->pluggable->hasPlugin($reqPluginName)) {
                             $msg = '%s requires a plugin that is not registered: %s.';
-                            throw new PluginDependencyNotProvidedException(sprintf($msg, get_class($plugin), $reqPluginName));
+                            $msg = sprintf($msg, get_class($plugin), $reqPluginName);
+                            throw new PluginDependencyNotProvidedException($msg);
                         }
 
                         $reqPlugin = $this->pluggable->getPlugin($reqPluginName);
@@ -217,5 +214,4 @@ class PluginManager implements Pluggable {
             }
         };
     }
-
 }

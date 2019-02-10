@@ -16,5 +16,4 @@ class CustomPluginStub implements Plugin {
     public function getTimesCalled() {
         return $this->timesCalled;
     }
-
 }

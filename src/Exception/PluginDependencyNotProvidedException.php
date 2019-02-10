@@ -11,4 +11,5 @@ declare(strict_types = 1);
 
 namespace Cspray\Labrador\Exception;
 
-class PluginDependencyNotProvidedException extends NotFoundException {}
+class PluginDependencyNotProvidedException extends NotFoundException {
+}

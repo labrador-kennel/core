@@ -7,7 +7,7 @@ declare(strict_types=1);
  * not implement this interface directly but implement one of the interfaces that extend Plugin.
  *
  * @license See LICENSE in source root
- * 
+ *
  * @see \Cspray\Labrador\Plugin\BootablePlugin
  * @see \Cspray\Labrador\Plugin\EventAwarePlugin
  * @see \Cspray\Labrador\Plugin\PluginDependentPlugin
@@ -16,4 +16,5 @@ declare(strict_types=1);
 
 namespace Cspray\Labrador\Plugin;
 
-interface Plugin {}
+interface Plugin {
+}

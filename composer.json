@@ -14,6 +14,7 @@
     "php": ">=7.2",
     "amphp/amp": "~2.1",
     "cspray/labrador-async-event": "~1.2",
+    "cspray/labrador-coding-standard": "0.1.0",
     "rdlowrey/auryn": "~1.4",
     "filp/whoops": "~2.3"
   },

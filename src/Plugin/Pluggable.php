@@ -53,5 +53,4 @@ interface Pluggable {
      * @return Plugin[]
      */
     public function getPlugins() : iterable;
-
 }

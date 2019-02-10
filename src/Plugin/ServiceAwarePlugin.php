@@ -22,5 +22,4 @@ interface ServiceAwarePlugin extends Plugin {
      * @return void
      */
     public function registerServices(Injector $injector) : void;
-
 }

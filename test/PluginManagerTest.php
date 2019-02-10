@@ -10,29 +10,32 @@
 namespace Cspray\Labrador\Test;
 
 use Amp\Loop;
-use Cspray\Labrador\{Engine, PluginManager};
+use Cspray\Labrador\Engine;
+use Cspray\Labrador\PluginManager;
 use Cspray\Labrador\Plugin\Plugin;
 
-use Cspray\Labrador\Exception\{
-    InvalidArgumentException, NotFoundException, CircularDependencyException, PluginDependencyNotProvidedException
-};
+use Cspray\Labrador\Exception\InvalidArgumentException;
+use Cspray\Labrador\Exception\NotFoundException;
+use Cspray\Labrador\Exception\CircularDependencyException;
+use Cspray\Labrador\Exception\PluginDependencyNotProvidedException;
 
-use Cspray\Labrador\Test\Stub\{BootCalledPlugin,
-    CircularDependencyPluginStub,
-    CustomPluginInterface,
-    CustomPluginOrderStub,
-    CustomPluginStub,
-    EventsRegisteredPlugin,
-    FooPluginDependentStub,
-    FooPluginStub,
-    PluginStub,
-    RecursivelyDependentPluginStub,
-    RequiresCircularDependentStub,
-    RequiresNotPresentPlugin,
-    ServicesRegisteredPlugin};
-use Cspray\Labrador\AsyncEvent\{
-    Emitter, AmpEmitter as EventEmitter, Event, StandardEvent
-};
+use Cspray\Labrador\Test\Stub\BootCalledPlugin;
+use Cspray\Labrador\Test\Stub\CircularDependencyPluginStub;
+use Cspray\Labrador\Test\Stub\CustomPluginInterface;
+use Cspray\Labrador\Test\Stub\CustomPluginOrderStub;
+use Cspray\Labrador\Test\Stub\CustomPluginStub;
+use Cspray\Labrador\Test\Stub\EventsRegisteredPlugin;
+use Cspray\Labrador\Test\Stub\FooPluginDependentStub;
+use Cspray\Labrador\Test\Stub\FooPluginStub;
+use Cspray\Labrador\Test\Stub\PluginStub;
+use Cspray\Labrador\Test\Stub\RecursivelyDependentPluginStub;
+use Cspray\Labrador\Test\Stub\RequiresCircularDependentStub;
+use Cspray\Labrador\Test\Stub\RequiresNotPresentPlugin;
+use Cspray\Labrador\Test\Stub\ServicesRegisteredPlugin;
+use Cspray\Labrador\AsyncEvent\Emitter;
+use Cspray\Labrador\AsyncEvent\AmpEmitter as EventEmitter;
+use Cspray\Labrador\AsyncEvent\Event;
+use Cspray\Labrador\AsyncEvent\StandardEvent;
 use Auryn\Injector;
 use PHPUnit\Framework\TestCase as UnitTestCase;
 
@@ -183,7 +186,8 @@ class PluginManagerTest extends UnitTestCase {
         $manager->registerPlugin(new RequiresCircularDependentStub());
 
         $exc = CircularDependencyException::class;
-        $msg = "A circular dependency was found with Cspray\\Labrador\\Test\\Stub\\RequiresCircularDependentStub requiring Cspray\\Labrador\\Test\\Stub\\CircularDependencyPluginStub.";
+        $msg = 'A circular dependency was found with Cspray\\Labrador\\Test\\Stub\\RequiresCircularDependentStub';
+        $msg .= ' requiring Cspray\\Labrador\\Test\\Stub\\CircularDependencyPluginStub.';
 
         $this->expectException($exc);
         $this->expectExceptionMessage($msg);
@@ -199,7 +203,8 @@ class PluginManagerTest extends UnitTestCase {
         $manager->registerPlugin(new RequiresNotPresentPlugin());
 
         $exc = PluginDependencyNotProvidedException::class;
-        $msg = 'Cspray\\Labrador\\Test\\Stub\\RequiresNotPresentPlugin requires a plugin that is not registered: SomeAwesomePlugin.';
+        $msg = 'Cspray\\Labrador\\Test\\Stub\\RequiresNotPresentPlugin requires a plugin that is not registered:';
+        $msg .= ' SomeAwesomePlugin.';
 
         $this->expectException($exc);
         $this->expectExceptionMessage($msg);
@@ -230,7 +235,9 @@ class PluginManagerTest extends UnitTestCase {
         $manager->registerPlugin($plugin);
 
         $this->expectException(InvalidArgumentException::class);
-        $this->expectExceptionMessage('A Plugin with name ' . FooPluginStub::class . ' has already been registered and may not be registered again.');
+        $msg = 'A Plugin with name ' . FooPluginStub::class . ' has already been registered and';
+        $msg .= ' may not be registered again.';
+        $this->expectExceptionMessage($msg);
 
         $manager->registerPlugin($plugin);
     }
@@ -248,7 +255,7 @@ class PluginManagerTest extends UnitTestCase {
         $booter = $this->getPluginBooter($manager);
         $booter->bootPlugins();
 
-        $this->assertSame(1, $plugin->getTimesCalled(), 'Expected method from custom plugin handler to have been invoked');
+        $this->assertSame(1, $plugin->getTimesCalled());
     }
 
     public function testRegisteringMultipleCustomPluginHandlers() {
@@ -267,7 +274,7 @@ class PluginManagerTest extends UnitTestCase {
         $booter = $this->getPluginBooter($manager);
         $booter->bootPlugins();
 
-        $this->assertSame(2, $plugin->getTimesCalled(), 'Expected method from custom plugin handler to have been invoked');
+        $this->assertSame(2, $plugin->getTimesCalled());
     }
 
     public function testCustomHandlerInvokedAfterSystemHandlers() {
@@ -275,16 +282,19 @@ class PluginManagerTest extends UnitTestCase {
         $manager = new PluginManager($injector, $this->mockDispatcher);
 
         $plugin = new CustomPluginOrderStub();
-        $manager->registerPluginHandler(CustomPluginOrderStub::class, function(CustomPluginOrderStub $pluginStub) {
-            $pluginStub->customOp();
-        });
+        $manager->registerPluginHandler(
+            CustomPluginOrderStub::class,
+            function(CustomPluginOrderStub $pluginStub) {
+                $pluginStub->customOp();
+            }
+        );
         $manager->registerPlugin($plugin);
 
         $booter = $this->getPluginBooter($manager);
         $booter->bootPlugins();
 
         $expected = ['depends', 'services', 'events', 'custom', 'boot'];
-        $this->assertSame($expected, $plugin->getCallOrder(), 'Expected plugin handlers to be invoked in a specific order and they were not');
+        $this->assertSame($expected, $plugin->getCallOrder());
     }
 
     public function testCustomHandlerPassedArgumentsAfterPlugin() {
@@ -294,15 +304,16 @@ class PluginManagerTest extends UnitTestCase {
         $handlerArgs = new \stdClass();
         $handlerArgs->data = null;
         $plugin = new CustomPluginStub();
-        $manager->registerPluginHandler(CustomPluginStub::class, function(CustomPluginStub $pluginStub, ...$arguments) use($handlerArgs) {
+        $handler = function(CustomPluginStub $pluginStub, ...$arguments) use($handlerArgs) {
             $handlerArgs->data = $arguments;
-        }, 'a', 'b', 'c');
+        };
+        $manager->registerPluginHandler(CustomPluginStub::class, $handler, 'a', 'b', 'c');
         $manager->registerPlugin($plugin);
 
         $booter = $this->getPluginBooter($manager);
         $booter->bootPlugins();
 
-        $this->assertSame(['a', 'b', 'c'], $handlerArgs->data, 'Expected the arguments passed to handler registration to be passed to handler');
+        $this->assertSame(['a', 'b', 'c'], $handlerArgs->data);
     }
 
     public function testCustomHandlerHandlesPluginTypesThatAreInterfaces() {
@@ -311,9 +322,12 @@ class PluginManagerTest extends UnitTestCase {
 
         $handlerArgs = new \stdClass();
         $handlerArgs->data = null;
-        $manager->registerPluginHandler(CustomPluginInterface::class, function(CustomPluginInterface $plugin) use($handlerArgs) {
-            $handlerArgs->data = $plugin;
-        });
+        $manager->registerPluginHandler(
+            CustomPluginInterface::class,
+            function(CustomPluginInterface $plugin) use($handlerArgs) {
+                $handlerArgs->data = $plugin;
+            }
+        );
         $plugin = $this->createMock(CustomPluginInterface::class);
         $manager->registerPlugin($plugin);
 
