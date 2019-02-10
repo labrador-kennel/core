@@ -36,5 +36,4 @@ interface Application extends BootablePlugin, EventAwarePlugin, PluginDependentP
      * @return void
      */
     public function exceptionHandler(Throwable $throwable) : void;
-
 }

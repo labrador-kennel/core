@@ -11,9 +11,11 @@ declare(strict_types=1);
 namespace Cspray\Labrador;
 
 use Cspray\Labrador\AsyncEvent\Emitter;
-use Cspray\Labrador\AsyncEvent\{EventFactory, StandardEventFactory};
+use Cspray\Labrador\AsyncEvent\EventFactory;
+use Cspray\Labrador\AsyncEvent\StandardEventFactory;
 use Cspray\Labrador\Exception\InvalidEngineStateException;
-use Cspray\Labrador\Plugin\{Plugin, Pluggable};
+use Cspray\Labrador\Plugin\Plugin;
+use Cspray\Labrador\Plugin\Pluggable;
 use Amp\Loop;
 
 class CoreEngine implements Engine {
@@ -150,5 +152,4 @@ class CoreEngine implements Engine {
     public function getPlugins() : iterable {
         return $this->pluginManager->getPlugins();
     }
-
 }

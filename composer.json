@@ -2,6 +2,12 @@
   "name": "cspray/labrador",
   "description": "A microframework providing a plugin and event system to build PHP powered applications.",
   "license": "MIT",
+  "repositories": [
+    {
+      "type": "vcs",
+      "url": "/home/cspray/Projects/labrador-kennel/coding-standard"
+    }
+  ],
   "authors": [
     {
       "name": "Charles Sprayberry",
@@ -14,6 +20,7 @@
     "php": ">=7.2",
     "amphp/amp": "~2.1",
     "cspray/labrador-async-event": "~1.2",
+    "cspray/labrador-coding-standard": "dev-master",
     "rdlowrey/auryn": "~1.4",
     "filp/whoops": "~2.3"
   },

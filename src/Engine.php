@@ -33,5 +33,4 @@ interface Engine extends Pluggable {
      * @return void
      */
     public function run(Application $application) : void;
-
 }

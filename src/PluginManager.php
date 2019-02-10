@@ -13,24 +13,19 @@ declare(strict_types=1);
 
 namespace Cspray\Labrador;
 
-use Cspray\Labrador\Plugin\{
-    BootablePlugin,
-    Pluggable,
-    Plugin,
-    ServiceAwarePlugin,
-    EventAwarePlugin,
-    PluginDependentPlugin
-};
-use Cspray\Labrador\Exception\{
-    CircularDependencyException,
-    InvalidArgumentException,
-    NotFoundException,
-    PluginDependencyNotProvidedException
-};
+use Cspray\Labrador\Plugin\BootablePlugin;
+use Cspray\Labrador\Plugin\Pluggable;
+use Cspray\Labrador\Plugin\Plugin;
+use Cspray\Labrador\Plugin\ServiceAwarePlugin;
+use Cspray\Labrador\Plugin\EventAwarePlugin;
+use Cspray\Labrador\Plugin\PluginDependentPlugin;
+use Cspray\Labrador\Exception\CircularDependencyException;
+use Cspray\Labrador\Exception\InvalidArgumentException;
+use Cspray\Labrador\Exception\NotFoundException;
+use Cspray\Labrador\Exception\PluginDependencyNotProvidedException;
 use Cspray\Labrador\AsyncEvent\Emitter;
 use Auryn\Injector;
 use ArrayObject;
-
 
 /**
  * It is HIGHLY recommended that if you create a Plugin it winds up
@@ -132,7 +127,7 @@ class PluginManager implements Pluggable {
             }
 
             public function bootPlugins() {
-                foreach($this->pluggable->getPlugins() as $plugin) {
+                foreach ($this->pluggable->getPlugins() as $plugin) {
                     $this->loadPlugin($plugin);
                 }
             }
@@ -217,5 +212,4 @@ class PluginManager implements Pluggable {
             }
         };
     }
-
 }

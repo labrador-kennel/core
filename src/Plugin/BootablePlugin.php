@@ -17,5 +17,4 @@ interface BootablePlugin extends Plugin {
      * primary execution of your app is kicked off.
      */
     public function boot() : void;
-
 }

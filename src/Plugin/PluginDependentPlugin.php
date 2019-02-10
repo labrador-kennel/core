@@ -20,5 +20,4 @@ interface PluginDependentPlugin extends Plugin {
      * @return iterable
      */
     public function dependsOn() : iterable;
-
 }
