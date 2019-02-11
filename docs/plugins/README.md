@@ -8,8 +8,9 @@ expect a Plugin to do one or more of the following things:
 - Add listeners to AsyncEvent\Emitter so that your code can respond to emitted events
 - Perform some bootstrap function when Labrador first starts up
 - Depend on some other Plugin to be loaded so that you have access to their services
+- ...whatever else you might need a Plugin to do! (see below for more details)
 
-Each one of these responsibilities is defined by its own interface; you implement an 
+Each one of the Labrador provided responsibilities is defined by its own interface; you implement an 
 object that defines one or more of these interfaces and then register that Plugin with 
 the Engine running your Application.
 
@@ -98,6 +99,14 @@ ensure that this Plugin is registered simply return it's fully qualified class n
 element in an array or Traversable. If the Plugin is registered with the Engine running 
 your application it will be loaded (if it hasn't already been loaded) otherwise an 
 Exception will be thrown indicating that your Application should register the Plugin.
+
+## YourCustomPlugin
+
+Maybe what your Plugin needs to do falls outside of what the predefined Plugins offer. In this 
+case it is easy to implement your own Plugin interface and implementations then add the type 
+to `Pluggable::registerPluginHandler`. This will allow your Plugin to hook into the Plugin registration 
+process and your handler will be executed after all of the pre-defined handlers are finished. 
+Custom handlers are executed for a given type in the order they are received. 
 
 ## Pluggable
 
