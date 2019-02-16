@@ -13,6 +13,8 @@
 powering the given Engine.
 - Renames `Services` -> `DependencyGraph` to be more clear what the intent of the object is 
 as well as to maintain consistency with other Labrador packages.
+- DependencyGraph will no longer share the Injector with itself to steer users away from using 
+the Injector as a Service Locator.
 - Updates the code style to match the Labrador Coding Standard. 
 - Changed the Contributing guide to point to the Labrador Governance repository.
 
@@ -20,6 +22,8 @@ as well as to maintain consistency with other Labrador packages.
 
 - Removed the `bootstrap()` function. You should now invoke `DependencyGraph::wireObjectGraph()` 
 directly instead.
+- Removed the `filp/whoops` library as a required dependency. If you wish to retain this error 
+handling functionality you will be required to add this dependency directly to composer.json.
 
 ## v3.0.0-beta3 - 2019-01-19
 
