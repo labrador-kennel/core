@@ -5,9 +5,7 @@ Ensures basic integration works
 
 require_once dirname(dirname(__DIR__)) . '/vendor/autoload.php';
 
-use function Cspray\Labrador\bootstrap;
-
-$injector = bootstrap();
+$injector = (new \Cspray\Labrador\DependencyGraph())->wireObjectGraph();
 $engine = $injector->make(\Cspray\Labrador\Engine::class);
 
 $engine->onEngineBootup(function() {

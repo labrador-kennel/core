@@ -18,7 +18,7 @@ use Cspray\Labrador\Plugin\Plugin;
 use Cspray\Labrador\Plugin\Pluggable;
 use Amp\Loop;
 
-class CoreEngine implements Engine {
+class AmpEngine implements Engine {
 
     private $emitter;
     private $pluginManager;

@@ -1,21 +1,21 @@
 {
   "name": "cspray/labrador",
-  "description": "A microframework providing a plugin and event system to build PHP powered applications.",
+  "description": "Core functionality powering Labrador Kennel applications through Plugins, Events, and Engines",
+  "keywords": ["amphp", "labrador-kennel"],
   "license": "MIT",
   "authors": [
     {
       "name": "Charles Sprayberry",
-      "email": "cspray+labrador@gmail.com",
-      "homepage": "http://labrador.cspray.net",
-      "role": "Benevolent Dictator For Life"
+      "email": "contact@labrador-kennel.io",
+      "homepage": "https://labrador-kennel.io",
+      "role": "Project Maintainer"
     }
   ],
   "require": {
     "php": ">=7.2",
     "amphp/amp": "~2.1",
-    "cspray/labrador-async-event": "~1.2",
-    "rdlowrey/auryn": "~1.4",
-    "filp/whoops": "~2.3"
+    "cspray/labrador-async-event": "2.0.0-rc1",
+    "rdlowrey/auryn": "~1.4"
   },
   "require-dev": {
     "amphp/phpunit-util": "~1.0",
@@ -27,10 +27,7 @@
       "Cspray\\Labrador\\": [
         "src/"
       ]
-    },
-    "files": [
-      "src/_functions.php"
-    ]
+    }
   },
   "autoload-dev": {
     "psr-4": {
