@@ -8,9 +8,9 @@ declare(strict_types = 1);
 
 namespace Cspray\Labrador\Test\Stub;
 
-use Cspray\Labrador\CoreEngine;
+use Cspray\Labrador\AmpEngine;
 
-class ExtraEventEmitArgs extends CoreEngine {
+class ExtraEventEmitArgs extends AmpEngine {
 
     protected function eventArgs(string $eventName) : array {
         return [1, 'foo', 'bar'];

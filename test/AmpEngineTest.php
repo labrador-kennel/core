@@ -15,7 +15,7 @@ use Amp\Loop;
 use Amp\Success;
 use Cspray\Labrador\Application;
 use Cspray\Labrador\Engine;
-use Cspray\Labrador\CoreEngine;
+use Cspray\Labrador\AmpEngine;
 use Cspray\Labrador\Exception\InvalidEngineStateException;
 use Cspray\Labrador\PluginManager;
 use Cspray\Labrador\Exception\Exception;
@@ -33,7 +33,7 @@ use Cspray\Labrador\AsyncEvent\Event;
 use Cspray\Labrador\Test\Stub\ExtraEventEmitArgs;
 use PHPUnit\Framework\TestCase as UnitTestCase;
 
-class CoreEngineTest extends UnitTestCase {
+class AmpEngineTest extends UnitTestCase {
 
     /**
      * @var Emitter
@@ -46,10 +46,10 @@ class CoreEngineTest extends UnitTestCase {
         $this->mockPluginManager = $this->getMockBuilder(PluginManager::class)->disableOriginalConstructor()->getMock();
     }
 
-    private function getEngine(Emitter $eventEmitter = null, PluginManager $pluginManager = null) : CoreEngine {
+    private function getEngine(Emitter $eventEmitter = null, PluginManager $pluginManager = null) : AmpEngine {
         $emitter = $eventEmitter ?: $this->emitter;
         $manager = $pluginManager ?: $this->mockPluginManager;
-        return new CoreEngine($manager, $emitter);
+        return new AmpEngine($manager, $emitter);
     }
 
     private function noopApp() : Application {
