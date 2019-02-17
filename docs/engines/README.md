@@ -1,3 +1,6 @@
+---
+layout: default
+---
 # Labrador Engines
 
 If an Application is all of your dependencies and app execution then the Engine is what 

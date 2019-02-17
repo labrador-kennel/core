@@ -15,15 +15,15 @@ layout: default
       <ul class="content" style="list-style-type: disc;list-style-position: inside;">
         <li>Register an object graph with the Auryn container.</li>
         <li>Add listeners to <code>AsyncEvent\Emitter</code> so that your code can respond to emitted events.</li>
-        <li>Perform some bootstrap function when Labrador first starts up.</li>
+        <li>Perform some bootstrap function when the Engine first starts up.</li>
         <li>Depend on some other Plugin to be loaded so that you have access to APIs they provide.</li>
         <li>...whatever else you might need a Plugin to do! (see below for more details).</li>
       </ul>
 
       <p class="content">
-        All Plugin responsibilities, except potentially those you custom define, are defined by an interface. It is up
-        to you to implement any combination of those interfaces as necessary for your Plugin. All of the interfaces are
-        explicitly scoped to be as easy to implement as possible.
+        All Plugins, except potentially those you custom create, are defined by an interface. It is up to you to
+        implement any combination of those interfaces as necessary for your Plugin. All of the interfaces are explicitly
+        scoped to be as easy to implement as possible.
       </p>
 
       <h3 class="is-size-3">InjectorAwarePlugin</h3>
@@ -52,7 +52,7 @@ interface InjectorAwarePlugin {
 
       <h3 class="is-size-3">EventAwarePlugin</h3>
 
-<pre><code class="php">&lt;?php
+<pre class="is-paddingless"><code class="php">&lt;?php
 
 namespace Cspray\Labrador\Plugin;
 
@@ -73,7 +73,7 @@ interface EventAwarePlugin {
 
       <h3 class="is-size-3">BootablePlugin</h3>
 
-<pre><code>&lt;?php
+<pre class="is-paddingless"><code>&lt;?php
 
 namespace Cspray\Labrador\Plugin;
 
@@ -86,12 +86,12 @@ interface BootablePlugin {
 
       <p class="content">
         Does your Plugin need to do something one-time when the app is booting up and before any of the Application code
-        has been executed? Implementing this Plugin and performing your action in the `boot()` method is how you'd do that.
+        has been executed? Implementing this Plugin and performing your action in the boot method is how you'd do that.
       </p>
 
       <h3 id="plugin-dependent-plugin" class="is-size-3">PluginDependentPlugin</h3>
 
-<pre><code>&lt;?php
+<pre class="is-paddingless"><code class="php">&lt;?php
 
 namespace Cspray\Labrador\Plugin;
 
@@ -111,20 +111,23 @@ interface PluginDependentPlugin {
         Exception will be thrown indicating that your Application should register the Plugin.
       </p>
 
-      ## YourCustomPlugin
+      <h3 class="is-size-3">YourCustomPlugin</h3>
 
-      Maybe what your Plugin needs to do falls outside of what the predefined Plugins offer. In this
-      case it is easy to implement your own Plugin interface and implementations then add the type
-      to `Pluggable::registerPluginHandler`. This will allow your Plugin to hook into the Plugin registration
-      process and your handler will be executed after all of the pre-defined handlers are finished.
-      Custom handlers are executed for a given type in the order they are received.
+      <p class="content">
+        Maybe what your Plugin needs to do falls outside of what the predefined Plugins offer. In this
+        case it is easy to implement your own Plugin interface and implementations then add the type
+        to <code>Pluggable::registerPluginHandler</code>. This will allow your Plugin to hook into the Plugin registration
+        process and your handler will be executed after all of the pre-defined handlers are finished.
+        Custom handlers are executed for a given type in the order they are received.
+      </p>
 
-      ## Pluggable
+      <h3 class="is-size-3">Pluggable</h3>
 
-      If your object can have Plugins attahed to it it should implement the Pluggable interface.
+      <p class="content">
+        If your object can have Plugins attahed to it it should implement the Pluggable interface.
+      </p>
 
-      ```php
-      <?php
+<pre class="is-paddingless"><code class="php">&lt;?php
 
 namespace Cspray\Labrador\Plugin;
 
@@ -169,40 +172,57 @@ interface Pluggable {
     public function getPlugins() : array;
 
 }
+</code></pre>
 
-?>
-      ```
+      <p class="content">
+        Typically your code shouldn't need to implement this interface; the Engine interface is a Pluggable and it is
+        highly recommended that you register Plugins on the Engine instance running your Application instead of on one
+        of your own objects. If you do implement your own Pluggable then you should be sure to follow the Plugin loading
+        process detailed below.
+      </p>
 
-      Typically your code shouldn't need to implement this interface; the Engine interface is
-      a Pluggable and it is highly recommended that you register Plugins on the Engine
-      instance running your Application instead of on one of your own objects. If you do
-      implement your own Pluggable then you should be sure to follow the Plugin loading
-      process detailed below.
+      <h3 class="is-size-3">Plugin Loading Process</h3>
 
-      ## Plugin Loading Process
+      <p class="content">
+        During the <code>Engine::ENGINE_BOOTUP_EVENT</code> each Plugin registered with the Engine will go through the
+        below process. This process happens synchronously; meaning that each Plugin is loaded in its entirety before the
+        next Plugin is started.
+      </p>
 
-      During the `Engine::ENGINE_BOOTUP_EVENT` each Plugin registered with the Engine will go
-      through the below process. This process happens synchronously; meaning that each Plugin
-      is loaded in its entirety before the next Plugin is started.
+      <p class="content">
+        While each responsibility of a Plugin is handled by its own interface it is certainly possible to implement all
+        4. In this case it might be important to know in what order each method will be called. Plugins are loaded in
+        the following order:
+      </p>
 
-      While each responsibility of a Plugin is handled by its own interface it is certainly
-      possible to implement all 4. In this case it might be important to know in what order
-      each method will be called. Plugins are loaded in the following order:
+      <ol type="1" class="content" style="list-style-position: inside;">
+        <li>
+          Call <code>Plugin::dependsOn()</code> and load any dependent Plugins; meaning all of the plugins returned from
+          this iterable will go through this process before the calling Plugin does.
+        </li>
+        <li>
+          Call <code>Plugin::registerServices(Injector)</code> and wire up any object graph that your Plugin requires.
+        </li>
+        <li>
+          Call <code>Plugin::registerEventListeners(Emitter)</code> and register any listeners for emitted events.
+        </li>
+        <li>
+          Invoke any handlers that have been registered with <code>Pluggable::registerPluginHandler</code> that matches
+          the specific type of Plugin being loaded.
+        </li>
+        <li>
+          Call <code>Plugin::boot()</code> and allow your Plugin to go through any necessary bootstrapping.
+        </li>
+      </ol>
 
-      1. Call `Plugin::dependsOn()` and load any dependent Plugins; meaning all of the plugins
-      returned from this iterable will go through this process before the calling Plugin does.
-      1. Call `Plugin::registerServices(Injector)` and wire up any object graph that your Plugin
-      requires.
-      1. Call `Plugin::registerEventListeners(Emitter)` and register any listeners for
-      emitted events.
-      1. Invoke any handlers that have been registered with `Pluggable::registerPluginHandler` that
-      matches the specific type of Plugin being loaded.
-      1. Call `Plugin::boot()` and allow your Plugin to go through any necessary bootstrapping.
+      <hr />
 
-
-      You should take a look at the [Application](../application) documentation next to learn more
-      about actually executing your application code.
-
+      <a href="applications.html" class="is-pulled-right is-size-5">
+        Applications
+        <span class="icon">
+          <i class="fas fa-angle-right"></i>
+        </span>
+      </a>
     </div>
   </div>
 </div>
