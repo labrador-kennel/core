@@ -1,0 +1,8 @@
+baseurl: "/core"
+layouts_dir: ".shared/_layouts"
+
+external_css:
+  - //cdnjs.cloudflare.com/ajax/libs/highlight.js/9.14.2/styles/default.min.css
+
+external_js:
+  - //cdnjs.cloudflare.com/ajax/libs/highlight.js/9.14.2/highlight.min.js
