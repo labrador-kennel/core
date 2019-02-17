@@ -1,0 +1,22 @@
+[
+  {
+    "name": "Home",
+    "url": "",
+    "active_check": "/"
+  },
+  {
+    "name": "Plugins",
+    "url": "plugins",
+    "active_check": "/plugins/"
+  },
+  {
+    "name": "Applications",
+    "url": "applications",
+    "active_check": "/applications/"
+  },
+  {
+    "name": "Engines",
+    "url": "engines",
+    "active_check": "/engines/"
+  }
+]

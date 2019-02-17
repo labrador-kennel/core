@@ -1,0 +1,212 @@
+---
+layout: docs
+---
+## Plugin Documentation
+
+A Labrador Plugin is the primary way for your code to interact with Labrador. It provides a way for you to group
+code and share it with not only your application but others. We typically expect a Plugin to do one or more of
+the following things:
+
+<ul class="content list-inside list-show-bullets">
+  <li>Register an object graph with the Auryn container.</li>
+  <li>Add listeners to <code>AsyncEvent\Emitter</code> so that your code can respond to emitted events.</li>
+  <li>Perform some bootstrap function when the Engine first starts up.</li>
+  <li>Depend on some other Plugin to be loaded so that you have access to APIs they provide.</li>
+  <li>...whatever else you might need a Plugin to do! (see below for more details).</li>
+</ul>
+
+  All Plugins, except potentially those you custom create, are defined by an interface. It is up to you to
+  implement any combination of those interfaces as necessary for your Plugin. All of the interfaces are explicitly
+  scoped to be as easy to implement as possible.
+
+### InjectorAwarePlugin
+
+```php
+<?php
+
+namespace Cspray\Labrador\Plugin;
+
+use Auryn\Injector;
+
+interface InjectorAwarePlugin {
+
+public function wireObjectGraph(Injector $injector);
+
+}
+````
+
+As the interface name and method implies this is how you wire an object graph to the Auryn container. You should
+refrain from making objects with this Plugin and instead wire up your object graph so appropriate objects are
+shared or non-instantiable arguments are defined for future object construction. You should refrain from creating
+objects with the Injector as not all Plugins may have had an opportunity to wire their object graph yet. If your
+Plugin absolutely must create an object in this call ensure that you also implement <a href="plugins#plugindependentplugin">
+PluginDependentPlugin</a> if that object comes from somewhere else.
+
+### EventAwarePlugin
+
+```php
+<?php
+
+namespace Cspray\Labrador\Plugin;
+
+use Cspray\Labrador\AsyncEvent\Emitter;
+
+interface EventAwarePlugin {
+
+public function registerEventListeners(Emitter $emitter);
+
+}
+```
+
+If you need to respond to one of Labrador's emitted events or an event emitted by your Application you should
+register any listeners with this type of Plugin. It is highly recommended that you do not emit events in this
+Plugin as there is no guarantee appropriate listeners will be registered.
+
+### BootablePlugin
+
+```php
+<?php
+
+namespace Cspray\Labrador\Plugin;
+
+interface BootablePlugin {
+
+public function boot();
+
+}
+```
+
+Does your Plugin need to do something one-time when the app is booting up and before any of the Application code
+has been executed? Implementing this Plugin and performing your action in the boot method is how you'd do that.
+
+### PluginDependentPlugin
+
+```php
+<?php
+
+namespace Cspray\Labrador\Plugin;
+
+interface PluginDependentPlugin {
+
+public function dependsOn() : iterable;
+
+}
+```
+
+Perhaps your Plugin depends on another Plugin. For example, you might have a `YourApp\PdoPlugin`
+that properly instantiates, configures, and shares with the Auryn container a PDO object. To
+ensure that this Plugin is registered simply return it's fully qualified class name as an
+element in an array or Traversable. If the Plugin is registered with the Engine running
+your application it will be loaded (if it hasn't already been loaded) otherwise an
+Exception will be thrown indicating that your Application should register the Plugin.
+
+### YourCustomPlugin
+
+Maybe what your Plugin needs to do falls outside of what the predefined Plugins offer. In this
+case it is easy to implement your own Plugin interface and implementations then add the type
+to `Pluggable::registerPluginHandler`. This will allow your Plugin to hook into the Plugin registration
+process and your handler will be executed after all of the pre-defined handlers are finished.
+Custom handlers are executed for a given type in the order they are received.
+
+### Pluggable
+
+If your object can have Plugins attached to it it should implement the Pluggable interface.
+
+```php
+<?php
+
+namespace Cspray\Labrador\Plugin;
+
+interface Pluggable {
+
+/**
+* @param string $pluginType
+* @param callable $handler
+* @param mixed ...$arguments
+* @return void
+*/
+public function registerPluginHandler(string $pluginType, callable $handler, ...$arguments);
+
+/**
+* @param Plugin $plugin
+* @return $this
+*/
+public function registerPlugin(Plugin $plugin);
+
+/**
+* @param string $name
+*/
+public function removePlugin(string $name);
+
+/**
+* @param string $name
+* @return boolean
+*/
+public function hasPlugin(string $name) : bool;
+
+/**
+* @param string $name
+* @return Plugin
+*/
+public function getPlugin(string $name) : Plugin;
+
+/**
+* An array of Plugin objects associated to the given Pluggable.
+*
+* @return Plugin[]
+*/
+public function getPlugins() : array;
+
+}
+```
+
+Typically your code shouldn't need to implement this interface; the Engine interface is a Pluggable and it is
+highly recommended that you register Plugins on the Engine instance running your Application instead of on one
+of your own objects. If you do implement your own Pluggable then you should be sure to follow the Plugin loading
+process detailed below.
+
+### Plugin Loading Process
+
+During the `Engine::ENGINE_BOOTUP_EVENT` each Plugin registered with the Engine will go through the
+below process. This process happens synchronously; meaning that each Plugin is loaded in its entirety before the
+next Plugin is started.
+
+  While each responsibility of a Plugin is handled by its own interface it is certainly possible to implement all
+  of them. In this case it might be important to know in what order each method will be called. Plugins are loaded in
+  the following order:
+
+<ol type="1" class="content list-inside">
+  <li>
+    Call <code>Plugin::dependsOn()</code> and load any dependent Plugins; meaning all of the plugins returned from
+    this iterable will go through this process before the calling Plugin does.
+  </li>
+  <li>
+    Call <code>Plugin::registerServices(Injector)</code> and wire up any object graph that your Plugin requires.
+  </li>
+  <li>
+    Call <code>Plugin::registerEventListeners(Emitter)</code> and register any listeners for emitted events.
+  </li>
+  <li>
+    Invoke any handlers that have been registered with <code>Pluggable::registerPluginHandler</code> that matches
+    the specific type of Plugin being loaded.
+  </li>
+  <li>
+    Call <code>Plugin::boot()</code> and allow your Plugin to go through any necessary bootstrapping.
+  </li>
+</ol>
+
+<hr />
+
+<a href="" class="is-pulled-left is-size-6">
+  <span class="icon">
+    <i class="fas fa-angle-left"></i>
+  </span>
+  Home
+</a>
+
+<a href="applications" class="is-pulled-right is-size-6">
+  Applications
+  <span class="icon">
+    <i class="fas fa-angle-right"></i>
+  </span>
+</a>
