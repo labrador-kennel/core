@@ -16,7 +16,7 @@ interface Pluggable {
      * Register a handler for a custom Plugin type that is not natively supported by Labrador.
      *
      * For more information about how custom handlers interact with Plugins during the initialization process please
-     * review the /docs/plugins/README.md documentation.
+     * review the /docs/plugins/plugins.html documentation.
      *
      * @param string $pluginType
      * @param callable $pluginHandler
