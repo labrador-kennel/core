@@ -8,3 +8,4 @@
 Vagrantfile
 /puphpet
 docs/_site/
+docs/.sass-cache

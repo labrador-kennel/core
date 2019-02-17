@@ -1,14 +1,14 @@
-# Labrador Application
-
-> If you have not looked at the [Plugins](./plugins) documentation you should do so before 
-> continuing.
+---
+layout: docs
+---
+## Application Documentation
 
 A Labrador Application from a high-level is an encapsulation of all the object graph, 
 event listeners, and initialization code for your application. Lower level an Application 
 is a Plugin that implements 3 additional methods that helps distinguish it from more generic 
 Plugins.
 
-## The Application Interface
+### The Application Interface
 
 ```php
 <?php
@@ -46,8 +46,6 @@ interface Application extends BootablePlugin, EventAwarePlugin, PluginDependentP
     public function exceptionHandler(Throwable $throwable) : void;
     
 }
-
-?>
 ```
 
 By implementing the available Plugin interfaces you can easily integrate your code into Labrador. 
@@ -60,7 +58,18 @@ We do recommen that you also override the default `exceptionHandler` implementat
 it will only rethrow the exception causing your application to fatally crash for any exception 
 thrown.
 
-<hr>
+<hr />
 
-You should take a look at the [Engines](../engines) documentation next to learn more 
-about executing your Application.
+<a href="plugins" class="is-pulled-left is-size-6">
+  <span class="icon">
+    <i class="fas fa-angle-left"></i>
+  </span>
+  Plugins
+</a>
+
+<a href="engines" class="is-pulled-right is-size-6">
+  Engines
+  <span class="icon">
+    <i class="fas fa-angle-right"></i>
+  </span>
+</a>
