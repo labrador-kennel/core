@@ -1,0 +1,3 @@
+[submodule "docs/.shared"]
+	path = docs/.shared
+	url = git@github.com:labrador-kennel/labrador-kennel.github.io.git
