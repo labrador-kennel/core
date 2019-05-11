@@ -9,10 +9,10 @@ declare(strict_types = 1);
 namespace Cspray\Labrador\Test\Stub;
 
 use Cspray\Labrador\Plugin\BootablePlugin;
-use Cspray\Labrador\Plugin\ServiceAwarePlugin;
+use Cspray\Labrador\Plugin\InjectorAwarePlugin;
 use Auryn\Injector;
 
-class FooPluginStub implements ServiceAwarePlugin, BootablePlugin {
+class FooPluginStub implements InjectorAwarePlugin, BootablePlugin {
 
     private $numBootCalled = 0;
 
@@ -30,7 +30,7 @@ class FooPluginStub implements ServiceAwarePlugin, BootablePlugin {
         return $this->numBootCalled;
     }
 
-    public function registerServices(Injector $injector) : void {
+    public function wireObjectGraph(Injector $injector) : void {
         $injector->share(FooService::class);
     }
 }

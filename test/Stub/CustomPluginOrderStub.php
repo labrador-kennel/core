@@ -8,9 +8,9 @@ use Cspray\Labrador\AsyncEvent\Emitter;
 use Cspray\Labrador\Plugin\BootablePlugin;
 use Cspray\Labrador\Plugin\EventAwarePlugin;
 use Cspray\Labrador\Plugin\PluginDependentPlugin;
-use Cspray\Labrador\Plugin\ServiceAwarePlugin;
+use Cspray\Labrador\Plugin\InjectorAwarePlugin;
 
-class CustomPluginOrderStub implements BootablePlugin, EventAwarePlugin, ServiceAwarePlugin, PluginDependentPlugin {
+class CustomPluginOrderStub implements BootablePlugin, EventAwarePlugin, InjectorAwarePlugin, PluginDependentPlugin {
 
     private $callOrder = [];
 
@@ -54,7 +54,7 @@ class CustomPluginOrderStub implements BootablePlugin, EventAwarePlugin, Service
      * @param Injector $injector
      * @return void
      */
-    public function registerServices(Injector $injector): void {
+    public function wireObjectGraph(Injector $injector): void {
         $this->callOrder[] = 'services';
     }
 

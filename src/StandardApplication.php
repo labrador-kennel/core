@@ -44,7 +44,7 @@ abstract class StandardApplication implements Application {
      * @param Injector $injector
      * @return void
      */
-    public function registerServices(Injector $injector) : void {
+    public function wireObjectGraph(Injector $injector) : void {
         // noop, override in your Application to wire your object graph to the Auryn container.
     }
 

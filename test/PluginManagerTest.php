@@ -29,7 +29,7 @@ use Cspray\Labrador\Test\Stub\EventsRegisteredPlugin;
 use Cspray\Labrador\Test\Stub\FooPluginDependentStub;
 use Cspray\Labrador\Test\Stub\FooPluginStub;
 use Cspray\Labrador\Test\Stub\FooService;
-use Cspray\Labrador\Test\Stub\FooServiceBootablePlugin;
+use Cspray\Labrador\Test\Stub\FooInjectorBootablePlugin;
 use Cspray\Labrador\Test\Stub\GeneratorBooterPlugin;
 use Cspray\Labrador\Test\Stub\PluginStub;
 use Cspray\Labrador\Test\Stub\RecursivelyDependentPluginStub;
@@ -325,7 +325,7 @@ class PluginManagerTest extends AsyncTestCase {
         $manager = $this->getPluginManager();
 
         $fooService = new FooService();
-        $plugin = new FooServiceBootablePlugin($fooService);
+        $plugin = new FooInjectorBootablePlugin($fooService);
 
         $manager->registerPlugin($plugin);
 
