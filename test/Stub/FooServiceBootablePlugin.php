@@ -1,16 +1,20 @@
 <?php
 
-declare(strict_types = 1);
 
-/**
- * An interface for a plugin that needs to perform some action when the Engine boots up.
- *
- * @license See LICENSE file in project root
- */
+namespace Cspray\Labrador\Test\Stub;
 
-namespace Cspray\Labrador\Plugin;
+use Auryn\Injector;
+use Cspray\Labrador\Plugin\BootablePlugin;
+use Cspray\Labrador\Plugin\ServiceAwarePlugin;
 
-interface BootablePlugin extends Plugin {
+class FooServiceBootablePlugin implements ServiceAwarePlugin, BootablePlugin {
+
+    private $fooService;
+    private $bootInjectedService;
+
+    public function __construct(FooService $fooService) {
+        $this->fooService = $fooService;
+    }
 
     /**
      * Return a callable that will be invoked using Auryn's Injector::execute API.
@@ -25,5 +29,17 @@ interface BootablePlugin extends Plugin {
      *
      * @return callable
      */
-    public function boot() : callable;
+    public function boot(): callable {
+        return function(FooService $fooService) {
+            $this->bootInjectedService = $fooService;
+        };
+    }
+
+    public function registerServices(Injector $injector): void {
+        $injector->share($this->fooService);
+    }
+
+    public function getBootInjectedService() {
+        return $this->bootInjectedService;
+    }
 }

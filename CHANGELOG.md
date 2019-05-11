@@ -1,5 +1,24 @@
 # Changelog
 
+## 3.0.0-beta4 2019-05-11
+
+The previous 3.0 Release Candidate has been found lacking key features that should be implemented for 
+a stable release. The codebase will become more stable before a 2nd RC is released.
+
+#### Added
+
+- A new method `Pluggable::loadPlugins` that must be explicitly called to load Plugins. Additionally, 
+this method is expected to be asynchronous to take advantage of async Plugin booting.
+
+#### Changed
+
+- Refactors the `Bootable::boot` method to return a callable that can be invoked in context of the 
+event loop, meaning you can yield Promises etc, and has all dependencies resolved with your Injector.
+- Refactors the Pluggable::registerPlugin method to return void and to throw an exception if a Plugin
+is attempted to be registered after `Pluggable::loadPlugins` is called.
+- Changed the `InvalidEngineStateException` to an `InvalidStateException` to be more generic and 
+used in multiple places.
+
 ## 3.0.0-rc1 - 2019-02-16
 
 #### Added

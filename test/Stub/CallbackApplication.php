@@ -51,8 +51,9 @@ class CallbackApplication implements Application {
      * Perform any actions that should be completed by your Plugin before the
      * primary execution of your app is kicked off.
      */
-    public function boot() : void {
-        // noop
+    public function boot() : callable {
+        return function() {
+        };
     }
 
     /**
