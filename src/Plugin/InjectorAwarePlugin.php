@@ -13,7 +13,7 @@ namespace Cspray\Labrador\Plugin;
 
 use Auryn\Injector;
 
-interface ServiceAwarePlugin extends Plugin {
+interface InjectorAwarePlugin extends Plugin {
 
     /**
      * Register any services that the Plugin provides.
@@ -21,5 +21,5 @@ interface ServiceAwarePlugin extends Plugin {
      * @param Injector $injector
      * @return void
      */
-    public function registerServices(Injector $injector) : void;
+    public function wireObjectGraph(Injector $injector) : void;
 }

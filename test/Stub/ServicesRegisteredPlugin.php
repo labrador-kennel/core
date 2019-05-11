@@ -3,10 +3,10 @@
 
 namespace Cspray\Labrador\Test\Stub;
 
-use Cspray\Labrador\Plugin\ServiceAwarePlugin;
+use Cspray\Labrador\Plugin\InjectorAwarePlugin;
 use Auryn\Injector;
 
-class ServicesRegisteredPlugin implements ServiceAwarePlugin {
+class ServicesRegisteredPlugin implements InjectorAwarePlugin {
 
     private $called = false;
 
@@ -20,7 +20,7 @@ class ServicesRegisteredPlugin implements ServiceAwarePlugin {
      * @param Injector $injector
      * @return void
      */
-    public function registerServices(Injector $injector) : void {
+    public function wireObjectGraph(Injector $injector) : void {
         $this->called = true;
     }
 }

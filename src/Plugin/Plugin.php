@@ -11,7 +11,7 @@ declare(strict_types=1);
  * @see \Cspray\Labrador\Plugin\BootablePlugin
  * @see \Cspray\Labrador\Plugin\EventAwarePlugin
  * @see \Cspray\Labrador\Plugin\PluginDependentPlugin
- * @see \Cspray\Labrador\Plugin\ServiceAwarePlugin
+ * @see \Cspray\Labrador\Plugin\InjectorAwarePlugin
  */
 
 namespace Cspray\Labrador\Plugin;

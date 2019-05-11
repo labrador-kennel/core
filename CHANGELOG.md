@@ -18,6 +18,10 @@ event loop, meaning you can yield Promises etc, and has all dependencies resolve
 is attempted to be registered after `Pluggable::loadPlugins` is called.
 - Changed the `InvalidEngineStateException` to an `InvalidStateException` to be more generic and 
 used in multiple places.
+- Renamed `ServiceAwarePlugin` -> `InjectorAwarePlugin` and renames the method on this interface to 
+`wireObjectGraph`. This ensures we are not conflating the term "Service" with other possible meanings 
+in your application, is more explicit to consumers about intent, and matches the naming strategy 
+for the `DependencyGraph` object convention.
 
 ## 3.0.0-rc1 - 2019-02-16
 

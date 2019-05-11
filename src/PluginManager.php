@@ -15,7 +15,7 @@ use Cspray\Labrador\Exception\InvalidStateException;
 use Cspray\Labrador\Plugin\BootablePlugin;
 use Cspray\Labrador\Plugin\Pluggable;
 use Cspray\Labrador\Plugin\Plugin;
-use Cspray\Labrador\Plugin\ServiceAwarePlugin;
+use Cspray\Labrador\Plugin\InjectorAwarePlugin;
 use Cspray\Labrador\Plugin\EventAwarePlugin;
 use Cspray\Labrador\Plugin\PluginDependentPlugin;
 use Cspray\Labrador\Exception\CircularDependencyException;
@@ -191,8 +191,8 @@ class PluginManager implements Pluggable {
             }
 
             private function handlePluginServices(Plugin $plugin) {
-                if ($plugin instanceof ServiceAwarePlugin) {
-                    $plugin->registerServices($this->injector);
+                if ($plugin instanceof InjectorAwarePlugin) {
+                    $plugin->wireObjectGraph($this->injector);
                 }
             }
 

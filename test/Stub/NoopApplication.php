@@ -59,7 +59,7 @@ class NoopApplication implements Application {
      * @param Injector $injector
      * @return void
      */
-    public function registerServices(Injector $injector) : void {
+    public function wireObjectGraph(Injector $injector) : void {
         // noop
     }
 

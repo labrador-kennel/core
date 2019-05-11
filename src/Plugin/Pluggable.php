@@ -26,7 +26,7 @@ use Cspray\Labrador\Exception\NotFoundException;
  *
  * 1. Any dependencies should have this process completed if the registered Plugin is a PluginDependentPlugin. The
  * process should detect for circular references and throw an exception if one is encountered.
- * 2. If the registered Plugin is a ServiceAwarePlugin the Injector should be provided so that the object graph for the
+ * 2. If the registered Plugin is a InjectorAwarePlugin the Injector should be provided so that the object graph for the
  * Plugin can be wired properly.
  * 3. If the registered Plugin is an EventAwarePlugin the Emitter should be provided so that any listeners can be
  * registered.

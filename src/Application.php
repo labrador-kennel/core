@@ -12,10 +12,10 @@ use Cspray\Labrador\Plugin\BootablePlugin;
 use Cspray\Labrador\Plugin\EventAwarePlugin;
 use Cspray\Labrador\Plugin\Pluggable;
 use Cspray\Labrador\Plugin\PluginDependentPlugin;
-use Cspray\Labrador\Plugin\ServiceAwarePlugin;
+use Cspray\Labrador\Plugin\InjectorAwarePlugin;
 use Throwable;
 
-interface Application extends BootablePlugin, EventAwarePlugin, PluginDependentPlugin, ServiceAwarePlugin {
+interface Application extends BootablePlugin, EventAwarePlugin, PluginDependentPlugin, InjectorAwarePlugin {
 
     /**
      * Perform whatever logic or operations your application requires; return a Promise that resolves when you app is

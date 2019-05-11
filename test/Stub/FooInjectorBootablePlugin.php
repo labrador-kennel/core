@@ -5,9 +5,9 @@ namespace Cspray\Labrador\Test\Stub;
 
 use Auryn\Injector;
 use Cspray\Labrador\Plugin\BootablePlugin;
-use Cspray\Labrador\Plugin\ServiceAwarePlugin;
+use Cspray\Labrador\Plugin\InjectorAwarePlugin;
 
-class FooServiceBootablePlugin implements ServiceAwarePlugin, BootablePlugin {
+class FooInjectorBootablePlugin implements InjectorAwarePlugin, BootablePlugin {
 
     private $fooService;
     private $bootInjectedService;
@@ -35,7 +35,7 @@ class FooServiceBootablePlugin implements ServiceAwarePlugin, BootablePlugin {
         };
     }
 
-    public function registerServices(Injector $injector): void {
+    public function wireObjectGraph(Injector $injector): void {
         $injector->share($this->fooService);
     }
 
