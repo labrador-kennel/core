@@ -18,7 +18,7 @@
     "rdlowrey/auryn": "~1.4"
   },
   "require-dev": {
-    "amphp/phpunit-util": "~1.0",
+    "amphp/phpunit-util": "dev-master",
     "cspray/labrador-coding-standard": "0.1.0",
     "phpunit/phpunit": "~6.5"
   },

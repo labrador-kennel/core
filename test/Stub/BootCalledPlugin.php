@@ -19,7 +19,9 @@ class BootCalledPlugin implements BootablePlugin {
         return $this->bootCalled;
     }
 
-    public function boot() : void {
-        $this->bootCalled = true;
+    public function boot() : callable {
+        return function() {
+            $this->bootCalled = true;
+        };
     }
 }

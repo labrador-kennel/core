@@ -8,5 +8,5 @@
  */
 namespace Cspray\Labrador\Exception;
 
-class InvalidEngineStateException extends Exception {
+class InvalidStateException extends Exception {
 }

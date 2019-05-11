@@ -10,12 +10,12 @@ declare(strict_types=1);
 
 namespace Cspray\Labrador;
 
+use Amp\Promise;
 use Cspray\Labrador\AsyncEvent\Emitter;
 use Cspray\Labrador\AsyncEvent\EventFactory;
 use Cspray\Labrador\AsyncEvent\StandardEventFactory;
-use Cspray\Labrador\Exception\InvalidEngineStateException;
+use Cspray\Labrador\Exception\InvalidStateException;
 use Cspray\Labrador\Plugin\Plugin;
-use Cspray\Labrador\Plugin\Pluggable;
 use Amp\Loop;
 
 class AmpEngine implements Engine {
@@ -45,6 +45,11 @@ class AmpEngine implements Engine {
         return $this->emitter;
     }
 
+    /**
+     * @param callable $cb
+     * @param array $listenerData
+     * @return AmpEngine
+     */
     public function onEngineBootup(callable $cb, array $listenerData = []) : self {
         $this->emitter->on(self::ENGINE_BOOTUP_EVENT, $cb, $listenerData);
         return $this;
@@ -52,6 +57,7 @@ class AmpEngine implements Engine {
 
     /**
      * @param callable $cb
+     * @param array $listenerData
      * @return $this
      */
     public function onAppCleanup(callable $cb, array $listenerData = []) : self {
@@ -62,12 +68,14 @@ class AmpEngine implements Engine {
     /**
      * Ensures that the appropriate plugins are booted and then executes the application.
      *
+     * @param Application $application
      * @return void
-     * @throws InvalidEngineStateException
+     * @throws Exception\InvalidArgumentException
+     * @throws InvalidStateException
      */
     public function run(Application $application) : void {
         if ($this->engineState !== 'idle') {
-            throw new InvalidEngineStateException('Engine::run() MUST NOT be called while already running.');
+            throw new InvalidStateException('Engine::run() MUST NOT be called while already running.');
         }
 
         Loop::setErrorHandler(function(\Throwable $error) use($application) {
@@ -77,12 +85,17 @@ class AmpEngine implements Engine {
             });
         });
 
+        if (!$this->hasPlugin(get_class($application))) {
+            $this->registerPlugin($application);
+        }
+
+        $this->emitter->once(self::ENGINE_BOOTUP_EVENT, function() {
+            yield $this->loadPlugins();
+        });
+
         Loop::run(function() use($application) {
             $this->engineState = 'running';
 
-            if (!$this->hasPlugin(get_class($application))) {
-                $this->registerPlugin($application);
-            }
 
             if (!$this->engineBooted) {
                 yield $this->emitEngineBootupEvent();
@@ -97,8 +110,7 @@ class AmpEngine implements Engine {
 
     private function emitEngineBootupEvent() {
         $event = $this->eventFactory->create(self::ENGINE_BOOTUP_EVENT, $this);
-        $promise = $this->emitter->emit($event);
-        return $promise;
+        return $this->emitter->emit($event);
     }
 
     private function emitAppCleanupEvent(Application $application) {
@@ -111,45 +123,27 @@ class AmpEngine implements Engine {
         $this->pluginManager->registerPluginHandler($pluginType, $pluginHandler, $arguments);
     }
 
-    /**
-     * @param Plugin $plugin
-     * @return $this
-     * @throws Exception\InvalidArgumentException
-     */
-    public function registerPlugin(Plugin $plugin) : Pluggable {
+    public function registerPlugin(Plugin $plugin) : void {
         $this->pluginManager->registerPlugin($plugin);
-        return $this;
     }
 
-    /**
-     * @param string $name
-     * @return void
-     */
     public function removePlugin(string $name) : void {
         $this->pluginManager->removePlugin($name);
     }
 
-    /**
-     * @param string $name
-     * @return bool
-     */
     public function hasPlugin(string $name) : bool {
         return $this->pluginManager->hasPlugin($name);
     }
 
-    /**
-     * @param string $name
-     * @return Plugin
-     * @throws Exception\NotFoundException
-     */
     public function getPlugin(string $name) : Plugin {
         return $this->pluginManager->getPlugin($name);
     }
 
-    /**
-     * @return Plugin[]
-     */
     public function getPlugins() : iterable {
         return $this->pluginManager->getPlugins();
+    }
+
+    public function loadPlugins(): Promise {
+        return $this->pluginManager->loadPlugins();
     }
 }

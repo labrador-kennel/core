@@ -16,7 +16,7 @@ use Amp\Success;
 use Cspray\Labrador\Application;
 use Cspray\Labrador\Engine;
 use Cspray\Labrador\AmpEngine;
-use Cspray\Labrador\Exception\InvalidEngineStateException;
+use Cspray\Labrador\Exception\InvalidStateException;
 use Cspray\Labrador\PluginManager;
 use Cspray\Labrador\Exception\Exception;
 use Cspray\Labrador\Test\Stub\CallbackApplication;
@@ -39,16 +39,16 @@ class AmpEngineTest extends UnitTestCase {
      * @var Emitter
      */
     private $emitter;
-    private $mockPluginManager;
+    private $pluginManager;
 
     public function setUp() {
         $this->emitter = new AmpEmitter();
-        $this->mockPluginManager = $this->getMockBuilder(PluginManager::class)->disableOriginalConstructor()->getMock();
+        $this->pluginManager = new PluginManager(new Injector(), $this->emitter);
     }
 
     private function getEngine(Emitter $eventEmitter = null, PluginManager $pluginManager = null) : AmpEngine {
         $emitter = $eventEmitter ?: $this->emitter;
-        $manager = $pluginManager ?: $this->mockPluginManager;
+        $manager = $pluginManager ?: $this->pluginManager;
         return new AmpEngine($manager, $emitter);
     }
 
@@ -151,8 +151,7 @@ class AmpEngineTest extends UnitTestCase {
     }
 
     public function testRegisteredPluginsGetBooted() {
-        $pluginManager = new PluginManager($this->createMock(Injector::class), $this->emitter);
-        $engine = $this->getEngine($this->emitter, $pluginManager);
+        $engine = $this->getEngine($this->emitter, $this->pluginManager);
 
         $plugin = new BootCalledPlugin();
         $engine->registerPlugin($plugin);
@@ -259,7 +258,7 @@ class AmpEngineTest extends UnitTestCase {
         $app = $this->exceptionHandlerApp($appCb, $handlerCb);
         $engine->run($app);
 
-        $this->assertInstanceOf(InvalidEngineStateException::class, $data->data);
+        $this->assertInstanceOf(InvalidStateException::class, $data->data);
         $this->assertSame('Engine::run() MUST NOT be called while already running.', $data->data->getMessage());
     }
 

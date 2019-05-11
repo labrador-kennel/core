@@ -30,6 +30,7 @@ interface Engine extends Pluggable {
     /**
      * Execute the application's primary logic.
      *
+     * @param Application $application
      * @return void
      */
     public function run(Application $application) : void;

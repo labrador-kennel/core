@@ -9,8 +9,9 @@
 
 namespace Cspray\Labrador\Test;
 
-use Amp\Loop;
+use Amp\PHPUnit\AsyncTestCase;
 use Cspray\Labrador\Engine;
+use Cspray\Labrador\Exception\InvalidStateException;
 use Cspray\Labrador\PluginManager;
 use Cspray\Labrador\Plugin\Plugin;
 
@@ -27,41 +28,40 @@ use Cspray\Labrador\Test\Stub\CustomPluginStub;
 use Cspray\Labrador\Test\Stub\EventsRegisteredPlugin;
 use Cspray\Labrador\Test\Stub\FooPluginDependentStub;
 use Cspray\Labrador\Test\Stub\FooPluginStub;
+use Cspray\Labrador\Test\Stub\FooService;
+use Cspray\Labrador\Test\Stub\FooServiceBootablePlugin;
+use Cspray\Labrador\Test\Stub\GeneratorBooterPlugin;
 use Cspray\Labrador\Test\Stub\PluginStub;
 use Cspray\Labrador\Test\Stub\RecursivelyDependentPluginStub;
 use Cspray\Labrador\Test\Stub\RequiresCircularDependentStub;
 use Cspray\Labrador\Test\Stub\RequiresNotPresentPlugin;
 use Cspray\Labrador\Test\Stub\ServicesRegisteredPlugin;
-use Cspray\Labrador\AsyncEvent\Emitter;
 use Cspray\Labrador\AsyncEvent\AmpEmitter as EventEmitter;
 use Cspray\Labrador\AsyncEvent\Event;
 use Cspray\Labrador\AsyncEvent\StandardEvent;
 use Auryn\Injector;
-use PHPUnit\Framework\TestCase as UnitTestCase;
 
-class PluginManagerTest extends UnitTestCase {
+class PluginManagerTest extends AsyncTestCase {
 
-    private $mockDispatcher;
-    private $mockInjector;
+    private $emitter;
+    private $injector;
 
     public function setUp() {
-        $this->mockDispatcher = $this->createMock(Emitter::class);
-        $this->mockInjector = $this->getMockBuilder(Injector::class)->disableOriginalConstructor()->getMock();
+        parent::setUp();
+        $this->emitter = new EventEmitter();
+        $this->injector = new Injector();
     }
 
     private function getPluginManager() {
-        return new PluginManager($this->mockInjector, $this->mockDispatcher);
-    }
-
-    private function getPluginBooter(PluginManager $mgr) {
-        $r = new \ReflectionClass($mgr);
-        $p = $r->getProperty('booter');
-        $p->setAccessible(true);
-        return $p->getValue($mgr);
+        return new PluginManager($this->injector, $this->emitter);
     }
 
     private function standardEvent(string $name, $target, array $eventData = []) : Event {
         return new StandardEvent($name, $target, $eventData);
+    }
+
+    private function getMockEngine() {
+        return $this->getMockBuilder(Engine::class)->disableOriginalConstructor()->getMock();
     }
 
     public function testManagerHasRegisteredPlugin() {
@@ -124,63 +124,50 @@ class PluginManagerTest extends UnitTestCase {
      * @dataProvider correctPluginMethodsCalledProvider
      */
     public function testPluginMethodsCalled(Plugin $plugin) {
-        $emitter = new EventEmitter();
-        $manager = new PluginManager($this->mockInjector, $emitter);
+        $manager = $this->getPluginManager();
         $manager->registerPlugin($plugin);
 
-        $engine = $this->getMockBuilder(Engine::class)->disableOriginalConstructor()->getMock();
-
-        Loop::run(function() use($emitter, $engine) {
-            $emitter->emit($this->standardEvent(Engine::ENGINE_BOOTUP_EVENT, $engine));
-        });
+        yield $manager->loadPlugins();
 
         $this->assertTrue($plugin->wasCalled());
     }
 
     public function testSingleDependsOnProcessed() {
-        $injector = new Injector();
-        $manager = new PluginManager($injector, $this->mockDispatcher);
-        $booter = $this->getPluginBooter($manager);
+        $manager = $this->getPluginManager();
 
-        $manager->registerPlugin($plugin = new FooPluginDependentStub($injector));
+        $manager->registerPlugin($plugin = new FooPluginDependentStub($this->injector));
         $manager->registerPlugin(new FooPluginStub());
 
-        $booter->bootPlugins();
+        yield $manager->loadPlugins();
 
         $this->assertTrue($plugin->wasDependsOnProvided(), 'Depends on services not provided');
     }
 
     public function testDependsOnLoadedOnce() {
-        $injector = new Injector();
-        $manager = new PluginManager($injector, $this->mockDispatcher);
-        $booter = $this->getPluginBooter($manager);
+        $manager = $this->getPluginManager();
 
-        $manager->registerPlugin(new FooPluginDependentStub($injector));
+        $manager->registerPlugin(new FooPluginDependentStub($this->injector));
         $manager->registerPlugin($plugin = new FooPluginStub());
 
-        $booter->bootPlugins();
+        yield $manager->loadPlugins();
 
         $this->assertSame(1, $plugin->getNumberTimesBootCalled());
     }
 
     public function testDependentPluginDependsOnDependentPlugin() {
-        $injector = new Injector();
-        $manager = new PluginManager($injector, $this->mockDispatcher);
-        $booter = $this->getPluginBooter($manager);
+        $manager = $this->getPluginManager();
 
-        $manager->registerPlugin($plugin = new RecursivelyDependentPluginStub($injector));
-        $manager->registerPlugin(new FooPluginDependentStub($injector));
+        $manager->registerPlugin($plugin = new RecursivelyDependentPluginStub($this->injector));
+        $manager->registerPlugin(new FooPluginDependentStub($this->injector));
         $manager->registerPlugin(new FooPluginStub());
 
-        $booter->bootPlugins();
+        yield $manager->loadPlugins();
 
         $this->assertTrue($plugin->wasDependsOnProvided(), 'Depends on services not provided');
     }
 
     public function testHandlingCircularDependency() {
-        $injector = new Injector();
-        $manager = new PluginManager($injector, $this->mockDispatcher);
-        $booter = $this->getPluginBooter($manager);
+        $manager = $this->getPluginManager();
 
         $manager->registerPlugin(new CircularDependencyPluginStub());
         $manager->registerPlugin(new RequiresCircularDependentStub());
@@ -192,13 +179,11 @@ class PluginManagerTest extends UnitTestCase {
         $this->expectException($exc);
         $this->expectExceptionMessage($msg);
 
-        $booter->bootPlugins();
+        yield $manager->loadPlugins();
     }
 
     public function testDependentPluginNotPresentThrowsException() {
-        $injector = new Injector();
-        $manager = new PluginManager($injector, $this->mockDispatcher);
-        $booter = $this->getPluginBooter($manager);
+        $manager = $this->getPluginManager();
 
         $manager->registerPlugin(new RequiresNotPresentPlugin());
 
@@ -209,27 +194,25 @@ class PluginManagerTest extends UnitTestCase {
         $this->expectException($exc);
         $this->expectExceptionMessage($msg);
 
-        $booter->bootPlugins();
+        yield $manager->loadPlugins();
     }
 
-    public function testLoadPluginIfRegisteredAfterPluginBootEvent() {
-        $emitter = new EventEmitter();
-        $manager = new PluginManager($this->mockInjector, $emitter);
+    public function testExceptionThrownIfPluginRegisteredAfterLoading() {
+        $manager = $this->getPluginManager();
 
-        Loop::run(function() use($emitter) {
-            $emitter->emit($this->standardEvent(Engine::ENGINE_BOOTUP_EVENT, new \stdClass()));
-        });
+        yield $manager->loadPlugins();
 
         $plugin = new BootCalledPlugin();
 
-        $manager->registerPlugin($plugin);
+        $this->expectException(InvalidStateException::class);
+        $msg = "Plugins have already been loaded and you MUST NOT register plugins after this has taken place.";
+        $this->expectExceptionMessage($msg);
 
-        $this->assertTrue($plugin->wasCalled());
+        $manager->registerPlugin($plugin);
     }
 
     public function testRegisteringSamePluginThrowsException() {
-        $injector = new Injector();
-        $manager = new PluginManager($injector, $this->mockDispatcher);
+        $manager = $this->getPluginManager();
 
         $plugin = new FooPluginStub();
         $manager->registerPlugin($plugin);
@@ -243,8 +226,7 @@ class PluginManagerTest extends UnitTestCase {
     }
 
     public function testRegisterCustomPluginHandler() {
-        $injector = new Injector();
-        $manager = new PluginManager($injector, $this->mockDispatcher);
+        $manager = $this->getPluginManager();
 
         $plugin = new CustomPluginStub();
         $manager->registerPluginHandler(CustomPluginStub::class, function(CustomPluginStub $pluginStub) {
@@ -252,15 +234,13 @@ class PluginManagerTest extends UnitTestCase {
         });
         $manager->registerPlugin($plugin);
 
-        $booter = $this->getPluginBooter($manager);
-        $booter->bootPlugins();
+        yield $manager->loadPlugins();
 
         $this->assertSame(1, $plugin->getTimesCalled());
     }
 
     public function testRegisteringMultipleCustomPluginHandlers() {
-        $injector = new Injector();
-        $manager = new PluginManager($injector, $this->mockDispatcher);
+        $manager = $this->getPluginManager();
 
         $plugin = new CustomPluginStub();
         $manager->registerPluginHandler(CustomPluginStub::class, function(CustomPluginStub $pluginStub) {
@@ -271,15 +251,13 @@ class PluginManagerTest extends UnitTestCase {
         });
         $manager->registerPlugin($plugin);
 
-        $booter = $this->getPluginBooter($manager);
-        $booter->bootPlugins();
+        yield $manager->loadPlugins();
 
         $this->assertSame(2, $plugin->getTimesCalled());
     }
 
     public function testCustomHandlerInvokedAfterSystemHandlers() {
-        $injector = new Injector();
-        $manager = new PluginManager($injector, $this->mockDispatcher);
+        $manager = $this->getPluginManager();
 
         $plugin = new CustomPluginOrderStub();
         $manager->registerPluginHandler(
@@ -290,16 +268,14 @@ class PluginManagerTest extends UnitTestCase {
         );
         $manager->registerPlugin($plugin);
 
-        $booter = $this->getPluginBooter($manager);
-        $booter->bootPlugins();
+        yield $manager->loadPlugins();
 
         $expected = ['depends', 'services', 'events', 'custom', 'boot'];
         $this->assertSame($expected, $plugin->getCallOrder());
     }
 
     public function testCustomHandlerPassedArgumentsAfterPlugin() {
-        $injector = new Injector();
-        $manager = new PluginManager($injector, $this->mockDispatcher);
+        $manager = $this->getPluginManager();
 
         $handlerArgs = new \stdClass();
         $handlerArgs->data = null;
@@ -310,15 +286,13 @@ class PluginManagerTest extends UnitTestCase {
         $manager->registerPluginHandler(CustomPluginStub::class, $handler, 'a', 'b', 'c');
         $manager->registerPlugin($plugin);
 
-        $booter = $this->getPluginBooter($manager);
-        $booter->bootPlugins();
+        yield $manager->loadPlugins();
 
         $this->assertSame(['a', 'b', 'c'], $handlerArgs->data);
     }
 
     public function testCustomHandlerHandlesPluginTypesThatAreInterfaces() {
-        $injector = new Injector();
-        $manager = new PluginManager($injector, $this->mockDispatcher);
+        $manager = $this->getPluginManager();
 
         $handlerArgs = new \stdClass();
         $handlerArgs->data = null;
@@ -331,9 +305,34 @@ class PluginManagerTest extends UnitTestCase {
         $plugin = $this->createMock(CustomPluginInterface::class);
         $manager->registerPlugin($plugin);
 
-        $booter = $this->getPluginBooter($manager);
-        $booter->bootPlugins();
+        yield $manager->loadPlugins();
 
         $this->assertSame($plugin, $handlerArgs->data);
+    }
+
+    public function testPluginBootMethodRunsOnEventLoop() {
+        $manager = $this->getPluginManager();
+
+        $plugin = new GeneratorBooterPlugin();
+        $manager->registerPlugin($plugin);
+
+        yield $manager->loadPlugins();
+
+        $this->assertSame(3, $plugin->getTimesYielded());
+    }
+
+    public function testPluginBootMethodInvokedByInjector() {
+        $manager = $this->getPluginManager();
+
+        $fooService = new FooService();
+        $plugin = new FooServiceBootablePlugin($fooService);
+
+        $manager->registerPlugin($plugin);
+
+        yield $manager->loadPlugins();
+
+        $bootedService = $plugin->getBootInjectedService();
+
+        $this->assertSame($fooService, $bootedService);
     }
 }

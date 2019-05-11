@@ -3,16 +3,15 @@
 declare(strict_types=1);
 
 /**
- * This is here to abstract away how plugins are managed for the Engine and
- * to ensure that Engine implementations do not have to require the Injector
- * directly to satisfy the Pluggable interface.
+ * The de facto implementation of the Pluggable interface that manages the lifecycle of a Plugin.
  *
  * @license See LICENSE in source root
- * @internal Specifically for use by internal Engine implementations
  */
 
 namespace Cspray\Labrador;
 
+use Amp\Promise;
+use Cspray\Labrador\Exception\InvalidStateException;
 use Cspray\Labrador\Plugin\BootablePlugin;
 use Cspray\Labrador\Plugin\Pluggable;
 use Cspray\Labrador\Plugin\Plugin;
@@ -27,10 +26,17 @@ use Cspray\Labrador\AsyncEvent\Emitter;
 use Auryn\Injector;
 use ArrayObject;
 
+use function Amp\call;
+
 /**
- * It is HIGHLY recommended that if you create a Plugin it winds up
- * being registered with this Pluggable; the standard Labrador Engines
- * proxy all Pluggable methods to an instance of this class.
+ * It is HIGHLY recommended that if you implement your own Pluggable interface that you delegate the actual
+ * responsibilities for handling the lifecycle of the Plugin to an instance of this object; it is well tested and
+ * implements the Plugin loading process in a known order that other Plugins may be reliant upon.
+ *
+ * Another important aspect of using this class over implementing the Pluggable methods in your own code is that this
+ * object helps abstract away the fact that we must ask for an Injector as a constructor dependency. By keeping that
+ * Injector dependency outside of your application and consuming code there's less opportunity for your Injector to
+ * be turned into a Service Locator.
  */
 class PluginManager implements Pluggable {
 
@@ -49,36 +55,31 @@ class PluginManager implements Pluggable {
         $this->injector = $injector;
         $this->plugins = new ArrayObject();
         $this->booter = $this->getBooter();
-        $this->registerBooter();
-    }
-
-    private function registerBooter() {
-        $cb = function() {
-            $this->pluginsBooted = true;
-            $this->booter->bootPlugins();
-        };
-        $cb = $cb->bindTo($this);
-
-        $this->emitter->on(Engine::ENGINE_BOOTUP_EVENT, $cb);
     }
 
     public function registerPluginHandler(string $pluginType, callable $handler, ...$arguments) : void {
         $this->booter->registerPluginHandler($pluginType, $handler, ...$arguments);
     }
 
-    public function registerPlugin(Plugin $plugin) : Pluggable {
+    public function registerPlugin(Plugin $plugin) : void {
         $pluginName = get_class($plugin);
         if ($this->hasPlugin($pluginName)) {
             $msg = "A Plugin with name $pluginName has already been registered and may not be registered again.";
             throw new InvalidArgumentException($msg);
         }
 
-        $this->plugins[$pluginName] = $plugin;
         if ($this->pluginsBooted) {
-            $this->booter->loadPlugin($plugin);
+            $msg = 'Plugins have already been loaded and you MUST NOT register plugins after this has taken place.';
+            throw new InvalidStateException($msg);
         }
+        $this->plugins[$pluginName] = $plugin;
+    }
 
-        return $this;
+    public function loadPlugins(): Promise {
+        return call(function() {
+            yield $this->booter->bootPlugins();
+            $this->pluginsBooted = true;
+        });
     }
 
     public function removePlugin(string $name) : void {
@@ -127,22 +128,26 @@ class PluginManager implements Pluggable {
                 $this->pluginHandlers['custom'][$pluginType][] = [$handler, $arguments];
             }
 
-            public function bootPlugins() {
-                foreach ($this->pluggable->getPlugins() as $plugin) {
-                    $this->loadPlugin($plugin);
-                }
+            public function bootPlugins() : Promise {
+                return call(function() {
+                    foreach ($this->pluggable->getPlugins() as $plugin) {
+                        yield $this->loadPlugin($plugin);
+                    }
+                });
             }
 
-            public function loadPlugin(Plugin $plugin) {
-                if ($this->notLoaded($plugin)) {
-                    $this->startLoading($plugin);
-                    $this->handlePluginDependencies($plugin);
-                    $this->handlePluginServices($plugin);
-                    $this->handlePluginEvents($plugin);
-                    $this->handleCustomPluginHandlers($plugin);
-                    $this->bootPlugin($plugin);
-                    $this->finishLoading($plugin);
-                }
+            public function loadPlugin(Plugin $plugin) : Promise {
+                return call(function() use($plugin) {
+                    if ($this->notLoaded($plugin)) {
+                        $this->startLoading($plugin);
+                        yield $this->handlePluginDependencies($plugin);
+                        $this->handlePluginServices($plugin);
+                        $this->handlePluginEvents($plugin);
+                        $this->handleCustomPluginHandlers($plugin);
+                        yield $this->bootPlugin($plugin);
+                        $this->finishLoading($plugin);
+                    }
+                });
             }
 
             private function notLoaded(Plugin $plugin) {
@@ -163,23 +168,26 @@ class PluginManager implements Pluggable {
                 return in_array(get_class($plugin), $this->loading);
             }
 
-            private function handlePluginDependencies(Plugin $plugin) {
-                if ($plugin instanceof PluginDependentPlugin) {
-                    foreach ($plugin->dependsOn() as $reqPluginName) {
-                        if (!$this->pluggable->hasPlugin($reqPluginName)) {
-                            $msg = '%s requires a plugin that is not registered: %s.';
-                            $msg = sprintf($msg, get_class($plugin), $reqPluginName);
-                            throw new PluginDependencyNotProvidedException($msg);
-                        }
+            private function handlePluginDependencies(Plugin $plugin) : Promise {
+                return call(function() use($plugin) {
+                    if ($plugin instanceof PluginDependentPlugin) {
+                        foreach ($plugin->dependsOn() as $reqPluginName) {
+                            if (!$this->pluggable->hasPlugin($reqPluginName)) {
+                                $msg = '%s requires a plugin that is not registered: %s.';
+                                $msg = sprintf($msg, get_class($plugin), $reqPluginName);
+                                throw new PluginDependencyNotProvidedException($msg);
+                            }
 
-                        $reqPlugin = $this->pluggable->getPlugin($reqPluginName);
-                        if ($this->isLoading($reqPlugin)) {
-                            $msg = 'A circular dependency was found with %s requiring %s.';
-                            throw new CircularDependencyException(sprintf($msg, get_class($plugin), $reqPluginName));
+                            $reqPlugin = $this->pluggable->getPlugin($reqPluginName);
+                            if ($this->isLoading($reqPlugin)) {
+                                $msg = 'A circular dependency was found with %s requiring %s.';
+                                $msg = sprintf($msg, get_class($plugin), $reqPluginName);
+                                throw new CircularDependencyException($msg);
+                            }
+                            yield $this->loadPlugin($reqPlugin);
                         }
-                        $this->loadPlugin($reqPlugin);
                     }
-                }
+                });
             }
 
             private function handlePluginServices(Plugin $plugin) {
@@ -207,10 +215,14 @@ class PluginManager implements Pluggable {
                 }
             }
 
-            private function bootPlugin(Plugin $plugin) {
-                if ($plugin instanceof BootablePlugin) {
-                    $plugin->boot();
-                }
+            private function bootPlugin(Plugin $plugin) : Promise {
+                return call(function() use($plugin) {
+                    if ($plugin instanceof BootablePlugin) {
+                        yield call(function() use($plugin) {
+                            return $this->injector->execute($plugin->boot());
+                        });
+                    }
+                });
             }
         };
     }
