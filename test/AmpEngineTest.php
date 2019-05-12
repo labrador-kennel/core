@@ -284,28 +284,4 @@ class AmpEngineTest extends UnitTestCase {
         $this->assertSame([1], $data->data);
     }
 
-    public function testApplicationRegisteredAsPluginOnRun() {
-        $engine = $this->getEngine(null, new PluginManager(new Injector(), $this->emitter));
-        $data = new \stdClass();
-        $data->data = false;
-        $app = $this->callbackApp(function() use($engine, $data) {
-            $data->data = $engine->hasPlugin(CallbackApplication::class);
-        });
-        $engine->run($app);
-
-        $this->assertTrue($data->data);
-    }
-
-    public function testHandlesApplicationAlreadyRegisteredAsPlugin() {
-        $engine = $this->getEngine(null, new PluginManager(new Injector(), $this->emitter));
-        $data = new \stdClass();
-        $data->data = false;
-        $app = $this->callbackApp(function() use($engine, $data) {
-            $data->data = $engine->hasPlugin(CallbackApplication::class);
-        });
-        $engine->registerPlugin($app);
-        $engine->run($app);
-
-        $this->assertTrue($data->data);
-    }
 }

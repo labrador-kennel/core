@@ -22,6 +22,8 @@ used in multiple places.
 `wireObjectGraph`. This ensures we are not conflating the term "Service" with other possible meanings 
 in your application, is more explicit to consumers about intent, and matches the naming strategy 
 for the `DependencyGraph` object convention.
+- An Application is no longer a Plugin of any type as the expected use case for an Application does 
+not work well with the Plugin loading process.
 
 ## 3.0.0-rc1 - 2019-02-16
 

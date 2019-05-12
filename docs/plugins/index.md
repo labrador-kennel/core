@@ -15,157 +15,57 @@ the following things:
   <li>...whatever else you might need a Plugin to do! (see below for more details).</li>
 </ul>
 
-  All Plugins, except potentially those you custom create, are defined by an interface. It is up to you to
-  implement any combination of those interfaces as necessary for your Plugin. All of the interfaces are explicitly
-  scoped to be as easy to implement as possible.
+All Plugins, except potentially those you custom create, are defined by an interface. It is up to you to
+implement any combination of those interfaces as necessary for your Plugin. All of the interfaces are explicitly
+scoped to be as easy to implement as possible.
 
 ### InjectorAwarePlugin
 
+As the name implies this Plugin lets you define its own discrete object graph that can be used by your Application 
+and, possibly, shared with other apps as well. The typical example would be a Plugin that allows sharing a database
+connection (or for more advanced applications an ORM EntityManager or similar). For our example, we're going to take 
+a look at providing an object from the [amphp postgres](https://github.com/amphp/postgres) package.
+
 ```php
-<?php
+<?php 
 
-namespace Cspray\Labrador\Plugin;
-
-use Auryn\Injector;
-
-interface InjectorAwarePlugin {
-
-public function wireObjectGraph(Injector $injector);
-
+class PostgresPlugin implements \Cspray\Labrador\Plugin\InjectorAwarePlugin {
+    
+    private $connectionString;
+    
+    public function __construct(string $connectionString) {
+        $this->connectionString = $connectionString;
+    }
+    
+    public function wireObjectGraph(\Auryn\Injector $injector) : void {
+        $config = new \Amp\Postgres\ConnectionConfig::fromString($this->connectionString);
+        $injector->share(\Amp\Postgres\pool($config));
+    }
+    
 }
-````
 
-As the interface name and method implies this is how you wire an object graph to the Auryn container. You should
-refrain from making objects with this Plugin and instead wire up your object graph so appropriate objects are
-shared or non-instantiable arguments are defined for future object construction. You should refrain from creating
-objects with the Injector as not all Plugins may have had an opportunity to wire their object graph yet. If your
-Plugin absolutely must create an object in this call ensure that you also implement <a href="plugins#plugindependentplugin">
-PluginDependentPlugin</a> if that object comes from somewhere else.
+?>
+```
+
+Generally speaking Plugins should be discrete enough in functionality to not require a huge object graph but depending 
+on what you need to wire up this can be as simple or as complex as necessary for your functionality.
+
+It is important, as with all Plugins, that after you instantiate your Plugin you pass it to `Engine::registerPlugin` so 
+that it may be loaded at bootup tmie.
 
 ### EventAwarePlugin
 
-```php
-<?php
-
-namespace Cspray\Labrador\Plugin;
-
-use Cspray\Labrador\AsyncEvent\Emitter;
-
-interface EventAwarePlugin {
-
-public function registerEventListeners(Emitter $emitter);
-
-}
-```
-
-If you need to respond to one of Labrador's emitted events or an event emitted by your Application you should
-register any listeners with this type of Plugin. It is highly recommended that you do not emit events in this
-Plugin as there is no guarantee appropriate listeners will be registered.
+Sometimes Plugins need to respond to events that get triggered by your Application or Labrador itself. 
 
 ### BootablePlugin
 
-```php
-<?php
-
-namespace Cspray\Labrador\Plugin;
-
-interface BootablePlugin {
-
-public function boot();
-
-}
-```
-
-Does your Plugin need to do something one-time when the app is booting up and before any of the Application code
-has been executed? Implementing this Plugin and performing your action in the boot method is how you'd do that.
-
 ### PluginDependentPlugin
-
-```php
-<?php
-
-namespace Cspray\Labrador\Plugin;
-
-interface PluginDependentPlugin {
-
-public function dependsOn() : iterable;
-
-}
-```
-
-Perhaps your Plugin depends on another Plugin. For example, you might have a `YourApp\PdoPlugin`
-that properly instantiates, configures, and shares with the Auryn container a PDO object. To
-ensure that this Plugin is registered simply return it's fully qualified class name as an
-element in an array or Traversable. If the Plugin is registered with the Engine running
-your application it will be loaded (if it hasn't already been loaded) otherwise an
-Exception will be thrown indicating that your Application should register the Plugin.
 
 ### YourCustomPlugin
 
-Maybe what your Plugin needs to do falls outside of what the predefined Plugins offer. In this
-case it is easy to implement your own Plugin interface and implementations then add the type
-to `Pluggable::registerPluginHandler`. This will allow your Plugin to hook into the Plugin registration
-process and your handler will be executed after all of the pre-defined handlers are finished.
-Custom handlers are executed for a given type in the order they are received.
-
 ### Pluggable
 
-If your object can have Plugins attached to it it should implement the Pluggable interface.
-
-```php
-<?php
-
-namespace Cspray\Labrador\Plugin;
-
-interface Pluggable {
-
-/**
-* @param string $pluginType
-* @param callable $handler
-* @param mixed ...$arguments
-* @return void
-*/
-public function registerPluginHandler(string $pluginType, callable $handler, ...$arguments);
-
-/**
-* @param Plugin $plugin
-* @return $this
-*/
-public function registerPlugin(Plugin $plugin);
-
-/**
-* @param string $name
-*/
-public function removePlugin(string $name);
-
-/**
-* @param string $name
-* @return boolean
-*/
-public function hasPlugin(string $name) : bool;
-
-/**
-* @param string $name
-* @return Plugin
-*/
-public function getPlugin(string $name) : Plugin;
-
-/**
-* An array of Plugin objects associated to the given Pluggable.
-*
-* @return Plugin[]
-*/
-public function getPlugins() : array;
-
-}
-```
-
-Typically your code shouldn't need to implement this interface; the Engine interface is a Pluggable and it is
-highly recommended that you register Plugins on the Engine instance running your Application instead of on one
-of your own objects. If you do implement your own Pluggable then you should be sure to follow the Plugin loading
-process detailed below.
-
-### Plugin Loading Process
+#### Plugin Loading Process
 
 During the `Engine::ENGINE_BOOTUP_EVENT` each Plugin registered with the Engine will go through the
 below process. This process happens synchronously; meaning that each Plugin is loaded in its entirety before the

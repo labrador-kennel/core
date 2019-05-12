@@ -85,10 +85,6 @@ class AmpEngine implements Engine {
             });
         });
 
-        if (!$this->hasPlugin(get_class($application))) {
-            $this->registerPlugin($application);
-        }
-
         $this->emitter->once(self::ENGINE_BOOTUP_EVENT, function() {
             yield $this->loadPlugins();
         });
