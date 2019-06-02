@@ -9,15 +9,13 @@
 
 namespace Cspray\Labrador\Test;
 
-use Amp\Deferred;
 use Amp\Delayed;
-use Amp\Loop;
 use Amp\Success;
 use Cspray\Labrador\Application;
 use Cspray\Labrador\Engine;
 use Cspray\Labrador\AmpEngine;
 use Cspray\Labrador\Exception\InvalidStateException;
-use Cspray\Labrador\PluginManager;
+use Cspray\Labrador\Plugin\PluginManager;
 use Cspray\Labrador\Exception\Exception;
 use Cspray\Labrador\Test\Stub\CallbackApplication;
 use Cspray\Labrador\Test\Stub\CustomPluginStub;
@@ -39,11 +37,16 @@ class AmpEngineTest extends UnitTestCase {
      * @var Emitter
      */
     private $emitter;
+    /**
+     * @var Injector
+     */
+    private $injector;
     private $pluginManager;
 
     public function setUp() {
+        $this->injector = new Injector();
         $this->emitter = new AmpEmitter();
-        $this->pluginManager = new PluginManager(new Injector(), $this->emitter);
+        $this->pluginManager = new PluginManager($this->injector, $this->emitter);
     }
 
     private function getEngine(Emitter $eventEmitter = null, PluginManager $pluginManager = null) : AmpEngine {
@@ -150,11 +153,17 @@ class AmpEngineTest extends UnitTestCase {
         $this->assertSame('Exception thrown in app', $exception->getMessage());
     }
 
+    /**
+     * @throws InvalidStateException
+     * @throws \Auryn\ConfigException
+     * @throws \Cspray\Labrador\Exception\InvalidArgumentException
+     */
     public function testRegisteredPluginsGetBooted() {
         $engine = $this->getEngine($this->emitter, $this->pluginManager);
 
         $plugin = new BootCalledPlugin();
-        $engine->registerPlugin($plugin);
+        $this->injector->share($plugin);
+        $engine->registerPlugin(BootCalledPlugin::class);
 
         $engine->run($this->noopApp());
 
@@ -199,7 +208,6 @@ class AmpEngineTest extends UnitTestCase {
         return [
             ['removePlugin', PluginStub::class, null],
             ['hasPlugin', PluginStub::class, true],
-            ['getPlugin', PluginStub::class, new PluginStub()],
             ['getPlugins', null, []],
         ];
     }

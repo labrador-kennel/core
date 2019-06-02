@@ -90,22 +90,11 @@ class PluginManager implements Pluggable {
         return $this->plugins;
     }
 
-    /**
-     * @param string $name
-     * @return Plugin
-     * @throws NotFoundException
-     */
-    public function getPlugin(string $name) : Plugin {
-        if (!isset($this->plugins[$name])) {
-            $msg = 'Could not find a registered plugin named "%s"';
-            throw new NotFoundException(sprintf($msg, $name));
-        }
-
-        return $this->plugins[$name];
-    }
-
     private function getBooter() {
-        return new class($this, $this->injector, $this->emitter) {
+        $loadedCallback = function(Plugin $plugin) {
+            $this->plugins[get_class($plugin)] = $plugin;
+        };
+        return new class($this, $this->injector, $this->emitter, $loadedCallback) {
 
             private $loading = [];
             private $loaded = [];
@@ -115,11 +104,13 @@ class PluginManager implements Pluggable {
             private $pluginHandlers = [
                 'custom' => []
             ];
+            private $pluginLoadedCallback;
 
-            public function __construct(Pluggable $pluggable, Injector $injector, Emitter $emitter) {
+            public function __construct(Pluggable $pluggable, Injector $injector, Emitter $emitter, callable $pluginLoadedCallback) {
                 $this->pluggable = $pluggable;
                 $this->injector = $injector;
                 $this->emitter = $emitter;
+                $this->pluginLoadedCallback = $pluginLoadedCallback;
             }
 
             public function registerPluginHandler(string $pluginType, callable $handler, ...$arguments) {
@@ -134,18 +125,20 @@ class PluginManager implements Pluggable {
              */
             public function bootPlugins() : Promise {
                 return call(function() {
-                    foreach ($this->pluggable->getPlugins() as $pluginName) {
-                        $plugin = $this->injector->make($pluginName);
-                        yield $this->loadPlugin($plugin);
+                    foreach ($this->pluggable->getRegisteredPlugins() as $pluginName) {
+                        yield $this->loadPlugin($pluginName);
                     }
                 });
             }
 
-            public function loadPlugin(Plugin $plugin) : Promise {
-                return call(function() use($plugin) {
-                    if ($this->notLoaded($plugin)) {
-                        $this->startLoading($plugin);
-                        yield $this->handlePluginDependencies($plugin);
+            public function loadPlugin(string $pluginName) : Promise {
+                return call(function() use($pluginName) {
+                    if ($this->notLoaded($pluginName)) {
+                        $this->startLoading($pluginName);
+                        yield $this->handlePluginDependencies($pluginName);
+
+                        $plugin = $this->injector->make($pluginName);
+
                         $this->handlePluginServices($plugin);
                         $this->handlePluginEvents($plugin);
                         $this->handleCustomPluginHandlers($plugin);
@@ -155,12 +148,12 @@ class PluginManager implements Pluggable {
                 });
             }
 
-            private function notLoaded(Plugin $plugin) {
-                return !in_array(get_class($plugin), $this->loaded);
+            private function notLoaded(string $plugin) {
+                return !in_array($plugin, $this->loaded);
             }
 
-            private function startLoading(Plugin $plugin) {
-                $this->loading[] = get_class($plugin);
+            private function startLoading(string $plugin) {
+                $this->loading[] = $plugin;
             }
 
             private function finishLoading(Plugin $plugin) {
@@ -169,27 +162,28 @@ class PluginManager implements Pluggable {
                 $this->loaded[] = $name;
             }
 
-            private function isLoading(Plugin $plugin) {
-                return in_array(get_class($plugin), $this->loading);
+            private function isLoading(string $plugin) {
+                return in_array($plugin, $this->loading);
             }
 
-            private function handlePluginDependencies(Plugin $plugin) : Promise {
+            private function handlePluginDependencies(string $plugin) : Promise {
                 return call(function() use($plugin) {
-                    if ($plugin instanceof PluginDependentPlugin) {
-                        foreach ($plugin->dependsOn() as $reqPluginName) {
-                            if (!$this->pluggable->hasPlugin($reqPluginName)) {
+                    $implementedTypes = class_implements($plugin);
+                    if (in_array(PluginDependentPlugin::class, $implementedTypes)) {
+                        foreach (call_user_func([$plugin, 'dependsOn']) as $reqPluginName) {
+                            if (!$this->pluggable->hasPluginBeenRegistered($reqPluginName)) {
                                 $msg = '%s requires a plugin that is not registered: %s.';
-                                $msg = sprintf($msg, get_class($plugin), $reqPluginName);
+                                $msg = sprintf($msg, $plugin, $reqPluginName);
                                 throw new PluginDependencyNotProvidedException($msg);
                             }
 
-                            $reqPlugin = $this->pluggable->getPlugin($reqPluginName);
-                            if ($this->isLoading($reqPlugin)) {
+                            if ($this->isLoading($reqPluginName)) {
                                 $msg = 'A circular dependency was found with %s requiring %s.';
-                                $msg = sprintf($msg, get_class($plugin), $reqPluginName);
+                                $msg = sprintf($msg, $plugin, $reqPluginName);
                                 throw new CircularDependencyException($msg);
                             }
-                            yield $this->loadPlugin($reqPlugin);
+
+                            yield $this->loadPlugin($reqPluginName);
                         }
                     }
                 });
@@ -263,9 +257,8 @@ class PluginManager implements Pluggable {
      * @param string $name
      * @return boolean
      */
-    public function hasPluginBeenRegistered(string $name): bool
-    {
-        // TODO: Implement hasPluginBeenRegistered() method.
+    public function hasPluginBeenRegistered(string $name): bool {
+        return array_key_exists($name, $this->plugins);
     }
 
     /**
@@ -277,24 +270,13 @@ class PluginManager implements Pluggable {
         // TODO: Implement hasPluginBeenLoaded() method.
     }
 
-    /**
-     * Attempt to retrieve a Plugin object.
-     *
-     * If the Plugin could not be found a NotFoundException SHOULD be thrown as the state of Plugins should be known to
-     * the developer and a Plugin expected but not present is likely an error in configuration or Application setup and
-     * should be addressed immediately.
-     *
-     * If loadPlugins has not been invoked then an InvalidStateException MUST be thrown as the loading process must be
-     * completed before the corresponding Plugin object is available.
-     *
-     * @param string $name
-     * @return Plugin
-     * @throws NotFoundException
-     * @throws InvalidStateException
-     */
-    public function getLoadedPlugin(string $name): Plugin
-    {
-        // TODO: Implement getLoadedPlugin() method.
+    public function getLoadedPlugin(string $name): Plugin {
+        if (!isset($this->plugins[$name])) {
+            $msg = 'Could not find a registered plugin named "%s"';
+            throw new NotFoundException(sprintf($msg, $name));
+        }
+
+        return $this->plugins[$name];
     }
 
     /**
@@ -317,8 +299,7 @@ class PluginManager implements Pluggable {
      *
      * @return string[]
      */
-    public function getRegisteredPlugins(): array
-    {
-        // TODO: Implement getRegisteredPlugins() method.
+    public function getRegisteredPlugins(): array {
+        return array_keys($this->plugins->getArrayCopy());
     }
 }

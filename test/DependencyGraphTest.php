@@ -6,7 +6,7 @@ namespace Cspray\Labrador\Test;
 use Cspray\Labrador\AmpEngine;
 use Cspray\Labrador\DependencyGraph;
 use Auryn\Injector;
-use Cspray\Labrador\PluginManager;
+use Cspray\Labrador\Plugin\PluginManager;
 use PHPUnit\Framework\TestCase as UnitTestCase;
 
 class DependencyGraphTest extends UnitTestCase {

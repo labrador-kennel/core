@@ -18,6 +18,7 @@ use Cspray\Labrador\Exception\InvalidStateException;
 use Cspray\Labrador\Exception\NotFoundException;
 use Cspray\Labrador\Plugin\Plugin;
 use Amp\Loop;
+use Cspray\Labrador\Plugin\PluginManager;
 
 class AmpEngine implements Engine {
 

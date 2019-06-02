@@ -9,14 +9,18 @@ use Cspray\Labrador\Plugin\BootablePlugin;
 use Cspray\Labrador\Plugin\EventAwarePlugin;
 use Cspray\Labrador\Plugin\PluginDependentPlugin;
 use Cspray\Labrador\Plugin\InjectorAwarePlugin;
+use stdClass;
 
 class CustomPluginOrderStub implements BootablePlugin, EventAwarePlugin, InjectorAwarePlugin, PluginDependentPlugin {
 
-    private static $staticOrder = [];
-    private $callOrder = [];
+    private static $callOrderObject;
 
-    public function getCallOrder() : array {
-        return $this->callOrder;
+    public static function setCallOrderObject(stdClass $stdClass) {
+        self::$callOrderObject = $stdClass;
+    }
+
+    public static function clearCallOrderObject() {
+        self::$callOrderObject = null;
     }
 
     /**
@@ -25,7 +29,7 @@ class CustomPluginOrderStub implements BootablePlugin, EventAwarePlugin, Injecto
      */
     public function boot(): callable {
         return function() {
-            $this->callOrder[] = 'boot';
+            self::$callOrderObject->callOrder[] = 'boot';
         };
     }
 
@@ -36,7 +40,7 @@ class CustomPluginOrderStub implements BootablePlugin, EventAwarePlugin, Injecto
      * @return void
      */
     public function registerEventListeners(Emitter $emitter): void {
-        $this->callOrder[] = 'events';
+        self::$callOrderObject->callOrder[] = 'events';
     }
 
     /**
@@ -45,7 +49,7 @@ class CustomPluginOrderStub implements BootablePlugin, EventAwarePlugin, Injecto
      * @return iterable
      */
     public static function dependsOn(): iterable {
-        self::$staticOrder[] = 'depends';
+        self::$callOrderObject->callOrder[] = 'depends';
         return [];
     }
 
@@ -56,10 +60,10 @@ class CustomPluginOrderStub implements BootablePlugin, EventAwarePlugin, Injecto
      * @return void
      */
     public function wireObjectGraph(Injector $injector): void {
-        $this->callOrder[] = 'services';
+        self::$callOrderObject->callOrder[] = 'services';
     }
 
     public function customOp() {
-        $this->callOrder[] = 'custom';
+        self::$callOrderObject->callOrder[] = 'custom';
     }
 }

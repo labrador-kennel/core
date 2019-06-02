@@ -324,7 +324,9 @@ class PluginManagerTest extends AsyncTestCase {
      * @throws ConfigException
      */
     public function testCustomHandlerInvokedAfterSystemHandlers() {
-        $this->injector->share($plugin = new CustomPluginOrderStub());
+        $callOrder = new stdClass();
+        $callOrder->callOrder = [];
+        CustomPluginOrderStub::setCallOrderObject($callOrder);
         $manager = $this->getPluginManager();
 
         $manager->registerPluginHandler(
@@ -333,12 +335,12 @@ class PluginManagerTest extends AsyncTestCase {
                 $pluginStub->customOp();
             }
         );
-        $manager->registerPlugin(get_class($plugin));
+        $manager->registerPlugin(CustomPluginOrderStub::class);
 
         yield $manager->loadPlugins();
 
         $expected = ['depends', 'services', 'events', 'custom', 'boot'];
-        $this->assertSame($expected, $plugin->getCallOrder());
+        $this->assertSame($expected, $callOrder->callOrder);
     }
 
     /**
