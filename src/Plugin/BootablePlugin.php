@@ -10,6 +10,8 @@ declare(strict_types = 1);
 
 namespace Cspray\Labrador\Plugin;
 
+use Amp\Promise;
+
 interface BootablePlugin extends Plugin {
 
     /**
@@ -25,5 +27,5 @@ interface BootablePlugin extends Plugin {
      *
      * @return callable
      */
-    public function boot() : callable;
+    public function boot() : Promise;
 }

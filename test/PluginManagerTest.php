@@ -393,44 +393,4 @@ class PluginManagerTest extends AsyncTestCase {
         $this->assertSame($plugin, $handlerArgs->data);
     }
 
-    /**
-     * @return Generator
-     * @throws CircularDependencyException
-     * @throws InvalidArgumentException
-     * @throws InvalidStateException
-     * @throws ConfigException
-     */
-    public function testPluginBootMethodRunsOnEventLoop() {
-        $plugin = new GeneratorBooterPlugin();
-        $this->injector->share($plugin);
-        $manager = $this->getPluginManager();
-
-        $manager->registerPlugin(GeneratorBooterPlugin::class);
-
-        yield $manager->loadPlugins();
-
-        $this->assertSame(3, $plugin->getTimesYielded());
-    }
-
-    /**
-     * @return Generator
-     * @throws CircularDependencyException
-     * @throws InvalidArgumentException
-     * @throws InvalidStateException
-     * @throws ConfigException
-     */
-    public function testPluginBootMethodInvokedByInjector() {
-        $manager = $this->getPluginManager();
-
-        $fooService = new FooService();
-        $this->injector->share($plugin = new FooInjectorBootablePlugin($fooService));
-
-        $manager->registerPlugin(get_class($plugin));
-
-        yield $manager->loadPlugins();
-
-        $bootedService = $plugin->getBootInjectedService();
-
-        $this->assertSame($fooService, $bootedService);
-    }
 }

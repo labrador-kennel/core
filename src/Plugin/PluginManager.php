@@ -89,6 +89,68 @@ class PluginManager implements Pluggable {
         return (new Deferred())->promise();
     }
 
+    /**
+     * Register a handler for a custom Plugin type to be invoked when removePlugin is called with a type that matches
+     * the $pluginType.
+     *
+     * If plugins have not yet been loaded when the target Plugin is removed this callback will not be invoked.
+     *
+     * @param string $pluginType
+     * @param callable $pluginHandler function(YourPluginType plugin, ...$arguments) : Promise|Generator|void {}
+     * @param mixed ...$arguments
+     */
+    public function registerPluginRemoveHandler(string $pluginType, callable $pluginHandler, ...$arguments): void
+    {
+        // TODO: Implement registerPluginRemoveHandler() method.
+    }
+
+    /**
+     * @param string $name
+     * @return boolean
+     */
+    public function hasPluginBeenRegistered(string $name): bool {
+        return array_key_exists($name, $this->plugins);
+    }
+
+    /**
+     * @param string $name
+     * @return bool
+     */
+    public function hasPluginBeenLoaded(string $name): bool {
+        // TODO: Implement hasPluginBeenLoaded() method.
+    }
+
+    public function getLoadedPlugin(string $name): Plugin {
+        if (!isset($this->plugins[$name])) {
+            $msg = 'Could not find a registered plugin named "%s"';
+            throw new NotFoundException(sprintf($msg, $name));
+        }
+
+    }
+
+    /**
+     * An array of Plugin objects associated to the given Pluggable.
+     *
+     * If loadPlugins has not been invoked an InvalidStateException MUST be thrown as the loading process must be
+     * completed before Plugin objects are available and this is a distinct case separate from there not being any
+     * Plugins after the loading process making an empty array ill-suited for this error condition.
+     *
+     * @return Plugin[]
+     * @throws InvalidStateException
+     */
+    public function getLoadedPlugins(): array {
+        // TODO: Implement getLoadedPlugins() method.
+    }
+
+    /**
+     * An array of Plugin names that will be loaded when loadPlugins is called.
+     *
+     * @return string[]
+     */
+    public function getRegisteredPlugins(): array {
+        return array_keys($this->plugins->getArrayCopy());
+    }
+
     private function getBooter() {
         $loadedCallback = function(Plugin $plugin) {
             $this->plugins[get_class($plugin)] = $plugin;
@@ -216,77 +278,11 @@ class PluginManager implements Pluggable {
             private function bootPlugin(Plugin $plugin) : Promise {
                 return call(function() use($plugin) {
                     if ($plugin instanceof BootablePlugin) {
-                        yield call(function() use($plugin) {
-                            return $this->injector->execute($plugin->boot());
-                        });
+                        yield $plugin->boot();
                     }
                 });
             }
         };
     }
 
-    /**
-     * Register a handler for a custom Plugin type to be invoked when removePlugin is called with a type that matches
-     * the $pluginType.
-     *
-     * If plugins have not yet been loaded when the target Plugin is removed this callback will not be invoked.
-     *
-     * @param string $pluginType
-     * @param callable $pluginHandler function(YourPluginType plugin, ...$arguments) : Promise|Generator|void {}
-     * @param mixed ...$arguments
-     */
-    public function registerPluginRemoveHandler(string $pluginType, callable $pluginHandler, ...$arguments): void
-    {
-        // TODO: Implement registerPluginRemoveHandler() method.
-    }
-
-    /**
-     * @param string $name
-     * @return boolean
-     */
-    public function hasPluginBeenRegistered(string $name): bool {
-        return array_key_exists($name, $this->plugins);
-    }
-
-    /**
-     * @param string $name
-     * @return bool
-     */
-    public function hasPluginBeenLoaded(string $name): bool
-    {
-        // TODO: Implement hasPluginBeenLoaded() method.
-    }
-
-    public function getLoadedPlugin(string $name): Plugin {
-        if (!isset($this->plugins[$name])) {
-            $msg = 'Could not find a registered plugin named "%s"';
-            throw new NotFoundException(sprintf($msg, $name));
-        }
-
-        return $this->plugins[$name];
-    }
-
-    /**
-     * An array of Plugin objects associated to the given Pluggable.
-     *
-     * If loadPlugins has not been invoked an InvalidStateException MUST be thrown as the loading process must be
-     * completed before Plugin objects are available and this is a distinct case separate from there not being any
-     * Plugins after the loading process making an empty array ill-suited for this error condition.
-     *
-     * @return Plugin[]
-     * @throws InvalidStateException
-     */
-    public function getLoadedPlugins(): array
-    {
-        // TODO: Implement getLoadedPlugins() method.
-    }
-
-    /**
-     * An array of Plugin names that will be loaded when loadPlugins is called.
-     *
-     * @return string[]
-     */
-    public function getRegisteredPlugins(): array {
-        return array_keys($this->plugins->getArrayCopy());
-    }
 }

@@ -3,6 +3,8 @@
 
 namespace Cspray\Labrador\Test\Stub;
 
+use Amp\Promise;
+use Amp\Success;
 use Auryn\Injector;
 use Cspray\Labrador\AsyncEvent\Emitter;
 use Cspray\Labrador\Plugin\BootablePlugin;
@@ -27,10 +29,9 @@ class CustomPluginOrderStub implements BootablePlugin, EventAwarePlugin, Injecto
      * Perform any actions that should be completed by your Plugin before the
      * primary execution of your app is kicked off.
      */
-    public function boot(): callable {
-        return function() {
-            self::$callOrderObject->callOrder[] = 'boot';
-        };
+    public function boot(): Promise {
+        self::$callOrderObject->callOrder[] = 'boot';
+        return new Success();
     }
 
     /**

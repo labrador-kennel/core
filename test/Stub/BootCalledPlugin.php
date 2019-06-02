@@ -9,6 +9,8 @@
 
 namespace Cspray\Labrador\Test\Stub;
 
+use Amp\Promise;
+use Amp\Success;
 use Cspray\Labrador\Plugin\BootablePlugin;
 
 class BootCalledPlugin implements BootablePlugin {
@@ -19,9 +21,8 @@ class BootCalledPlugin implements BootablePlugin {
         return $this->bootCalled;
     }
 
-    public function boot() : callable {
-        return function() {
-            $this->bootCalled = true;
-        };
+    public function boot() : Promise {
+        $this->bootCalled = true;
+        return new Success();
     }
 }
