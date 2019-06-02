@@ -128,10 +128,9 @@ interface Pluggable {
     public function hasPluginBeenRegistered(string $name) : bool;
 
     /**
-     * @param string $name
      * @return bool
      */
-    public function hasPluginBeenLoaded(string $name) : bool;
+    public function havePluginsLoaded() : bool;
 
     /**
      * Attempt to retrieve a Plugin object.

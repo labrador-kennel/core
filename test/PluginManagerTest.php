@@ -11,13 +11,13 @@ namespace Cspray\Labrador\Test;
 
 use Amp\PHPUnit\AsyncTestCase;
 use Cspray\Labrador\Exception\InvalidStateException;
+use Cspray\Labrador\Plugin\Pluggable;
 use Cspray\Labrador\Plugin\PluginManager;
 use Cspray\Labrador\Plugin\Plugin;
 
 use Cspray\Labrador\Exception\InvalidArgumentException;
 use Cspray\Labrador\Exception\NotFoundException;
 use Cspray\Labrador\Exception\CircularDependencyException;
-use Cspray\Labrador\Exception\PluginDependencyNotProvidedException;
 
 use Cspray\Labrador\Test\Stub\BootCalledPlugin;
 use Cspray\Labrador\Test\Stub\CircularDependencyPluginStub;
@@ -27,13 +27,9 @@ use Cspray\Labrador\Test\Stub\CustomPluginStub;
 use Cspray\Labrador\Test\Stub\EventsRegisteredPlugin;
 use Cspray\Labrador\Test\Stub\FooPluginDependentStub;
 use Cspray\Labrador\Test\Stub\FooPluginStub;
-use Cspray\Labrador\Test\Stub\FooService;
-use Cspray\Labrador\Test\Stub\FooInjectorBootablePlugin;
-use Cspray\Labrador\Test\Stub\GeneratorBooterPlugin;
 use Cspray\Labrador\Test\Stub\PluginStub;
 use Cspray\Labrador\Test\Stub\RecursivelyDependentPluginStub;
 use Cspray\Labrador\Test\Stub\RequiresCircularDependentStub;
-use Cspray\Labrador\Test\Stub\RequiresNotPresentPlugin;
 use Cspray\Labrador\Test\Stub\ServicesRegisteredPlugin;
 use Cspray\Labrador\AsyncEvent\AmpEmitter as EventEmitter;
 use Auryn\Injector;
@@ -143,7 +139,6 @@ class PluginManagerTest extends AsyncTestCase {
         $manager = $this->getPluginManager();
 
         $manager->registerPlugin(FooPluginDependentStub::class);
-        $manager->registerPlugin(FooPluginStub::class);
 
         yield $manager->loadPlugins();
 
@@ -163,7 +158,6 @@ class PluginManagerTest extends AsyncTestCase {
         $manager = $this->getPluginManager();
 
         $manager->registerPlugin(get_class($dependentPlugin));
-        $manager->registerPlugin(get_class($plugin));
 
         yield $manager->loadPlugins();
 
@@ -183,12 +177,154 @@ class PluginManagerTest extends AsyncTestCase {
         $manager = $this->getPluginManager();
 
         $manager->registerPlugin(get_class($plugin));
-        $manager->registerPlugin(FooPluginDependentStub::class);
-        $manager->registerPlugin(FooPluginStub::class);
 
         yield $manager->loadPlugins();
 
         $this->assertTrue($plugin->wasDependsOnProvided(), 'Depends on services not provided');
+    }
+
+    public function testHavePluginsLoadedBeforeLoadingReturnsFalse() {
+        $manager = $this->getPluginManager();
+
+        $this->assertFalse(
+            $manager->havePluginsLoaded(),
+            'Expected loaded to be false before loadPlugins invoked'
+        );
+    }
+
+    /**
+     * @return Generator
+     * @throws CircularDependencyException
+     * @throws ConfigException
+     * @throws InvalidArgumentException
+     * @throws InvalidStateException
+     */
+    public function testHavePluginsLoadedAfterLoadingReturnTrue() {
+        $this->injector->share($this->injector);
+        $this->injector->share($plugin = new RecursivelyDependentPluginStub($this->injector));
+        $manager = $this->getPluginManager();
+
+        $manager->registerPlugin(get_class($plugin));
+
+        yield $manager->loadPlugins();
+
+        $this->assertTrue(
+            $manager->havePluginsLoaded(),
+            'Expected loaded to be true after loadPlugins invoked'
+        );
+    }
+
+    /**
+     * @return Generator
+     * @throws CircularDependencyException
+     * @throws ConfigException
+     * @throws InvalidArgumentException
+     * @throws InvalidStateException
+     */
+    public function testDependentPluginsAlterRegistrationListIfNotPresent() {
+        $this->injector->share($this->injector);
+        $this->injector->share($plugin = new RecursivelyDependentPluginStub($this->injector));
+        $manager = $this->getPluginManager();
+
+        $manager->registerPlugin(get_class($plugin));
+
+        yield $manager->loadPlugins();
+
+        $registeredPlugins = $manager->getRegisteredPlugins();
+        $expected = [
+            RecursivelyDependentPluginStub::class,
+            FooPluginStub::class,
+            FooPluginDependentStub::class
+        ];
+
+        $msg = 'Expected dependent Plugins to be added to registered list';
+        $this->assertSame($expected, $registeredPlugins, $msg);
+    }
+
+
+    /**
+     * @return Generator
+     * @throws CircularDependencyException
+     * @throws ConfigException
+     * @throws InvalidArgumentException
+     * @throws InvalidStateException
+     */
+    public function testGettingLoadedPlugins() {
+        $pluginStub = new PluginStub();
+        $fooStub = new FooPluginStub();
+        $this->injector->share($pluginStub);
+        $this->injector->share($fooStub);
+
+        $manager = $this->getPluginManager();
+
+        $manager->registerPlugin(PluginStub::class);
+        $manager->registerPlugin(FooPluginStub::class);
+
+        yield $manager->loadPlugins();
+
+        $loadedPlugins = $manager->getLoadedPlugins();
+        $expected = [$pluginStub, $fooStub];
+
+        $msg = 'Expected loaded plugins to be the objects that were created';
+        $this->assertSame($expected, $loadedPlugins, $msg);
+    }
+
+    /**
+     * @throws InvalidStateException
+     */
+    public function testGettingLoadedPluginsBeforeLoadPluginsThrowsException() {
+        $manager = $this->getPluginManager();
+
+        $this->expectException(InvalidStateException::class);
+        $msg = 'Loaded plugins may only be gathered after ' . Pluggable::class . '::loadPlugins invoked';
+        $this->expectExceptionMessage($msg);
+
+        $manager->getLoadedPlugins();
+    }
+
+    /**
+     * @return Generator
+     * @throws CircularDependencyException
+     * @throws ConfigException
+     * @throws InvalidArgumentException
+     * @throws InvalidStateException
+     * @throws NotFoundException
+     */
+    public function testGettingIndividualLoadedPlugin() {
+        $pluginStub = new PluginStub();
+        $this->injector->share($pluginStub);
+
+        $manager = $this->getPluginManager();
+
+        $manager->registerPlugin(PluginStub::class);
+
+        yield $manager->loadPlugins();
+
+        $actual = $manager->getLoadedPlugin(PluginStub::class);
+
+        $msg = 'Expected loaded plugins to be the objects that were created';
+        $this->assertSame($pluginStub, $actual, $msg);
+    }
+
+    /**
+     * @throws ConfigException
+     * @throws InvalidArgumentException
+     * @throws InvalidStateException
+     * @throws NotFoundException
+     */
+    public function testGettingIndividualLoadedPluginBeforeLoadThrowsException() {
+        $pluginStub = new PluginStub();
+        $this->injector->share($pluginStub);
+
+        $manager = $this->getPluginManager();
+
+        $manager->registerPlugin(PluginStub::class);
+
+        $this->expectException(InvalidStateException::class);
+        $msg = 'A loaded Plugin may only be gathered after ' . Pluggable::class . '::loadPlugins invoked';
+        $this->expectExceptionMessage($msg);
+
+        $manager->getLoadedPlugin(PluginStub::class);
     }
 
     /**
@@ -206,27 +342,6 @@ class PluginManagerTest extends AsyncTestCase {
         $exc = CircularDependencyException::class;
         $msg = 'A circular dependency was found with Cspray\\Labrador\\Test\\Stub\\RequiresCircularDependentStub';
         $msg .= ' requiring Cspray\\Labrador\\Test\\Stub\\CircularDependencyPluginStub.';
-
-        $this->expectException($exc);
-        $this->expectExceptionMessage($msg);
-
-        yield $manager->loadPlugins();
-    }
-
-    /**
-     * @return Generator
-     * @throws CircularDependencyException
-     * @throws InvalidArgumentException
-     * @throws InvalidStateException
-     */
-    public function testDependentPluginNotPresentThrowsException() {
-        $manager = $this->getPluginManager();
-
-        $manager->registerPlugin(RequiresNotPresentPlugin::class);
-
-        $exc = PluginDependencyNotProvidedException::class;
-        $msg = 'Cspray\\Labrador\\Test\\Stub\\RequiresNotPresentPlugin requires a plugin that is not registered:';
-        $msg .= ' SomeAwesomePlugin.';
 
         $this->expectException($exc);
         $this->expectExceptionMessage($msg);
@@ -321,7 +436,6 @@ class PluginManagerTest extends AsyncTestCase {
      * @throws CircularDependencyException
      * @throws InvalidArgumentException
      * @throws InvalidStateException
-     * @throws ConfigException
      */
     public function testCustomHandlerInvokedAfterSystemHandlers() {
         $callOrder = new stdClass();
