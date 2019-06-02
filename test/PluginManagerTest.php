@@ -64,12 +64,12 @@ class PluginManagerTest extends AsyncTestCase {
     public function testManagerHasRegisteredPlugin() {
         $manager = $this->getPluginManager();
         $manager->registerPlugin(PluginStub::class);
-        $this->assertTrue($manager->hasPlugin(PluginStub::class));
+        $this->assertTrue($manager->hasPluginBeenRegistered(PluginStub::class));
     }
 
     public function testManagerDoesNotHavePlugin() {
         $manager = $this->getPluginManager();
-        $this->assertFalse($manager->hasPlugin(PluginStub::class));
+        $this->assertFalse($manager->hasPluginBeenRegistered(PluginStub::class));
     }
 
     /**
@@ -93,10 +93,10 @@ class PluginManagerTest extends AsyncTestCase {
     public function testRemovingRegisteredPlugin() {
         $manager = $this->getPluginManager();
         $manager->registerPlugin(PluginStub::class);
-        $this->assertTrue($manager->hasPlugin(PluginStub::class));
+        $this->assertTrue($manager->hasPluginBeenRegistered(PluginStub::class));
 
         $manager->removePlugin(PluginStub::class);
-        $this->assertFalse($manager->hasPlugin(PluginStub::class));
+        $this->assertFalse($manager->hasPluginBeenRegistered(PluginStub::class));
     }
 
     public function correctPluginMethodsCalledProvider() {

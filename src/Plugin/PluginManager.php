@@ -64,7 +64,7 @@ class PluginManager implements Pluggable {
     }
 
     public function registerPlugin(string $plugin) : void {
-        if ($this->hasPlugin($plugin)) {
+        if ($this->hasPluginBeenRegistered($plugin)) {
             $msg = "A Plugin with name $plugin has already been registered and may not be registered again.";
             throw new InvalidArgumentException($msg);
         }
@@ -87,14 +87,6 @@ class PluginManager implements Pluggable {
         unset($this->plugins[$name]);
 
         return (new Deferred())->promise();
-    }
-
-    public function hasPlugin(string $name) : bool {
-        return isset($this->plugins[$name]);
-    }
-
-    public function getPlugins() : iterable {
-        return $this->plugins;
     }
 
     private function getBooter() {
