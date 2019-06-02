@@ -41,18 +41,15 @@ class AmpEngineTest extends UnitTestCase {
      * @var Injector
      */
     private $injector;
-    private $pluginManager;
 
     public function setUp() {
         $this->injector = new Injector();
         $this->emitter = new AmpEmitter();
-        $this->pluginManager = new PluginManager($this->injector, $this->emitter);
     }
 
-    private function getEngine(Emitter $eventEmitter = null, PluginManager $pluginManager = null) : AmpEngine {
+    private function getEngine(Emitter $eventEmitter = null) : AmpEngine {
         $emitter = $eventEmitter ?: $this->emitter;
-        $manager = $pluginManager ?: $this->pluginManager;
-        return new AmpEngine($manager, $emitter);
+        return new AmpEngine($emitter);
     }
 
     private function noopApp() : Application {
@@ -153,23 +150,6 @@ class AmpEngineTest extends UnitTestCase {
         $this->assertSame('Exception thrown in app', $exception->getMessage());
     }
 
-    /**
-     * @throws InvalidStateException
-     * @throws \Auryn\ConfigException
-     * @throws \Cspray\Labrador\Exception\InvalidArgumentException
-     */
-    public function testRegisteredPluginsGetBooted() {
-        $engine = $this->getEngine($this->emitter, $this->pluginManager);
-
-        $plugin = new BootCalledPlugin();
-        $this->injector->share($plugin);
-        $engine->registerPlugin(BootCalledPlugin::class);
-
-        $engine->run($this->noopApp());
-
-        $this->assertTrue($plugin->wasCalled(), 'The Plugin::boot method was not called');
-    }
-
     public function eventEmitterProxyData() {
         return [
             ['onEngineBootup', Engine::ENGINE_BOOTUP_EVENT],
@@ -202,53 +182,6 @@ class AmpEngineTest extends UnitTestCase {
         $engine->run($app = $this->noopApp());
 
         $this->assertSame($app, $data->data);
-    }
-
-    public function pluginManagerProxyData() {
-        return [
-            ['removePlugin', PluginStub::class, null],
-            ['hasPlugin', PluginStub::class, true],
-            ['getPlugins', null, []],
-        ];
-    }
-
-    /**
-     * @dataProvider pluginManagerProxyData
-     */
-    public function testProxyToPluginManager($method, $arg, $returnVal) {
-        $pluginManager = $this->getMockBuilder(PluginManager::class)
-                              ->disableOriginalConstructor()
-                              ->getMock();
-
-        $pluginMethod = $pluginManager->expects($this->once())
-                                      ->method($method);
-        if ($arg) {
-            $pluginMethod->with($arg);
-        }
-
-        if (!is_null($returnVal)) {
-            $pluginMethod->willReturn($returnVal);
-        }
-
-        $this->getEngine(null, $pluginManager)->$method($arg);
-    }
-
-    public function testCustomPluginHandlersProxiedToPluginManager() {
-        $pluginManager = $this->getMockBuilder(PluginManager::class)
-                              ->disableOriginalConstructor()
-                              ->getMock();
-
-        $pluginManager->expects($this->once())->method('registerPluginHandler')->with(
-            CustomPluginStub::class,
-            $this->callback(function($argument) {
-                return is_callable($argument) && $argument() === 'my special return value';
-            })
-        );
-
-        $engine = $this->getEngine(null, $pluginManager);
-        $engine->registerPluginHandler(CustomPluginStub::class, function() {
-            return 'my special return value';
-        });
     }
 
     public function testCallingRunMultipleTimesThrowsException() {

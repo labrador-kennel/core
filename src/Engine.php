@@ -13,7 +13,7 @@ namespace Cspray\Labrador;
 use Cspray\Labrador\AsyncEvent\Emitter;
 use Cspray\Labrador\Plugin\Pluggable;
 
-interface Engine extends Pluggable {
+interface Engine {
 
     // These are the bare MINIMUM amount of events that an engine should trigger
     // An Engine MAY trigger more events but at least these

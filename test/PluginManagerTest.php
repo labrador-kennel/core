@@ -282,7 +282,7 @@ class PluginManagerTest extends AsyncTestCase {
         $this->injector->share($plugin = new CustomPluginStub());
         $manager = $this->getPluginManager();
 
-        $manager->registerPluginHandler(CustomPluginStub::class, function(CustomPluginStub $pluginStub) {
+        $manager->registerPluginLoadHandler(CustomPluginStub::class, function(CustomPluginStub $pluginStub) {
             $pluginStub->myCustomPlugin();
         });
         $manager->registerPlugin(get_class($plugin));
@@ -303,10 +303,10 @@ class PluginManagerTest extends AsyncTestCase {
         $this->injector->share($plugin = new CustomPluginStub());
         $manager = $this->getPluginManager();
 
-        $manager->registerPluginHandler(CustomPluginStub::class, function(CustomPluginStub $pluginStub) {
+        $manager->registerPluginLoadHandler(CustomPluginStub::class, function(CustomPluginStub $pluginStub) {
             $pluginStub->myCustomPlugin();
         });
-        $manager->registerPluginHandler(CustomPluginStub::class, function(CustomPluginStub $pluginStub) {
+        $manager->registerPluginLoadHandler(CustomPluginStub::class, function(CustomPluginStub $pluginStub) {
             $pluginStub->myCustomPlugin();
         });
         $manager->registerPlugin(get_class($plugin));
@@ -329,7 +329,7 @@ class PluginManagerTest extends AsyncTestCase {
         CustomPluginOrderStub::setCallOrderObject($callOrder);
         $manager = $this->getPluginManager();
 
-        $manager->registerPluginHandler(
+        $manager->registerPluginLoadHandler(
             CustomPluginOrderStub::class,
             function(CustomPluginOrderStub $pluginStub) {
                 $pluginStub->customOp();
@@ -358,7 +358,7 @@ class PluginManagerTest extends AsyncTestCase {
             $handlerArgs->pluginStub = $pluginStub;
             $handlerArgs->data = $arguments;
         };
-        $manager->registerPluginHandler(CustomPluginStub::class, $handler, 'a', 'b', 'c');
+        $manager->registerPluginLoadHandler(CustomPluginStub::class, $handler, 'a', 'b', 'c');
         $manager->registerPlugin(CustomPluginStub::class);
 
         yield $manager->loadPlugins();
@@ -378,7 +378,7 @@ class PluginManagerTest extends AsyncTestCase {
 
         $handlerArgs = new stdClass();
         $handlerArgs->data = null;
-        $manager->registerPluginHandler(
+        $manager->registerPluginLoadHandler(
             CustomPluginInterface::class,
             function(CustomPluginInterface $plugin) use($handlerArgs) {
                 $handlerArgs->data = $plugin;

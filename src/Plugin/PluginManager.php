@@ -52,8 +52,15 @@ class PluginManager implements Pluggable {
         $this->booter = $this->getBooter();
     }
 
-    public function registerPluginHandler(string $pluginType, callable $handler, ...$arguments) : void {
-        $this->booter->registerPluginHandler($pluginType, $handler, ...$arguments);
+    /**
+     * Register a handler for a custom Plugin type to be invoked when loadPlugins is invoked.
+     *
+     * @param string $pluginType
+     * @param callable $pluginHandler function(YourPluginType $plugin, ...$arguments) : Promise|Generator|void {}
+     * @param mixed ...$arguments
+     */
+    public function registerPluginLoadHandler(string $pluginType, callable $pluginHandler, ...$arguments): void {
+        $this->booter->registerPluginHandler($pluginType, $pluginHandler, ...$arguments);
     }
 
     public function registerPlugin(string $plugin) : void {
@@ -224,18 +231,6 @@ class PluginManager implements Pluggable {
                 });
             }
         };
-    }
-
-    /**
-     * Register a handler for a custom Plugin type to be invoked when loadPlugins is invoked.
-     *
-     * @param string $pluginType
-     * @param callable $pluginHandler function(YourPluginType $plugin, ...$arguments) : Promise|Generator|void {}
-     * @param mixed ...$arguments
-     */
-    public function registerPluginLoadHandler(string $pluginType, callable $pluginHandler, ...$arguments): void
-    {
-        // TODO: Implement registerPluginLoadHandler() method.
     }
 
     /**
