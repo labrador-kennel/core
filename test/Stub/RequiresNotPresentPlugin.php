@@ -17,7 +17,7 @@ class RequiresNotPresentPlugin implements PluginDependentPlugin {
      *
      * @return array
      */
-    public function dependsOn() : iterable {
+    public static function dependsOn() : iterable {
         return ['SomeAwesomePlugin'];
     }
 }

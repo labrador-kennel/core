@@ -8,16 +8,11 @@ declare(strict_types=1);
  * @license See LICENSE in source root
  */
 
-namespace Cspray\Labrador;
+namespace Cspray\Labrador\Plugin;
 
+use Amp\Deferred;
 use Amp\Promise;
 use Cspray\Labrador\Exception\InvalidStateException;
-use Cspray\Labrador\Plugin\BootablePlugin;
-use Cspray\Labrador\Plugin\Pluggable;
-use Cspray\Labrador\Plugin\Plugin;
-use Cspray\Labrador\Plugin\InjectorAwarePlugin;
-use Cspray\Labrador\Plugin\EventAwarePlugin;
-use Cspray\Labrador\Plugin\PluginDependentPlugin;
 use Cspray\Labrador\Exception\CircularDependencyException;
 use Cspray\Labrador\Exception\InvalidArgumentException;
 use Cspray\Labrador\Exception\NotFoundException;
@@ -61,10 +56,9 @@ class PluginManager implements Pluggable {
         $this->booter->registerPluginHandler($pluginType, $handler, ...$arguments);
     }
 
-    public function registerPlugin(Plugin $plugin) : void {
-        $pluginName = get_class($plugin);
-        if ($this->hasPlugin($pluginName)) {
-            $msg = "A Plugin with name $pluginName has already been registered and may not be registered again.";
+    public function registerPlugin(string $plugin) : void {
+        if ($this->hasPlugin($plugin)) {
+            $msg = "A Plugin with name $plugin has already been registered and may not be registered again.";
             throw new InvalidArgumentException($msg);
         }
 
@@ -72,7 +66,7 @@ class PluginManager implements Pluggable {
             $msg = 'Plugins have already been loaded and you MUST NOT register plugins after this has taken place.';
             throw new InvalidStateException($msg);
         }
-        $this->plugins[$pluginName] = $plugin;
+        $this->plugins[$plugin] = $plugin;
     }
 
     public function loadPlugins(): Promise {
@@ -82,8 +76,10 @@ class PluginManager implements Pluggable {
         });
     }
 
-    public function removePlugin(string $name) : void {
+    public function removePlugin(string $name) : Promise {
         unset($this->plugins[$name]);
+
+        return (new Deferred())->promise();
     }
 
     public function hasPlugin(string $name) : bool {
@@ -94,6 +90,11 @@ class PluginManager implements Pluggable {
         return $this->plugins;
     }
 
+    /**
+     * @param string $name
+     * @return Plugin
+     * @throws NotFoundException
+     */
     public function getPlugin(string $name) : Plugin {
         if (!isset($this->plugins[$name])) {
             $msg = 'Could not find a registered plugin named "%s"';
@@ -128,9 +129,13 @@ class PluginManager implements Pluggable {
                 $this->pluginHandlers['custom'][$pluginType][] = [$handler, $arguments];
             }
 
+            /**
+             * @return Promise
+             */
             public function bootPlugins() : Promise {
                 return call(function() {
-                    foreach ($this->pluggable->getPlugins() as $plugin) {
+                    foreach ($this->pluggable->getPlugins() as $pluginName) {
+                        $plugin = $this->injector->make($pluginName);
                         yield $this->loadPlugin($plugin);
                     }
                 });
@@ -225,5 +230,95 @@ class PluginManager implements Pluggable {
                 });
             }
         };
+    }
+
+    /**
+     * Register a handler for a custom Plugin type to be invoked when loadPlugins is invoked.
+     *
+     * @param string $pluginType
+     * @param callable $pluginHandler function(YourPluginType $plugin, ...$arguments) : Promise|Generator|void {}
+     * @param mixed ...$arguments
+     */
+    public function registerPluginLoadHandler(string $pluginType, callable $pluginHandler, ...$arguments): void
+    {
+        // TODO: Implement registerPluginLoadHandler() method.
+    }
+
+    /**
+     * Register a handler for a custom Plugin type to be invoked when removePlugin is called with a type that matches
+     * the $pluginType.
+     *
+     * If plugins have not yet been loaded when the target Plugin is removed this callback will not be invoked.
+     *
+     * @param string $pluginType
+     * @param callable $pluginHandler function(YourPluginType plugin, ...$arguments) : Promise|Generator|void {}
+     * @param mixed ...$arguments
+     */
+    public function registerPluginRemoveHandler(string $pluginType, callable $pluginHandler, ...$arguments): void
+    {
+        // TODO: Implement registerPluginRemoveHandler() method.
+    }
+
+    /**
+     * @param string $name
+     * @return boolean
+     */
+    public function hasPluginBeenRegistered(string $name): bool
+    {
+        // TODO: Implement hasPluginBeenRegistered() method.
+    }
+
+    /**
+     * @param string $name
+     * @return bool
+     */
+    public function hasPluginBeenLoaded(string $name): bool
+    {
+        // TODO: Implement hasPluginBeenLoaded() method.
+    }
+
+    /**
+     * Attempt to retrieve a Plugin object.
+     *
+     * If the Plugin could not be found a NotFoundException SHOULD be thrown as the state of Plugins should be known to
+     * the developer and a Plugin expected but not present is likely an error in configuration or Application setup and
+     * should be addressed immediately.
+     *
+     * If loadPlugins has not been invoked then an InvalidStateException MUST be thrown as the loading process must be
+     * completed before the corresponding Plugin object is available.
+     *
+     * @param string $name
+     * @return Plugin
+     * @throws NotFoundException
+     * @throws InvalidStateException
+     */
+    public function getLoadedPlugin(string $name): Plugin
+    {
+        // TODO: Implement getLoadedPlugin() method.
+    }
+
+    /**
+     * An array of Plugin objects associated to the given Pluggable.
+     *
+     * If loadPlugins has not been invoked an InvalidStateException MUST be thrown as the loading process must be
+     * completed before Plugin objects are available and this is a distinct case separate from there not being any
+     * Plugins after the loading process making an empty array ill-suited for this error condition.
+     *
+     * @return Plugin[]
+     * @throws InvalidStateException
+     */
+    public function getLoadedPlugins(): array
+    {
+        // TODO: Implement getLoadedPlugins() method.
+    }
+
+    /**
+     * An array of Plugin names that will be loaded when loadPlugins is called.
+     *
+     * @return string[]
+     */
+    public function getRegisteredPlugins(): array
+    {
+        // TODO: Implement getRegisteredPlugins() method.
     }
 }

@@ -12,6 +12,7 @@ use Cspray\Labrador\Plugin\InjectorAwarePlugin;
 
 class CustomPluginOrderStub implements BootablePlugin, EventAwarePlugin, InjectorAwarePlugin, PluginDependentPlugin {
 
+    private static $staticOrder = [];
     private $callOrder = [];
 
     public function getCallOrder() : array {
@@ -43,8 +44,8 @@ class CustomPluginOrderStub implements BootablePlugin, EventAwarePlugin, Injecto
      *
      * @return iterable
      */
-    public function dependsOn(): iterable {
-        $this->callOrder[] = 'depends';
+    public static function dependsOn(): iterable {
+        self::$staticOrder[] = 'depends';
         return [];
     }
 

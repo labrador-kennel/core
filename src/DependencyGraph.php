@@ -14,6 +14,7 @@ namespace Cspray\Labrador;
 use Auryn\Injector;
 use Cspray\Labrador\AsyncEvent\Emitter;
 use Cspray\Labrador\AsyncEvent\AmpEmitter;
+use Cspray\Labrador\Plugin\PluginManager;
 
 class DependencyGraph {
 

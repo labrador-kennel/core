@@ -19,5 +19,5 @@ interface PluginDependentPlugin extends Plugin {
      *
      * @return iterable
      */
-    public function dependsOn() : iterable;
+    public static function dependsOn() : iterable;
 }
