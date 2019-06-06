@@ -29,7 +29,12 @@ a look at providing an object from the [amphp postgres](https://github.com/amphp
 ```php
 <?php 
 
-class PostgresPlugin implements \Cspray\Labrador\Plugin\InjectorAwarePlugin {
+use Cspray\Labrador\Plugin\InjectorAwarePlugin;
+use Amp\Postgres\ConnectionConfig;
+use Auryn\Injector;
+use function Amp\Postgres\pool;
+
+class PostgresPlugin implements InjectorAwarePlugin {
     
     private $connectionString;
     
@@ -37,9 +42,9 @@ class PostgresPlugin implements \Cspray\Labrador\Plugin\InjectorAwarePlugin {
         $this->connectionString = $connectionString;
     }
     
-    public function wireObjectGraph(\Auryn\Injector $injector) : void {
-        $config = new \Amp\Postgres\ConnectionConfig::fromString($this->connectionString);
-        $injector->share(\Amp\Postgres\pool($config));
+    public function wireObjectGraph(Injector $injector) : void {
+        $config = ConnectionConfig::fromString($this->connectionString);
+        $injector->share(pool($config));
     }
     
 }
@@ -50,8 +55,12 @@ class PostgresPlugin implements \Cspray\Labrador\Plugin\InjectorAwarePlugin {
 Generally speaking Plugins should be discrete enough in functionality to not require a huge object graph but depending 
 on what you need to wire up this can be as simple or as complex as necessary for your functionality.
 
-It is important, as with all Plugins, that after you instantiate your Plugin you pass it to `Engine::registerPlugin` so 
-that it may be loaded at bootup tmie.
+<div class="message is-info">
+  It is important to remember that your Plugin must be able to be instantiated by your Application's Injector. During your 
+  bootstrapping process you should ensure that you have defined the appropriate scalar constructor value for this object.
+</div>
+
+### PluginDependentPlugin
 
 ### EventAwarePlugin
 
@@ -59,7 +68,6 @@ Sometimes Plugins need to respond to events that get triggered by your Applicati
 
 ### BootablePlugin
 
-### PluginDependentPlugin
 
 ### YourCustomPlugin
 

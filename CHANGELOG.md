@@ -16,6 +16,8 @@ loading process.
 place. Attempting to call this method before loading has occurred will result in an exception.
 - `Pluggable::getLoadedPlugins` returns a collection of all loaded Plugins. Attempting to call 
 this method before loading has occurred will result in an exception.
+- Added `EventAwarePlugin::removeEventListeners` that will be invoked whenever a loaded Plugin is 
+removed from its Pluggable.
 
 #### Changed
 
@@ -30,6 +32,23 @@ is being checked with the new differentiation between registering and loading a 
 what is being returned. This will always be a collection of Plugin names.
 - Changed the invocation of Pluggable load handlers to support resolving Promises.
 - Changed the `Engine` interface to no longer extend `Pluggable`.
+- An Application is no longer a Plugin of any type as the expected use case for an Application does 
+not work well with the Plugin loading process.
+- Moved the `PluginManager` implementation into the `Cspray\Labrador\Plugin` namespace.
+- Changed the `BootablePlugin::boot` method to return a `Promise` instead of a callable now that 
+services may be injected as a constructor dependency.
+- Changed the `PluginDependentPlugin::dependsOn` method to be static so that dependencies can be 
+provided before the Plugin is instantiated.
+- Changed the Plugin loading process such that a Plugin dependency does not need to be registered 
+to complete the loading process. The Plugin dependency need only be able to be instantiated by the 
+Injector.
+
+#### Removed
+
+- Removed the `PluginDependencyNotProvidedException` and replaced its uses with either an 
+`InvalidStateException` or an `InvalidArgumentException`.
+- Removed the `StandardApplication` in favor of a more robust series of Application implementations 
+out of the box.
 
 ## 3.0.0-beta4 2019-05-11
 
@@ -53,8 +72,6 @@ used in multiple places.
 `wireObjectGraph`. This ensures we are not conflating the term "Service" with other possible meanings 
 in your application, is more explicit to consumers about intent, and matches the naming strategy 
 for the `DependencyGraph` object convention.
-- An Application is no longer a Plugin of any type as the expected use case for an Application does 
-not work well with the Plugin loading process.
 
 ## 3.0.0-rc1 - 2019-02-16
 
