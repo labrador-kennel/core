@@ -63,6 +63,13 @@ class PluginManager implements Pluggable {
             $msg = 'Plugins have already been loaded and you MUST NOT register plugins after this has taken place.';
             throw new InvalidStateException($msg);
         }
+
+        $implementedTypes = class_implements($plugin);
+        if (!in_array(Plugin::class, $implementedTypes)) {
+            $msg = 'Attempted to register a Plugin that does not implement the ' . Plugin::class . ' interface';
+            throw new InvalidArgumentException($msg);
+        }
+
         $this->plugins[$plugin] = null;
     }
 
@@ -80,9 +87,11 @@ class PluginManager implements Pluggable {
                 $plugin->removeEventListeners($this->emitter);
             }
 
-            foreach ($this->removeHandlers as $pluginType => list($handler, $args)) {
+            foreach ($this->removeHandlers as $pluginType => $handlers) {
                 if ($plugin instanceof $pluginType) {
-                    $handler($plugin, ...$args);
+                    foreach ($handlers as list($handler, $args)) {
+                        $handler($plugin, ...$args);
+                    }
                 }
             }
         }
@@ -90,7 +99,7 @@ class PluginManager implements Pluggable {
     }
 
     public function registerPluginRemoveHandler(string $pluginType, callable $pluginHandler, ...$arguments): void {
-        $this->removeHandlers[$pluginType] = [$pluginHandler, $arguments];
+        $this->removeHandlers[$pluginType][] = [$pluginHandler, $arguments];
     }
 
     /**
@@ -191,7 +200,7 @@ class PluginManager implements Pluggable {
 
                         $this->handlePluginServices($plugin);
                         $this->handlePluginEvents($plugin);
-                        $this->handleCustomPluginHandlers($plugin);
+                        yield $this->handleCustomPluginHandlers($plugin);
                         yield $this->bootPlugin($plugin);
                         $this->finishLoading($plugin);
                     }
@@ -228,6 +237,14 @@ class PluginManager implements Pluggable {
                                 throw new CircularDependencyException($msg);
                             }
 
+                            $dependencyTypes = class_implements($reqPluginName);
+                            if (!in_array(Plugin::class, $dependencyTypes)) {
+                                $msg = 'A Plugin, ' . $plugin . ', depends on a ';
+                                $msg .= 'type, ' . $reqPluginName . ', that does not implement ' . Plugin::class;
+                                throw new InvalidStateException($msg);
+                            }
+
+
                             yield $this->loadPlugin($reqPluginName);
                         }
                     }
@@ -246,17 +263,16 @@ class PluginManager implements Pluggable {
                 }
             }
 
-            private function handleCustomPluginHandlers(Plugin $plugin) {
-                $pluginClass = get_class($plugin);
-                foreach ($this->pluginHandlers['custom'] as $type => $pluginHandlers) {
-                    if ($pluginClass === $type || $plugin instanceof $type) {
-                        foreach ($pluginHandlers as $pluginHandlerData) {
-                            $pluginHandler = $pluginHandlerData[0];
-                            $pluginHandlerArgs = $pluginHandlerData[1];
-                            $pluginHandler($plugin, ...$pluginHandlerArgs);
+            private function handleCustomPluginHandlers(Plugin $plugin) : Promise {
+                return call(function() use($plugin) {
+                    foreach ($this->pluginHandlers['custom'] as $type => $pluginHandlers) {
+                        if ($plugin instanceof $type) {
+                            foreach ($pluginHandlers as list($pluginHandler, $pluginHandlerArgs)) {
+                                yield call($pluginHandler, $plugin, ...$pluginHandlerArgs);
+                            }
                         }
                     }
-                }
+                });
             }
 
             private function bootPlugin(Plugin $plugin) : Promise {

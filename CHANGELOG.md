@@ -1,5 +1,36 @@
 # Changelog
 
+## 3.0.0-beta5 2019-07-??
+
+This release represents a major refactor to the Plugin system in an attempt to make the more common use 
+case easier to facilitate and to provide more async support for Plugins.
+
+#### Added
+
+- `Pluggable::registerPluginRemoveHandler` was added that allows invoking a custom function whenever a 
+Plugin is removed AFTER the loading process has been completed. These handlers will not run if the Plugin 
+is removed before loading is initiated.
+- `Pluggable::havePluginsLoaded` was added to determine whether or not Plugins have gone through the 
+loading process.
+- `Pluggable::getLoadedPlugin` was added to retrieve a Plugin by name once the loading process has taken 
+place. Attempting to call this method before loading has occurred will result in an exception.
+- `Pluggable::getLoadedPlugins` returns a collection of all loaded Plugins. Attempting to call 
+this method before loading has occurred will result in an exception.
+
+#### Changed
+
+- `Pluggable::registerPlugin(Plugin)` was changed to `Pluggable::registerPlugin(string)` where the string
+is the fully qualified class name of a type that implements the Plugin interface. This was done to more 
+easily facilitate the use case where a Plugin may depend on a service to be constructed.
+- `Pluggable::registerHandler` was changed to `Pluggable::registerPluginLoadHandler` to differentiate it from 
+the newly added remove handlers.
+- `Pluggable::hasPlugin` was changed to `Pluggable::hasPluginBeenRegistered` to more explicitly state what 
+is being checked with the new differentiation between registering and loading a Plugin.
+- `Pluggable::getPlugins` was changed to `Plugglable::getRegisteredPlugins` to be more semantic on 
+what is being returned. This will always be a collection of Plugin names.
+- Changed the invocation of Pluggable load handlers to support resolving Promises.
+- Changed the `Engine` interface to no longer extend `Pluggable`.
+
 ## 3.0.0-beta4 2019-05-11
 
 The previous 3.0 Release Candidate has been found lacking key features that should be implemented for 

@@ -9,7 +9,10 @@
 
 namespace Cspray\Labrador\Test;
 
+use function Amp\call;
+use Amp\Delayed;
 use Amp\PHPUnit\AsyncTestCase;
+use Cspray\Labrador\Engine;
 use Cspray\Labrador\Exception\InvalidStateException;
 use Cspray\Labrador\Plugin\Pluggable;
 use Cspray\Labrador\Plugin\PluginManager;
@@ -27,6 +30,7 @@ use Cspray\Labrador\Test\Stub\CustomPluginStub;
 use Cspray\Labrador\Test\Stub\EventsRegisteredPlugin;
 use Cspray\Labrador\Test\Stub\FooPluginDependentStub;
 use Cspray\Labrador\Test\Stub\FooPluginStub;
+use Cspray\Labrador\Test\Stub\PluginDependsNotPluginStub;
 use Cspray\Labrador\Test\Stub\PluginStub;
 use Cspray\Labrador\Test\Stub\RecursivelyDependentPluginStub;
 use Cspray\Labrador\Test\Stub\RequiresCircularDependentStub;
@@ -196,6 +200,35 @@ class PluginManagerTest extends AsyncTestCase {
         $this->assertSame(1, $actual->a);
         $this->assertTrue($actual->b);
         $this->assertSame([2,3,4], $actual->c);
+    }
+
+    /**
+     * @return Generator
+     * @throws CircularDependencyException
+     * @throws ConfigException
+     * @throws InvalidArgumentException
+     * @throws InvalidStateException
+     */
+    public function testRemoveHandlerAcceptsMultipleHandlers() {
+        $plugin = new CustomPluginStub();
+        $this->injector->share($plugin);
+
+        $manager = $this->getPluginManager();
+
+        $manager->registerPlugin(CustomPluginStub::class);
+
+        $manager->registerPluginRemoveHandler(CustomPluginStub::class, function(CustomPluginStub $fooPluginStub) {
+            $fooPluginStub->myCustomPlugin();
+        });
+        $manager->registerPluginRemoveHandler(CustomPluginStub::class, function(CustomPluginStub $fooPluginStub) {
+            $fooPluginStub->myCustomPlugin();
+        });
+
+        yield $manager->loadPlugins();
+
+        $manager->removePlugin(CustomPluginStub::class);
+
+        $this->assertSame(2, $plugin->getTimesCalled());
     }
 
     public function correctPluginMethodsCalledProvider() {
@@ -458,6 +491,25 @@ class PluginManagerTest extends AsyncTestCase {
      * @throws InvalidArgumentException
      * @throws InvalidStateException
      */
+    public function testPluginDependentPluginDeclaresDependencyThatIsNotPluginThrowsException() {
+        $manager = $this->getPluginManager();
+
+        $manager->registerPlugin(PluginDependsNotPluginStub::class);
+
+        $this->expectException(InvalidStateException::class);
+        $msg = 'A Plugin, ' . PluginDependsNotPluginStub::class . ', depends ';
+        $msg .= 'on a type, ' . Engine::class . ', that does not implement ' . Plugin::class;
+        $this->expectExceptionMessage($msg);
+
+        yield $manager->loadPlugins();
+    }
+
+    /**
+     * @return Generator
+     * @throws CircularDependencyException
+     * @throws InvalidArgumentException
+     * @throws InvalidStateException
+     */
     public function testExceptionThrownIfPluginRegisteredAfterLoading() {
         $manager = $this->getPluginManager();
 
@@ -487,6 +539,20 @@ class PluginManagerTest extends AsyncTestCase {
         $this->expectExceptionMessage($msg);
 
         $manager->registerPlugin(get_class($plugin));
+    }
+
+    /**
+     * @throws InvalidArgumentException
+     * @throws InvalidStateException
+     */
+    public function testRegisteringClassThatIsNotAPluginThrowsException() {
+        $manager = $this->getPluginManager();
+
+        $this->expectException(InvalidArgumentException::class);
+        $msg = "Attempted to register a Plugin that does not implement the " . Plugin::class . " interface";
+        $this->expectExceptionMessage($msg);
+
+        $manager->registerPlugin(Engine::class);
     }
 
     /**
@@ -608,6 +674,27 @@ class PluginManagerTest extends AsyncTestCase {
         yield $manager->loadPlugins();
 
         $this->assertSame($plugin, $handlerArgs->data);
+    }
+
+    public function testCustomHandlerReturnsPromise() {
+        $manager = $this->getPluginManager();
+        $actual = new stdClass();
+        $actual->counter = 0;
+        $manager->registerPlugin(FooPluginStub::class);
+        $manager->registerPluginLoadHandler(FooPluginStub::class, function() use($actual) {
+            return call(function() use($actual) {
+                yield new Delayed(1);
+                $actual->counter++;
+                yield new Delayed(1);
+                $actual->counter++;
+                yield new Delayed(1);
+                $actual->counter++;
+            });
+        });
+
+        yield $manager->loadPlugins();
+
+        $this->assertSame(3, $actual->counter);
     }
 
 }
