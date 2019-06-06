@@ -44,6 +44,10 @@ class CustomPluginOrderStub implements BootablePlugin, EventAwarePlugin, Injecto
         self::$callOrderObject->callOrder[] = 'events';
     }
 
+    public function removeEventListeners(Emitter $emitter): void {
+        self::$callOrderObject->callOrder[] = 'SHOULD NOT SHOW UP';
+    }
+
     /**
      * Return an array of plugin names that this plugin depends on.
      *

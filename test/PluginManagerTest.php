@@ -95,13 +95,116 @@ class PluginManagerTest extends AsyncTestCase {
         $this->assertFalse($manager->hasPluginBeenRegistered(PluginStub::class));
     }
 
+    /**
+     * @return Generator
+     * @throws CircularDependencyException
+     * @throws ConfigException
+     * @throws InvalidArgumentException
+     * @throws InvalidStateException
+     */
+    public function testRemovingLoadedEventAwarePluginCallsRemoveListeners() {
+        $plugin = new EventsRegisteredPlugin();
+        $this->injector->share($plugin);
+        $manager = $this->getPluginManager();
+        $manager->registerPlugin(EventsRegisteredPlugin::class);
+
+        yield $manager->loadPlugins();
+
+        $manager->removePlugin(EventsRegisteredPlugin::class);
+
+        $this->assertTrue($plugin->wasRemoveCalled());
+    }
+
+    /**
+     * @return Generator
+     * @throws CircularDependencyException
+     * @throws ConfigException
+     * @throws InvalidArgumentException
+     * @throws InvalidStateException
+     */
+    public function testRemoveLoadedPluginWthCustomRemoveHandler() {
+        $plugin = new CustomPluginStub();
+        $this->injector->share($plugin);
+        $manager = $this->getPluginManager();
+        $manager->registerPlugin(CustomPluginStub::class);
+        $manager->registerPluginRemoveHandler(CustomPluginStub::class, function(CustomPluginStub $plugin) {
+            $plugin->myCustomPlugin();
+        });
+
+        yield $manager->loadPlugins();
+
+        $manager->removePlugin(CustomPluginStub::class);
+
+        $this->assertSame(1, $plugin->getTimesCalled());
+    }
+
+    /**
+     * @return Generator
+     * @throws CircularDependencyException
+     * @throws ConfigException
+     * @throws InvalidArgumentException
+     * @throws InvalidStateException
+     */
+    public function testRemoveLoadedPluginMatchesHandlerForInterface() {
+        $plugin = new class implements CustomPluginInterface {
+            private $timesCalled = 0;
+
+            public function myMethod() {
+                $this->timesCalled++;
+            }
+
+            public function getTimesCalled() {
+                return $this->timesCalled;
+            }
+        };
+
+        $this->injector->share($plugin);
+        $manager = $this->getPluginManager();
+        $manager->registerPlugin(get_class($plugin));
+        $manager->registerPluginRemoveHandler(CustomPluginInterface::class, function(CustomPluginInterface $plugin) {
+            $plugin->myMethod();
+        });
+
+        yield $manager->loadPlugins();
+
+        $manager->removePlugin(get_class($plugin));
+
+        $this->assertSame(1, $plugin->getTimesCalled());
+    }
+
+    /**
+     * @return Generator
+     * @throws CircularDependencyException
+     * @throws InvalidArgumentException
+     * @throws InvalidStateException
+     */
+    public function testRemoveLoadedPluginPassesArgumentsToHandler() {
+        $manager = $this->getPluginManager();
+        $manager->registerPlugin(PluginStub::class);
+        $actual = new stdClass();
+        $manager->registerPluginRemoveHandler(PluginStub::class, function(PluginStub $pluginStub, int $a, bool $b, array $c) use($actual) {
+            $actual->plugin = $pluginStub;
+            $actual->a = $a;
+            $actual->b = $b;
+            $actual->c = $c;
+        }, 1, true, [2,3,4]);
+
+        yield $manager->loadPlugins();
+
+        $manager->removePlugin(PluginStub::class);
+
+        $this->assertSame(1, $actual->a);
+        $this->assertTrue($actual->b);
+        $this->assertSame([2,3,4], $actual->c);
+    }
+
     public function correctPluginMethodsCalledProvider() {
         return [
             [new BootCalledPlugin(), function(BootCalledPlugin $plugin) { return $plugin->wasCalled(); }],
             [new ServicesRegisteredPlugin(), function(ServicesRegisteredPlugin $plugin) {
                 return $plugin->wasCalled();
             }],
-            [new EventsRegisteredPlugin(), function(EventsRegisteredPlugin $plugin) { return $plugin->wasCalled(); }]
+            [new EventsRegisteredPlugin(), function(EventsRegisteredPlugin $plugin) { return $plugin->wasRegisterCalled(); }]
         ];
     }
 

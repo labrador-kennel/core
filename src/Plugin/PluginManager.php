@@ -10,7 +10,6 @@ declare(strict_types=1);
 
 namespace Cspray\Labrador\Plugin;
 
-use Amp\Deferred;
 use Amp\Promise;
 use Cspray\Labrador\Exception\InvalidStateException;
 use Cspray\Labrador\Exception\CircularDependencyException;
@@ -18,7 +17,6 @@ use Cspray\Labrador\Exception\InvalidArgumentException;
 use Cspray\Labrador\Exception\NotFoundException;
 use Cspray\Labrador\AsyncEvent\Emitter;
 use Auryn\Injector;
-use ArrayObject;
 
 use function Amp\call;
 
@@ -34,30 +32,23 @@ use function Amp\call;
  */
 class PluginManager implements Pluggable {
 
-    private $plugins;
+    private $plugins = [];
     private $emitter;
     private $injector;
     private $booter;
     private $pluginsBooted = false;
+    private $removeHandlers = [];
 
     /**
      * @param Injector $injector
      * @param Emitter $emitter
      */
     public function __construct(Injector $injector, Emitter $emitter) {
-        $this->emitter = $emitter;
         $this->injector = $injector;
-        $this->plugins = new ArrayObject();
+        $this->emitter = $emitter;
         $this->booter = $this->getBooter();
     }
 
-    /**
-     * Register a handler for a custom Plugin type to be invoked when loadPlugins is invoked.
-     *
-     * @param string $pluginType
-     * @param callable $pluginHandler function(YourPluginType $plugin, ...$arguments) : Promise|Generator|void {}
-     * @param mixed ...$arguments
-     */
     public function registerPluginLoadHandler(string $pluginType, callable $pluginHandler, ...$arguments): void {
         $this->booter->registerPluginHandler($pluginType, $pluginHandler, ...$arguments);
     }
@@ -82,25 +73,24 @@ class PluginManager implements Pluggable {
         });
     }
 
-    public function removePlugin(string $name) : Promise {
-        unset($this->plugins[$name]);
+    public function removePlugin(string $name) : void {
+        if (isset($this->plugins[$name])) {
+            $plugin = $this->plugins[$name];
+            if ($plugin instanceof EventAwarePlugin) {
+                $plugin->removeEventListeners($this->emitter);
+            }
 
-        return (new Deferred())->promise();
+            foreach ($this->removeHandlers as $pluginType => list($handler, $args)) {
+                if ($plugin instanceof $pluginType) {
+                    $handler($plugin, ...$args);
+                }
+            }
+        }
+        unset($this->plugins[$name]);
     }
 
-    /**
-     * Register a handler for a custom Plugin type to be invoked when removePlugin is called with a type that matches
-     * the $pluginType.
-     *
-     * If plugins have not yet been loaded when the target Plugin is removed this callback will not be invoked.
-     *
-     * @param string $pluginType
-     * @param callable $pluginHandler function(YourPluginType plugin, ...$arguments) : Promise|Generator|void {}
-     * @param mixed ...$arguments
-     */
-    public function registerPluginRemoveHandler(string $pluginType, callable $pluginHandler, ...$arguments): void
-    {
-        // TODO: Implement registerPluginRemoveHandler() method.
+    public function registerPluginRemoveHandler(string $pluginType, callable $pluginHandler, ...$arguments): void {
+        $this->removeHandlers[$pluginType] = [$pluginHandler, $arguments];
     }
 
     /**
@@ -132,31 +122,16 @@ class PluginManager implements Pluggable {
         return $this->plugins[$name];
     }
 
-    /**
-     * An array of Plugin objects associated to the given Pluggable.
-     *
-     * If loadPlugins has not been invoked an InvalidStateException MUST be thrown as the loading process must be
-     * completed before Plugin objects are available and this is a distinct case separate from there not being any
-     * Plugins after the loading process making an empty array ill-suited for this error condition.
-     *
-     * @return Plugin[]
-     * @throws InvalidStateException
-     */
     public function getLoadedPlugins(): array {
         if (!$this->havePluginsLoaded()) {
             $msg = 'Loaded plugins may only be gathered after ' . Pluggable::class . '::loadPlugins invoked';
             throw new InvalidStateException($msg);
         }
-        return array_values($this->plugins->getArrayCopy());
+        return array_values($this->plugins);
     }
 
-    /**
-     * An array of Plugin names that will be loaded when loadPlugins is called.
-     *
-     * @return string[]
-     */
     public function getRegisteredPlugins(): array {
-        return array_keys($this->plugins->getArrayCopy());
+        return array_keys($this->plugins);
     }
 
     private function getBooter() {

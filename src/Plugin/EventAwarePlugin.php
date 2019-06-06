@@ -21,4 +21,7 @@ interface EventAwarePlugin extends Plugin {
      * @return void
      */
     public function registerEventListeners(Emitter $emitter) : void;
+
+    public function removeEventListeners(Emitter $emitter) : void;
+
 }

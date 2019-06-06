@@ -119,7 +119,7 @@ interface Pluggable {
      * @param string $name
      * @return Promise
      */
-    public function removePlugin(string $name) : Promise;
+    public function removePlugin(string $name) : void;
 
     /**
      * @param string $name

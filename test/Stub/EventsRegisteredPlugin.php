@@ -7,10 +7,15 @@ use Cspray\Labrador\AsyncEvent\Emitter;
 
 class EventsRegisteredPlugin implements EventAwarePlugin {
 
-    private $called = false;
+    private $registered = false;
+    private $removed = false;
 
-    public function wasCalled() {
-        return $this->called;
+    public function wasRegisterCalled() {
+        return $this->registered;
+    }
+
+    public function wasRemoveCalled() {
+        return $this->removed;
     }
 
     /**
@@ -20,6 +25,10 @@ class EventsRegisteredPlugin implements EventAwarePlugin {
      * @return void
      */
     public function registerEventListeners(Emitter $emitter) : void {
-        $this->called = true;
+        $this->registered = true;
+    }
+
+    public function removeEventListeners(Emitter $emitter): void {
+        $this->removed = true;
     }
 }
