@@ -87,7 +87,7 @@ class AmpEngineTest extends UnitTestCase {
 
         $engine = $this->getEngine();
         $engine->onEngineBootup($bootUpCb);
-        $engine->onAppCleanup($cleanupCb);
+        $engine->onEngineShutdown($cleanupCb);
 
         $engine->run(new NoopApplication());
 
@@ -119,7 +119,7 @@ class AmpEngineTest extends UnitTestCase {
         $app = $this->callbackApp($executeAppCb);
 
         $engine = $this->getEngine();
-        $engine->onAppCleanup($cleanupCb);
+        $engine->onEngineShutdown($cleanupCb);
 
         $engine->run($app);
 
@@ -153,7 +153,7 @@ class AmpEngineTest extends UnitTestCase {
     public function eventEmitterProxyData() {
         return [
             ['onEngineBootup', Engine::ENGINE_BOOTUP_EVENT],
-            ['onAppCleanup', Engine::APP_CLEANUP_EVENT]
+            ['onEngineShutdown', Engine::ENGINE_SHUTDOWN_EVENT]
         ];
     }
 
@@ -161,8 +161,7 @@ class AmpEngineTest extends UnitTestCase {
      * @dataProvider eventEmitterProxyData
      */
     public function testProxyToEventEmitter($method, $event) {
-        $cb = function() {
-        };
+        $cb = function() {};
         $engine = $this->getEngine($this->emitter);
         $engine->$method($cb);
 
@@ -174,7 +173,7 @@ class AmpEngineTest extends UnitTestCase {
     public function testAppCleanupEventHasCorrectTarget() {
         $data = new \stdClass();
         $data->data = null;
-        $this->emitter->on(Engine::APP_CLEANUP_EVENT, function(Event $event) use($data) {
+        $this->emitter->on(Engine::ENGINE_SHUTDOWN_EVENT, function(Event $event) use($data) {
             $data->data = $event->target();
         });
 
@@ -223,6 +222,11 @@ class AmpEngineTest extends UnitTestCase {
         $engine->run($this->noopApp());
 
         $this->assertSame([1], $data->data);
+    }
+
+    public function testGettingEmitterIsInstancePassedToConstructor() {
+        $actual = $this->getEngine()->getEmitter();
+        $this->assertSame($this->emitter, $actual);
     }
 
 }

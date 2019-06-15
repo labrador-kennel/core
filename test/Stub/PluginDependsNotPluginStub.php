@@ -9,7 +9,7 @@ use Cspray\Labrador\Plugin\PluginDependentPlugin;
 
 class PluginDependsNotPluginStub implements PluginDependentPlugin {
 
-    public static function dependsOn(): iterable {
+    public static function dependsOn(): array {
         return [Engine::class];
     }
 

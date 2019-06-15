@@ -35,7 +35,7 @@
          -->
 
         <!--  Additional configuration for the collecting process (parsing of php code, generation of xml data) -->
-        <collector publiconly="false" backend="parser" encoding="auto">
+        <collector publiconly="true" backend="parser" encoding="auto">
             <!--  @publiconly - Flag to disable/enable processing of non public methods and members -->
             <!--  @backend    - The collector backend to use, currently only shipping with 'parser' -->
             <!--  @encoding   - Charset encoding of source files (overwrite default 'auto' if detection fails) -->
@@ -62,7 +62,7 @@
 
             <!-- A generation process consists of one or more build tasks and of (optional) enrich sources -->
 
-            <enrich base="${basedir}/build/phpdox/enrich">
+            <enrich base="${basedir}/build/logs">
                 <!-- @base - (Base-)Directory of datafiles used for enrich process -->
 
                 <!--<source type="...">-->
@@ -83,27 +83,11 @@
                 </source>
 
                 <!-- PHP Code Sniffer findings -->
-                <source type="phpcs">
-                    <file name="vendor/cspray/labrador-coding-standard/ruleset.xml" />
-                </source>
-
-                <!-- PHPMessDetector -->
                 <!--
-                <source type="pmd">
-                    <file name="pmd.xml" />
+                <source type="phpcs">
+                    <file name="phpcs/index.xml" />
                 </source>
                 -->
-
-                <!-- PHPUnit Coverage XML -->
-                <!-- <source type="phpunit">  -->
-                <!-- <coverage path="" /> -->
-                <!--           @path - the directory where the xml code coverage report can be found -->
-                <!--</source>-->
-                <source type="phpunit">
-                    <coverage path="build/clover.xml" />
-                    <filter directory="${phpDox.project.source}" />
-                </source>
-
             </enrich>
 
             <!-- <build engine="..." enabled="true" output="..." /> -->

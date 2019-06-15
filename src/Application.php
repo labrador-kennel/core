@@ -1,15 +1,17 @@
 <?php declare(strict_types=1);
 
-/**
- * A special type of Plugin for the Labrador framework that acts as the primary execution point for your application.
- *
- * @license See LICENSE in source root.
- */
 namespace Cspray\Labrador;
 
 use Amp\Promise;
 use Throwable;
 
+/**
+ * An interface that represents the encapsulation of your business logic and the Plugins your Application requires to
+ * run correctly.
+ *
+ * @package Cspray\Labrador
+ * @license See LICENSE in source root
+ */
 interface Application {
 
     /**
@@ -19,7 +21,7 @@ interface Application {
      * This method should avoid throwing an exception and instead fail the Promise with the Exception that caused the
      * application to crash.
      *
-     * @return Promise
+     * @return Promise<void>
      */
     public function execute() : Promise;
 

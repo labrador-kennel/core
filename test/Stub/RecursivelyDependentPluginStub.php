@@ -43,7 +43,7 @@ class RecursivelyDependentPluginStub implements PluginDependentPlugin, BootableP
      *
      * @return array
      */
-    public static function dependsOn() : iterable {
+    public static function dependsOn() : array {
         return [FooPluginDependentStub::class];
     }
 }

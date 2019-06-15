@@ -1,23 +1,23 @@
-<?php
-
-declare(strict_types = 1);
-
-/**
- * A Plugin that depends on another Plugin being present and loaded before this
- * Plugin can be booted, services can be registered or event listeners can be
- * added.
- *
- * @license See LICENSE file in project root
- */
+<?php declare(strict_types = 1);
 
 namespace Cspray\Labrador\Plugin;
 
+/**
+ * A Plugin that depends on another Plugin being present and loaded before it can be loaded itself.
+ *
+ * @package Cspray\Labrador\Plugin
+ * @license See LICENSE file in project root
+ */
 interface PluginDependentPlugin extends Plugin {
 
     /**
-     * Return an array of plugin names that this plugin depends on.
+     * Return an array of fully qualified class names for Plugins that should be loaded by the Pluggable the
+     * implementing Plugin is attached to.
      *
-     * @return iterable
+     * If you return a value that is not a valid class name that implements the Plugin interface an exception will be
+     * thrown during the Plugin loading process.
+     *
+     * @return string[]
      */
-    public static function dependsOn() : iterable;
+    public static function dependsOn() : array;
 }

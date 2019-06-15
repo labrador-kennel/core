@@ -21,6 +21,7 @@
     "amphp/phpunit-util": "dev-master",
     "cspray/labrador-coding-standard": "0.1.0",
     "phpunit/phpunit": "~7",
+    "phploc/phploc": "^5.0",
     "theseer/phpdox": "^0.12.0"
   },
   "autoload": {

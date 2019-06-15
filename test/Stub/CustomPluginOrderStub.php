@@ -51,9 +51,9 @@ class CustomPluginOrderStub implements BootablePlugin, EventAwarePlugin, Injecto
     /**
      * Return an array of plugin names that this plugin depends on.
      *
-     * @return iterable
+     * @return array
      */
-    public static function dependsOn(): iterable {
+    public static function dependsOn(): array {
         self::$callOrderObject->callOrder[] = 'depends';
         return [];
     }

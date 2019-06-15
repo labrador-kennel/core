@@ -43,7 +43,7 @@ class FooPluginDependentStub implements PluginDependentPlugin, BootablePlugin {
      *
      * @return array
      */
-    public static function dependsOn() : iterable {
+    public static function dependsOn() : array {
         return [FooPluginStub::class];
     }
 }
