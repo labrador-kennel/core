@@ -1,0 +1,122 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE html SYSTEM "about:legacy-compat">
+<html xmlns="http://www.w3.org/1999/xhtml" lang="en">
+  <head>
+    <title>phpDox - Cspray\Labrador\Plugin\Pluggable::getLoadedPlugin</title>
+    <link rel="stylesheet" type="text/css" href="../../css/style.css" media="screen"/>
+    <meta http-equiv="content-type" content="text/html; charset=utf-8"/>
+  </head>
+  <body>
+    <nav class="topnav">
+      <ul>
+        <li>
+          <div class="logo"><span>/**</span>phpDox</div>
+        </li>
+        <li class="separator">
+          <a href="../../index.html">Overview</a>
+        </li>
+        <li class="separator">
+          <a href="../../namespaces.html">Namespaces</a>
+        </li>
+        <li>
+          <a href="../../interfaces.html">Interfaces</a>
+        </li>
+        <li>
+          <a href="../../classes.html">Classes</a>
+        </li>
+        <li class="separator">
+          <a href="../../source/index.html">Source</a>
+        </li>
+      </ul>
+    </nav>
+    <div id="mainstage">
+      <div class="box">
+        <ul class="breadcrumb">
+          <li>
+            <a href="../../index.html">Overview</a>
+          </li>
+          <li class="separator">
+            <a href="../../classes.html">Classes</a>
+          </li>
+          <li class="separator">
+            <a href="../../classes.html#Cspray_Labrador_Plugin">Cspray\Labrador\Plugin</a>
+          </li>
+          <li class="separator">
+            <a title="Cspray\Labrador\Plugin\Pluggable" href="../../interfaces/Cspray_Labrador_Plugin_Pluggable.html">Pluggable</a>
+          </li>
+          <li class="separator">getLoadedPlugin</li>
+        </ul>
+      </div>
+      <nav class="box">
+        <ul>
+          <li>
+            <a href="#introduction">Introduction</a>
+          </li>
+          <li>
+            <a href="#synopsis">Synopsis</a>
+          </li>
+          <li>
+            <a href="#parameter">Parameter</a>
+          </li>
+          <li>
+            <a href="#return">Return</a>
+          </li>
+          <li>
+            <a href="#throws">Throws</a>
+          </li>
+          <li>
+            <a href="../../source/Plugin/Pluggable.php.html#line148">Source</a>
+          </li>
+        </ul>
+      </nav>
+      <section>
+        <h1><small>Cspray\Labrador\Plugin\Pluggable::</small>getLoadedPlugin</h1>
+        <h4>Attempt to retrieve a Plugin object.</h4>
+        <p>If the Plugin could not be found a NotFoundException SHOULD be thrown as the state of Plugins should be known to
+the developer and a Plugin expected but not present is likely an error in configuration or Application setup and
+should be addressed immediately.
+
+If loadPlugins has not been invoked then an InvalidStateException MUST be thrown as the loading process must be
+completed before the corresponding Plugin object is available.</p>
+        <ul/>
+        <h2 id="signature">Signature</h2>
+        <div class="styled synopsis">
+          <code>public function getLoadedPlugin(string
+        $pluginType )
+            </code>
+        </div>
+        <h2 id="parameterlist">Parameters</h2>
+        <dl class="styled">
+          <dt><code>$pluginType</code>
+                —
+                string</dt>
+          <dd>The fully qualified class name of the Plugin to retrieve</dd>
+        </dl>
+        <h2 id="return">Returns</h2>
+        <dl class="styled">
+          <dt>Plugin</dt>
+          <dd>The Plugin instance used for the loading process<br/>
+        </dd>
+        </dl>
+        <h2 id="throws">Errors/Exceptions</h2>
+        <dl class="styled">
+          <dt>
+            <code>
+              <a title="Cspray\Labrador\Exception\NotFoundException" href="../../interfaces/Cspray_Labrador_Exception_NotFoundException.html">NotFoundException</a>
+            </code>
+          </dt>
+          <dd/>
+          <dt>
+            <code>
+              <a title="Cspray\Labrador\Exception\InvalidStateException" href="../../interfaces/Cspray_Labrador_Exception_InvalidStateException.html">InvalidStateException</a>
+            </code>
+          </dt>
+          <dd/>
+        </dl>
+      </section>
+    </div>
+    <footer>
+      <span>Generated using phpDox 0.12.0-dev - Copyright (C) 2010 - 2019 by Arne Blankerts and Contributors</span>
+    </footer>
+  </body>
+</html>

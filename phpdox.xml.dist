@@ -57,7 +57,7 @@
         </collector>
 
         <!--  Configuration of generation process -->
-        <generator output="${basedir}/build/api">
+        <generator output="${basedir}/docs/api">
             <!-- @output - (Base-)Directory to store output data in -->
 
             <!-- A generation process consists of one or more build tasks and of (optional) enrich sources -->
@@ -100,7 +100,7 @@
             <!--  default engine "html" -->
             <build engine="html" enabled="true" output="html">
                 <template dir="${phpDox.home}/templates/html"/>
-                <file extension="xhtml"/>
+                <file extension="html"/>
             </build>
 
         </generator>
