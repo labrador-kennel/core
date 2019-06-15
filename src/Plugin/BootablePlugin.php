@@ -1,29 +1,22 @@
-<?php
-
-declare(strict_types = 1);
-
-/**
- * An interface for a plugin that needs to perform some action when the Engine boots up.
- *
- * @license See LICENSE file in project root
- */
+<?php declare(strict_types = 1);
 
 namespace Cspray\Labrador\Plugin;
 
+use Amp\Promise;
+
+/**
+ * A Plugin capable of executing some possibly asynchronous operation when the Pluggable this Plugin is attached to
+ * calls Pluggable::loadPlugins.
+ *
+ * @package Cspray\Labrador\Plugin
+ * @license See LICENSE in source root
+ */
 interface BootablePlugin extends Plugin {
 
     /**
-     * Return a callable that will be invoked using Auryn's Injector::execute API.
+     * Return a Promise that resolves when the booting process is finished.
      *
-     * By invoking the callable with your application's Injector you can typehint your callable with any service that
-     * has been wired by your object graph OR if this object is also a PluginDependentPlugin the services provided by
-     * those dependent plugins. Your callable will also be invoked on the event loop and can yield or return a promise
-     * and will work as expected.
-     *
-     * It is very important that your callable only typehints against objects known to be wired in your container. If
-     * you typehint a scalar value or a type that cannot be instantiated by the Injector an exception will be thrown.
-     *
-     * @return callable
+     * @return Promise<void>
      */
-    public function boot() : callable;
+    public function boot() : Promise;
 }

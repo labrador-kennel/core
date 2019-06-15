@@ -18,5 +18,10 @@
     "name": "Engines",
     "url": "engines",
     "active_check": "/engines/"
+  },
+  {
+    "name": "API Docs",
+    "url": "api/html",
+    "active_check": "api/html"
   }
 ]

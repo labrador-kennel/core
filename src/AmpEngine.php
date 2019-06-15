@@ -1,42 +1,30 @@
-<?php
-
-declare(strict_types=1);
-
-/**
- * The standard Engine implementation triggering all required Labrador events.
- *
- * @license See LICENSE in source root
- */
+<?php declare(strict_types=1);
 
 namespace Cspray\Labrador;
 
-use Amp\Promise;
 use Cspray\Labrador\AsyncEvent\Emitter;
 use Cspray\Labrador\AsyncEvent\EventFactory;
 use Cspray\Labrador\AsyncEvent\StandardEventFactory;
 use Cspray\Labrador\Exception\InvalidStateException;
-use Cspray\Labrador\Plugin\Plugin;
 use Amp\Loop;
 
+/**
+ * An implementation of the Engine interface running on the global amphp Loop.
+ *
+ * @package Cspray\Labrador
+ * @license See LICENSE in source root
+ */
 class AmpEngine implements Engine {
 
     private $emitter;
-    private $pluginManager;
     private $eventFactory;
     private $engineState = 'idle';
     private $engineBooted = false;
 
-    /**
-     * @param PluginManager $pluginManager
-     * @param Emitter $emitter
-     * @param EventFactory $eventFactory
-     */
     public function __construct(
-        PluginManager $pluginManager,
         Emitter $emitter,
         EventFactory $eventFactory = null
     ) {
-        $this->pluginManager = $pluginManager;
         $this->emitter = $emitter;
         $this->eventFactory = $eventFactory ?? new StandardEventFactory();
     }
@@ -46,7 +34,7 @@ class AmpEngine implements Engine {
     }
 
     /**
-     * @param callable $cb
+     * @param callable $cb function(Cspray\Labrador\AsyncEvent\Event, ...$listenerData) : Promise|Generator|void
      * @param array $listenerData
      * @return AmpEngine
      */
@@ -56,21 +44,18 @@ class AmpEngine implements Engine {
     }
 
     /**
-     * @param callable $cb
+     * @param callable $cb function(Cspray\Labrador\AsyncEvent\Event, ...$listenerData) : Promise|Generator|void
      * @param array $listenerData
      * @return $this
      */
-    public function onAppCleanup(callable $cb, array $listenerData = []) : self {
-        $this->emitter->on(self::APP_CLEANUP_EVENT, $cb, $listenerData);
+    public function onEngineShutdown(callable $cb, array $listenerData = []) : self {
+        $this->emitter->on(self::ENGINE_SHUTDOWN_EVENT, $cb, $listenerData);
         return $this;
     }
 
     /**
-     * Ensures that the appropriate plugins are booted and then executes the application.
-     *
      * @param Application $application
      * @return void
-     * @throws Exception\InvalidArgumentException
      * @throws InvalidStateException
      */
     public function run(Application $application) : void {
@@ -85,12 +70,7 @@ class AmpEngine implements Engine {
             });
         });
 
-        if (!$this->hasPlugin(get_class($application))) {
-            $this->registerPlugin($application);
-        }
-
         $this->emitter->once(self::ENGINE_BOOTUP_EVENT, function() {
-            yield $this->loadPlugins();
         });
 
         Loop::run(function() use($application) {
@@ -114,36 +94,8 @@ class AmpEngine implements Engine {
     }
 
     private function emitAppCleanupEvent(Application $application) {
-        $event = $this->eventFactory->create(self::APP_CLEANUP_EVENT, $application);
+        $event = $this->eventFactory->create(self::ENGINE_SHUTDOWN_EVENT, $application);
         $promise = $this->emitter->emit($event);
         return $promise;
-    }
-
-    public function registerPluginHandler(string $pluginType, callable $pluginHandler, ...$arguments): void {
-        $this->pluginManager->registerPluginHandler($pluginType, $pluginHandler, $arguments);
-    }
-
-    public function registerPlugin(Plugin $plugin) : void {
-        $this->pluginManager->registerPlugin($plugin);
-    }
-
-    public function removePlugin(string $name) : void {
-        $this->pluginManager->removePlugin($name);
-    }
-
-    public function hasPlugin(string $name) : bool {
-        return $this->pluginManager->hasPlugin($name);
-    }
-
-    public function getPlugin(string $name) : Plugin {
-        return $this->pluginManager->getPlugin($name);
-    }
-
-    public function getPlugins() : iterable {
-        return $this->pluginManager->getPlugins();
-    }
-
-    public function loadPlugins(): Promise {
-        return $this->pluginManager->loadPlugins();
     }
 }

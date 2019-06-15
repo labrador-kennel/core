@@ -11,8 +11,8 @@ $engine = $injector->make(\Cspray\Labrador\Engine::class);
 $engine->onEngineBootup(function() {
     echo "init\n";
 })
-->onAppCleanup(function() {
-    echo "cleanup";
+->onEngineShutdown(function() {
+    echo "shutdown";
 });
 
 $app = new \Cspray\Labrador\Test\Stub\ExceptionHandlerApplication(
@@ -33,4 +33,4 @@ $engine->run($app);
 init
 oops in app
 handle RuntimeException
-cleanup
+shutdown

@@ -1,5 +1,57 @@
 # Changelog
 
+## 3.0.0-beta5 2019-??-??
+
+This release represents a major refactor to the Plugin system in an attempt to make the more common use 
+case easier to facilitate and to provide more async support for Plugins.
+
+#### Added
+
+- `Pluggable::registerPluginRemoveHandler` was added that allows invoking a custom function whenever a 
+Plugin is removed AFTER the loading process has been completed. These handlers will not run if the Plugin 
+is removed before loading is initiated.
+- `Pluggable::havePluginsLoaded` was added to determine whether or not Plugins have gone through the 
+loading process.
+- `Pluggable::getLoadedPlugin` was added to retrieve a Plugin by name once the loading process has taken 
+place. Attempting to call this method before loading has occurred will result in an exception.
+- `Pluggable::getLoadedPlugins` returns a collection of all loaded Plugins. Attempting to call 
+this method before loading has occurred will result in an exception.
+- Added `EventAwarePlugin::removeEventListeners` that will be invoked whenever a loaded Plugin is 
+removed from its Pluggable.
+
+#### Changed
+
+- `Pluggable::registerPlugin(Plugin)` was changed to `Pluggable::registerPlugin(string)` where the string
+is the fully qualified class name of a type that implements the Plugin interface. This was done to more 
+easily facilitate the use case where a Plugin may depend on a service to be constructed.
+- `Pluggable::registerHandler` was changed to `Pluggable::registerPluginLoadHandler` to differentiate it from 
+the newly added remove handlers.
+- `Pluggable::hasPlugin` was changed to `Pluggable::hasPluginBeenRegistered` to more explicitly state what 
+is being checked with the new differentiation between registering and loading a Plugin.
+- `Pluggable::getPlugins` was changed to `Plugglable::getRegisteredPlugins` to be more semantic on 
+what is being returned. This will always be a collection of Plugin names.
+- Changed the invocation of Pluggable load handlers to support resolving Promises.
+- Changed the `Engine` interface to no longer extend `Pluggable`.
+- An Application is no longer a Plugin of any type as the expected use case for an Application does 
+not work well with the Plugin loading process.
+- Moved the `PluginManager` implementation into the `Cspray\Labrador\Plugin` namespace.
+- Changed the `BootablePlugin::boot` method to return a `Promise` instead of a callable now that 
+services may be injected as a constructor dependency.
+- Changed the `PluginDependentPlugin::dependsOn` method to be static so that dependencies can be 
+provided before the Plugin is instantiated.
+- Changed the Plugin loading process such that a Plugin dependency does not need to be registered 
+to complete the loading process. The Plugin dependency need only be able to be instantiated by the 
+Injector.
+- Changed the name of the `Engine::APP_CLEANUP_EVENT` -> `Engine::ENGINE_SHUTDOWN_EVENT` to be more 
+semantic with its counterpart.
+
+#### Removed
+
+- Removed the `PluginDependencyNotProvidedException` and replaced its uses with either an 
+`InvalidStateException` or an `InvalidArgumentException`.
+- Removed the `StandardApplication` in favor of a more robust series of Application implementations 
+out of the box.
+
 ## 3.0.0-beta4 2019-05-11
 
 The previous 3.0 Release Candidate has been found lacking key features that should be implemented for 

@@ -8,6 +8,8 @@ declare(strict_types = 1);
 
 namespace Cspray\Labrador\Test\Stub;
 
+use Amp\Promise;
+use Amp\Success;
 use Cspray\Labrador\Plugin\BootablePlugin;
 use Cspray\Labrador\Plugin\InjectorAwarePlugin;
 use Auryn\Injector;
@@ -20,10 +22,9 @@ class FooPluginStub implements InjectorAwarePlugin, BootablePlugin {
      * Perform any actions that should be completed by your Plugin before the
      * primary execution of your app is kicked off.
      */
-    public function boot() : callable {
-        return function() {
-            $this->numBootCalled++;
-        };
+    public function boot() : Promise {
+        $this->numBootCalled++;
+        return new Success();
     }
 
     public function getNumberTimesBootCalled() : int {

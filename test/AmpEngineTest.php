@@ -9,15 +9,13 @@
 
 namespace Cspray\Labrador\Test;
 
-use Amp\Deferred;
 use Amp\Delayed;
-use Amp\Loop;
 use Amp\Success;
 use Cspray\Labrador\Application;
 use Cspray\Labrador\Engine;
 use Cspray\Labrador\AmpEngine;
 use Cspray\Labrador\Exception\InvalidStateException;
-use Cspray\Labrador\PluginManager;
+use Cspray\Labrador\Plugin\PluginManager;
 use Cspray\Labrador\Exception\Exception;
 use Cspray\Labrador\Test\Stub\CallbackApplication;
 use Cspray\Labrador\Test\Stub\CustomPluginStub;
@@ -39,17 +37,19 @@ class AmpEngineTest extends UnitTestCase {
      * @var Emitter
      */
     private $emitter;
-    private $pluginManager;
+    /**
+     * @var Injector
+     */
+    private $injector;
 
     public function setUp() {
+        $this->injector = new Injector();
         $this->emitter = new AmpEmitter();
-        $this->pluginManager = new PluginManager(new Injector(), $this->emitter);
     }
 
-    private function getEngine(Emitter $eventEmitter = null, PluginManager $pluginManager = null) : AmpEngine {
+    private function getEngine(Emitter $eventEmitter = null) : AmpEngine {
         $emitter = $eventEmitter ?: $this->emitter;
-        $manager = $pluginManager ?: $this->pluginManager;
-        return new AmpEngine($manager, $emitter);
+        return new AmpEngine($emitter);
     }
 
     private function noopApp() : Application {
@@ -87,7 +87,7 @@ class AmpEngineTest extends UnitTestCase {
 
         $engine = $this->getEngine();
         $engine->onEngineBootup($bootUpCb);
-        $engine->onAppCleanup($cleanupCb);
+        $engine->onEngineShutdown($cleanupCb);
 
         $engine->run(new NoopApplication());
 
@@ -119,7 +119,7 @@ class AmpEngineTest extends UnitTestCase {
         $app = $this->callbackApp($executeAppCb);
 
         $engine = $this->getEngine();
-        $engine->onAppCleanup($cleanupCb);
+        $engine->onEngineShutdown($cleanupCb);
 
         $engine->run($app);
 
@@ -150,21 +150,10 @@ class AmpEngineTest extends UnitTestCase {
         $this->assertSame('Exception thrown in app', $exception->getMessage());
     }
 
-    public function testRegisteredPluginsGetBooted() {
-        $engine = $this->getEngine($this->emitter, $this->pluginManager);
-
-        $plugin = new BootCalledPlugin();
-        $engine->registerPlugin($plugin);
-
-        $engine->run($this->noopApp());
-
-        $this->assertTrue($plugin->wasCalled(), 'The Plugin::boot method was not called');
-    }
-
     public function eventEmitterProxyData() {
         return [
             ['onEngineBootup', Engine::ENGINE_BOOTUP_EVENT],
-            ['onAppCleanup', Engine::APP_CLEANUP_EVENT]
+            ['onEngineShutdown', Engine::ENGINE_SHUTDOWN_EVENT]
         ];
     }
 
@@ -185,7 +174,7 @@ class AmpEngineTest extends UnitTestCase {
     public function testAppCleanupEventHasCorrectTarget() {
         $data = new \stdClass();
         $data->data = null;
-        $this->emitter->on(Engine::APP_CLEANUP_EVENT, function(Event $event) use($data) {
+        $this->emitter->on(Engine::ENGINE_SHUTDOWN_EVENT, function(Event $event) use($data) {
             $data->data = $event->target();
         });
 
@@ -193,54 +182,6 @@ class AmpEngineTest extends UnitTestCase {
         $engine->run($app = $this->noopApp());
 
         $this->assertSame($app, $data->data);
-    }
-
-    public function pluginManagerProxyData() {
-        return [
-            ['removePlugin', PluginStub::class, null],
-            ['hasPlugin', PluginStub::class, true],
-            ['getPlugin', PluginStub::class, new PluginStub()],
-            ['getPlugins', null, []],
-        ];
-    }
-
-    /**
-     * @dataProvider pluginManagerProxyData
-     */
-    public function testProxyToPluginManager($method, $arg, $returnVal) {
-        $pluginManager = $this->getMockBuilder(PluginManager::class)
-                              ->disableOriginalConstructor()
-                              ->getMock();
-
-        $pluginMethod = $pluginManager->expects($this->once())
-                                      ->method($method);
-        if ($arg) {
-            $pluginMethod->with($arg);
-        }
-
-        if (!is_null($returnVal)) {
-            $pluginMethod->willReturn($returnVal);
-        }
-
-        $this->getEngine(null, $pluginManager)->$method($arg);
-    }
-
-    public function testCustomPluginHandlersProxiedToPluginManager() {
-        $pluginManager = $this->getMockBuilder(PluginManager::class)
-                              ->disableOriginalConstructor()
-                              ->getMock();
-
-        $pluginManager->expects($this->once())->method('registerPluginHandler')->with(
-            CustomPluginStub::class,
-            $this->callback(function($argument) {
-                return is_callable($argument) && $argument() === 'my special return value';
-            })
-        );
-
-        $engine = $this->getEngine(null, $pluginManager);
-        $engine->registerPluginHandler(CustomPluginStub::class, function() {
-            return 'my special return value';
-        });
     }
 
     public function testCallingRunMultipleTimesThrowsException() {
@@ -284,28 +225,8 @@ class AmpEngineTest extends UnitTestCase {
         $this->assertSame([1], $data->data);
     }
 
-    public function testApplicationRegisteredAsPluginOnRun() {
-        $engine = $this->getEngine(null, new PluginManager(new Injector(), $this->emitter));
-        $data = new \stdClass();
-        $data->data = false;
-        $app = $this->callbackApp(function() use($engine, $data) {
-            $data->data = $engine->hasPlugin(CallbackApplication::class);
-        });
-        $engine->run($app);
-
-        $this->assertTrue($data->data);
-    }
-
-    public function testHandlesApplicationAlreadyRegisteredAsPlugin() {
-        $engine = $this->getEngine(null, new PluginManager(new Injector(), $this->emitter));
-        $data = new \stdClass();
-        $data->data = false;
-        $app = $this->callbackApp(function() use($engine, $data) {
-            $data->data = $engine->hasPlugin(CallbackApplication::class);
-        });
-        $engine->registerPlugin($app);
-        $engine->run($app);
-
-        $this->assertTrue($data->data);
+    public function testGettingEmitterIsInstancePassedToConstructor() {
+        $actual = $this->getEngine()->getEmitter();
+        $this->assertSame($this->emitter, $actual);
     }
 }

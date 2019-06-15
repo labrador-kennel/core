@@ -1,0 +1,270 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE html SYSTEM "about:legacy-compat">
+<html xmlns="http://www.w3.org/1999/xhtml" lang="en">
+  <head>
+    <title>phpDox - Cspray\Labrador\DependencyGraph</title>
+    <link rel="stylesheet" type="text/css" href="../css/style.css" media="screen"/>
+    <meta http-equiv="content-type" content="text/html; charset=utf-8"/>
+  </head>
+  <body>
+    <nav class="topnav">
+      <ul>
+        <li>
+          <div class="logo"><span>/**</span>phpDox</div>
+        </li>
+        <li class="separator">
+          <a href="../index.html">Overview</a>
+        </li>
+        <li class="separator">
+          <a href="../namespaces.html">Namespaces</a>
+        </li>
+        <li>
+          <a href="../interfaces.html">Interfaces</a>
+        </li>
+        <li>
+          <a href="../classes.html">Classes</a>
+        </li>
+        <li class="separator">
+          <a href="../source/index.html">Source</a>
+        </li>
+      </ul>
+    </nav>
+    <div id="mainstage">
+      <div class="box">
+        <ul class="breadcrumb">
+          <li>
+            <a href="../index.html">Overview</a>
+          </li>
+          <li class="separator">
+            <a href="../classes.html">Classes</a>
+          </li>
+          <li class="separator">
+            <a href="../classes.html#Cspray_Labrador">Cspray\Labrador</a>
+          </li>
+          <li class="separator">DependencyGraph</li>
+        </ul>
+      </div>
+      <nav class="box">
+        <ul>
+          <li>
+            <a href="#introduction">Introduction</a>
+          </li>
+          <li>
+            <a href="#synopsis">Synopsis</a>
+          </li>
+          <li>
+            <a href="#methods">Methods</a>
+          </li>
+          <li>
+            <a href="#history">History</a>
+          </li>
+          <li>
+            <a href="../source/DependencyGraph.php.html#line20">Source</a>
+          </li>
+        </ul>
+      </nav>
+      <section>
+        <h1 id="introduction"><small>Cspray\Labrador\</small>DependencyGraph</h1>
+        <h4>An object that wires together an object graph to ensure that Labrador works out-of-the-box.</h4>
+        <p>While you could replicate this within your own DependencyGraph object it is recommended that to define Labrador<br/>dependencies on your Injector you use this implementation. You can then further define dependencies on the Injector<br/>returned to customize or add dependencies your Application might need that is not suitable for a Plugin.</p>
+        <ul>
+          <li>License: See LICENSE in source root</li>
+        </ul>
+        <h2 id="synopsis">Synopsis</h2>
+        <div class="synopsis">class DependencyGraph
+            {<br/><ul class="none"><li>// methods</li><li>public <span title="Injector">Injector</span> <a title="Cspray\Labrador\DependencyGraph" href="../classes/Cspray_Labrador_DependencyGraph/wireObjectGraph.html">wireObjectGraph</a>()
+                    </li></ul>
+
+            }<br/></div>
+        <h2 id="methods">Methods</h2>
+        <div class="styled">
+          <h4>public</h4>
+          <ul>
+            <li id="wireObjectGraph"><a title="Cspray\Labrador\DependencyGraph" href="../classes/Cspray_Labrador_DependencyGraph/wireObjectGraph.html">wireObjectGraph()</a>
+                — Returns an Injector that will allow the creation of the dependencies that Labrador needs out-of-the-box.</li>
+          </ul>
+        </div>
+        <h2 id="history">History</h2>
+        <ul class="styled history">
+          <li>
+            <h3>2019-06-15T15:28:41+00:00 (commit #<span title="ca5efa0945ecb7c1308d2cb34fba342524888d57">ca5efa0</span>)</h3>
+            <div>
+              <p>
+                        Author: Charles Sprayberry (me@cspray.io) /
+                        Commiter: Charles Sprayberry (me@cspray.io)
+                    </p>
+              <pre class="wrapped">work on doc normalization</pre>
+            </div>
+          </li>
+          <li>
+            <h3>2019-06-02T09:13:29+00:00 (commit #<span title="b81c7aad8a220e05f90da9ea69cf756279970259">b81c7aa</span>)</h3>
+            <div>
+              <p>
+                        Author: Charles Sprayberry (me@cspray.io) /
+                        Commiter: Charles Sprayberry (me@cspray.io)
+                    </p>
+              <pre class="wrapped">finish with Pluggable rework, get tests running _not passing_</pre>
+            </div>
+          </li>
+          <li>
+            <h3>2019-02-16T06:03:07+00:00 (commit #<span title="d4460b1da5908a9f5d5a68eb521e89f2c821075e">d4460b1</span>)</h3>
+            <div>
+              <p>
+                        Author: Charles (cspray@users.noreply.github.com) /
+                        Commiter: GitHub (cspray@users.noreply.github.com)
+                    </p>
+              <pre class="wrapped">fix improper names, remove unneeded stuff, update async-event (#73)
+
+* fix improper names, remove unneeded stuff, update async-event
+
+* add removing filp/whoops, add injector not shared anymore</pre>
+            </div>
+          </li>
+          <li>
+            <h3>2019-02-10T18:50:33+00:00 (commit #<span title="737528f9dce623d7498a3bc5dc227f27b0d3d0ea">737528f</span>)</h3>
+            <div>
+              <p>
+                        Author: Charles (cspray@users.noreply.github.com) /
+                        Commiter: GitHub (cspray@users.noreply.github.com)
+                    </p>
+              <pre class="wrapped">Implement coding standard (#70)
+
+* use labrador-coding-standard from packagist, fix test dir
+
+* fix php coding sniffer errors, add labrador-cs to ci build</pre>
+            </div>
+          </li>
+          <li>
+            <h3>2018-01-14T15:26:37+00:00 (commit #<span title="a153b03ffa7abc9a292405993153efafaf25ebb6">a153b03</span>)</h3>
+            <div>
+              <p>
+                        Author: Charles (cspray@users.noreply.github.com) /
+                        Commiter: GitHub (cspray@users.noreply.github.com)
+                    </p>
+              <pre class="wrapped">Refactor amp (#65)
+
+* all the changes to 3.0 and async goodness
+
+* update changelog to reflect more appropriate version
+
+* fix example application</pre>
+            </div>
+          </li>
+          <li>
+            <h3>2016-02-14T16:36:09+00:00 (commit #<span title="698cca497789932d3867fe67906fd57a58f0dce0">698cca4</span>)</h3>
+            <div>
+              <p>
+                        Author: Charles Sprayberry (cspray@gmail.com) /
+                        Commiter: Charles Sprayberry (cspray@gmail.com)
+                    </p>
+              <pre class="wrapped">Add ability to register custom events in factory</pre>
+            </div>
+          </li>
+          <li>
+            <h3>2016-01-14T02:55:49+00:00 (commit #<span title="53387451a7680341be72843c31b5dc21413e4fe4">5338745</span>)</h3>
+            <div>
+              <p>
+                        Author: Charles Sprayberry (cspray@gmail.com) /
+                        Commiter: Charles Sprayberry (cspray@gmail.com)
+                    </p>
+              <pre class="wrapped">cleanup uses</pre>
+            </div>
+          </li>
+          <li>
+            <h3>2015-12-18T03:26:05+00:00 (commit #<span title="edb06cb737805206d1cb70b7c3a04bdedfd26d33">edb06cb</span>)</h3>
+            <div>
+              <p>
+                        Author: Charles Sprayberry (cspray@gmail.com) /
+                        Commiter: Charles Sprayberry (cspray@gmail.com)
+                    </p>
+              <pre class="wrapped">mv psr0 psr4</pre>
+            </div>
+          </li>
+          <li>
+            <h3>2015-12-18T03:20:55+00:00 (commit #<span title="e86579951ebc28c028e07a5f7d6c5a0c8a91f4af">e865799</span>)</h3>
+            <div>
+              <p>
+                        Author: Charles Sprayberry (cspray@gmail.com) /
+                        Commiter: Charles Sprayberry (cspray@gmail.com)
+                    </p>
+              <pre class="wrapped">remove dependency on environment</pre>
+            </div>
+          </li>
+          <li>
+            <h3>2015-08-17T04:10:23+00:00 (commit #<span title="16465dbb5718ee561132db66cde10c52a33b664d">16465db</span>)</h3>
+            <div>
+              <p>
+                        Author: Charles Sprayberry (cspray@gmail.com) /
+                        Commiter: Charles Sprayberry (cspray@gmail.com)
+                    </p>
+              <pre class="wrapped">fix broken tests from tellers upgrade</pre>
+            </div>
+          </li>
+          <li>
+            <h3>2015-08-17T01:46:35+00:00 (commit #<span title="ff59cc71d38c7587408969fa39f03a219e2fe083">ff59cc7</span>)</h3>
+            <div>
+              <p>
+                        Author: Charles Sprayberry (cspray@gmail.com) /
+                        Commiter: Charles Sprayberry (cspray@gmail.com)
+                    </p>
+              <pre class="wrapped">more event updates</pre>
+            </div>
+          </li>
+          <li>
+            <h3>2015-08-17T01:31:36+00:00 (commit #<span title="13defaf736add551aa82dea930a20b09a7d79237">13defaf</span>)</h3>
+            <div>
+              <p>
+                        Author: Charles Sprayberry (cspray@gmail.com) /
+                        Commiter: Charles Sprayberry (cspray@gmail.com)
+                    </p>
+              <pre class="wrapped">refactor to use league/event</pre>
+            </div>
+          </li>
+          <li>
+            <h3>2015-08-07T01:53:25+00:00 (commit #<span title="33ff1c772f2c6c853b15b5d7ea9e376e1dcf2e21">33ff1c7</span>)</h3>
+            <div>
+              <p>
+                        Author: Charles Sprayberry (charles@designbook.com) /
+                        Commiter: Charles Sprayberry (charles@designbook.com)
+                    </p>
+              <pre class="wrapped">move labrador to cspray namespace</pre>
+            </div>
+          </li>
+          <li>
+            <h3>2015-07-26T20:01:00+00:00 (commit #<span title="57151f22db3d5993d6ea9d496e02d823e224c500">57151f2</span>)</h3>
+            <div>
+              <p>
+                        Author: Charles Sprayberry (charles@designbook.com) /
+                        Commiter: Charles Sprayberry (charles@designbook.com)
+                    </p>
+              <pre class="wrapped">add telluris integration</pre>
+            </div>
+          </li>
+          <li>
+            <h3>2015-07-19T04:23:57+00:00 (commit #<span title="b1979e56732dee7178ae4b66011f797bbde6a338">b1979e5</span>)</h3>
+            <div>
+              <p>
+                        Author: Charles Sprayberry (charles@designbook.com) /
+                        Commiter: Charles Sprayberry (charles@designbook.com)
+                    </p>
+              <pre class="wrapped">move PluginManager to root namespace</pre>
+            </div>
+          </li>
+          <li>
+            <h3>2015-07-18T14:48:30+00:00 (commit #<span title="985ef4193e927049cd47d08a2642eb69a0f77dc1">985ef41</span>)</h3>
+            <div>
+              <p>
+                        Author: Charles Sprayberry (charles@designbook.com) /
+                        Commiter: Charles Sprayberry (charles@designbook.com)
+                    </p>
+              <pre class="wrapped">clean up docs</pre>
+            </div>
+          </li>
+        </ul>
+      </section>
+    </div>
+    <footer>
+      <span>Generated using phpDox 0.12.0-dev - Copyright (C) 2010 - 2019 by Arne Blankerts and Contributors</span>
+    </footer>
+  </body>
+</html>
