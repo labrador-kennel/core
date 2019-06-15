@@ -224,5 +224,4 @@ final class PluginManager implements Pluggable {
             }
         });
     }
-
 }

@@ -29,5 +29,4 @@ interface EventAwarePlugin extends Plugin {
      * @return void
      */
     public function removeEventListeners(Emitter $emitter) : void;
-
 }

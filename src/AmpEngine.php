@@ -98,5 +98,4 @@ class AmpEngine implements Engine {
         $promise = $this->emitter->emit($event);
         return $promise;
     }
-
 }

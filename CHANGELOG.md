@@ -1,6 +1,6 @@
 # Changelog
 
-## 3.0.0-beta5 2019-07-??
+## 3.0.0-beta5 2019-??-??
 
 This release represents a major refactor to the Plugin system in an attempt to make the more common use 
 case easier to facilitate and to provide more async support for Plugins.
@@ -42,6 +42,8 @@ provided before the Plugin is instantiated.
 - Changed the Plugin loading process such that a Plugin dependency does not need to be registered 
 to complete the loading process. The Plugin dependency need only be able to be instantiated by the 
 Injector.
+- Changed the name of the `Engine::APP_CLEANUP_EVENT` -> `Engine::ENGINE_SHUTDOWN_EVENT` to be more 
+semantic with its counterpart.
 
 #### Removed
 

@@ -161,7 +161,8 @@ class AmpEngineTest extends UnitTestCase {
      * @dataProvider eventEmitterProxyData
      */
     public function testProxyToEventEmitter($method, $event) {
-        $cb = function() {};
+        $cb = function() {
+        };
         $engine = $this->getEngine($this->emitter);
         $engine->$method($cb);
 
@@ -228,5 +229,4 @@ class AmpEngineTest extends UnitTestCase {
         $actual = $this->getEngine()->getEmitter();
         $this->assertSame($this->emitter, $actual);
     }
-
 }

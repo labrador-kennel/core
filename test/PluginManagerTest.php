@@ -186,12 +186,18 @@ class PluginManagerTest extends AsyncTestCase {
         $manager = $this->getPluginManager();
         $manager->registerPlugin(PluginStub::class);
         $actual = new stdClass();
-        $manager->registerPluginRemoveHandler(PluginStub::class, function(PluginStub $pluginStub, int $a, bool $b, array $c) use($actual) {
-            $actual->plugin = $pluginStub;
-            $actual->a = $a;
-            $actual->b = $b;
-            $actual->c = $c;
-        }, 1, true, [2,3,4]);
+        $manager->registerPluginRemoveHandler(
+            PluginStub::class,
+            function(PluginStub $pluginStub, int $a, bool $b, array $c) use($actual) {
+                $actual->plugin = $pluginStub;
+                $actual->a = $a;
+                $actual->b = $b;
+                $actual->c = $c;
+            },
+            1,
+            true,
+            [2,3,4]
+        );
 
         yield $manager->loadPlugins();
 
@@ -217,12 +223,18 @@ class PluginManagerTest extends AsyncTestCase {
 
         $manager->registerPlugin(CustomPluginStub::class);
 
-        $manager->registerPluginRemoveHandler(CustomPluginStub::class, function(CustomPluginStub $fooPluginStub) {
-            $fooPluginStub->myCustomPlugin();
-        });
-        $manager->registerPluginRemoveHandler(CustomPluginStub::class, function(CustomPluginStub $fooPluginStub) {
-            $fooPluginStub->myCustomPlugin();
-        });
+        $manager->registerPluginRemoveHandler(
+            CustomPluginStub::class,
+            function(CustomPluginStub $fooPluginStub) {
+                $fooPluginStub->myCustomPlugin();
+            }
+        );
+        $manager->registerPluginRemoveHandler(
+            CustomPluginStub::class,
+            function(CustomPluginStub $fooPluginStub) {
+                $fooPluginStub->myCustomPlugin();
+            }
+        );
 
         yield $manager->loadPlugins();
 
@@ -233,11 +245,14 @@ class PluginManagerTest extends AsyncTestCase {
 
     public function correctPluginMethodsCalledProvider() {
         return [
-            [new BootCalledPlugin(), function(BootCalledPlugin $plugin) { return $plugin->wasCalled(); }],
+            [new BootCalledPlugin(), function(BootCalledPlugin $plugin) { return $plugin->wasCalled();
+            }],
             [new ServicesRegisteredPlugin(), function(ServicesRegisteredPlugin $plugin) {
                 return $plugin->wasCalled();
             }],
-            [new EventsRegisteredPlugin(), function(EventsRegisteredPlugin $plugin) { return $plugin->wasRegisterCalled(); }]
+            [new EventsRegisteredPlugin(), function(EventsRegisteredPlugin $plugin) {
+                return $plugin->wasRegisterCalled();
+            }]
         ];
     }
 
@@ -696,5 +711,4 @@ class PluginManagerTest extends AsyncTestCase {
 
         $this->assertSame(3, $actual->counter);
     }
-
 }
