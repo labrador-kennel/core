@@ -1,4 +1,4 @@
-<?php
+<?php declare(strict_types=1);
 
 /**
  *
@@ -15,21 +15,19 @@ use Cspray\Labrador\Application;
 use Cspray\Labrador\Engine;
 use Cspray\Labrador\AmpEngine;
 use Cspray\Labrador\Exception\InvalidStateException;
-use Cspray\Labrador\Plugin\PluginManager;
 use Cspray\Labrador\Exception\Exception;
-use Cspray\Labrador\Test\Stub\CallbackApplication;
-use Cspray\Labrador\Test\Stub\CustomPluginStub;
-use Cspray\Labrador\Test\Stub\ExceptionHandlerApplication;
+use Cspray\Labrador\Exceptions;
+use Cspray\Labrador\CallbackApplication;
+use Cspray\Labrador\Plugin\Pluggable;
+use Cspray\Labrador\Test\Stub\LoadPluginCalledApplication;
 use Cspray\Labrador\Test\Stub\NoopApplication;
-use Cspray\Labrador\Test\Stub\PluginStub;
-use Cspray\Labrador\Test\Stub\BootCalledPlugin;
 use Auryn\Injector;
 use Cspray\Labrador\AsyncEvent\AmpEmitter;
 use Cspray\Labrador\AsyncEvent\Emitter;
-use Cspray\Labrador\AsyncEvent\AmpEmitter as EventEmitter;
 use Cspray\Labrador\AsyncEvent\Event;
-use Cspray\Labrador\Test\Stub\ExtraEventEmitArgs;
 use PHPUnit\Framework\TestCase as UnitTestCase;
+use Psr\Log\Test\TestLogger;
+use RuntimeException;
 
 class AmpEngineTest extends UnitTestCase {
 
@@ -42,14 +40,22 @@ class AmpEngineTest extends UnitTestCase {
      */
     private $injector;
 
+    /**
+     * @var TestLogger
+     */
+    private $logger;
+
     public function setUp() {
         $this->injector = new Injector();
         $this->emitter = new AmpEmitter();
+        $this->logger = new TestLogger();
     }
 
     private function getEngine(Emitter $eventEmitter = null) : AmpEngine {
         $emitter = $eventEmitter ?: $this->emitter;
-        return new AmpEngine($emitter);
+        $engine = new AmpEngine($emitter);
+        $engine->setLogger($this->logger);
+        return $engine;
     }
 
     private function noopApp() : Application {
@@ -57,11 +63,15 @@ class AmpEngineTest extends UnitTestCase {
     }
 
     private function callbackApp(callable $callback) : Application {
-        return new CallbackApplication($callback);
+        $pluggable = $this->getMockBuilder(Pluggable::class)->getMock();
+        $pluggable->expects($this->once())->method('loadPlugins')->willReturn(new Success());
+        return new CallbackApplication($pluggable, $callback);
     }
 
     private function exceptionHandlerApp(callable $appCallback, callable $handler) : Application {
-        return new ExceptionHandlerApplication($appCallback, $handler);
+        $pluggable = $this->getMockBuilder(Pluggable::class)->getMock();
+        $pluggable->expects($this->once())->method('loadPlugins')->willReturn(new Success());
+        return new CallbackApplication($pluggable, $appCallback, $handler);
     }
 
     public function testEventsExecutedInOrder() {
@@ -152,8 +162,8 @@ class AmpEngineTest extends UnitTestCase {
 
     public function eventEmitterProxyData() {
         return [
-            ['onEngineBootup', Engine::ENGINE_BOOTUP_EVENT],
-            ['onEngineShutdown', Engine::ENGINE_SHUTDOWN_EVENT]
+            ['onEngineBootup', Engine::START_UP_EVENT],
+            ['onEngineShutdown', Engine::SHUT_DOWN_EVENT]
         ];
     }
 
@@ -174,7 +184,7 @@ class AmpEngineTest extends UnitTestCase {
     public function testAppCleanupEventHasCorrectTarget() {
         $data = new \stdClass();
         $data->data = null;
-        $this->emitter->on(Engine::ENGINE_SHUTDOWN_EVENT, function(Event $event) use($data) {
+        $this->emitter->on(Engine::SHUT_DOWN_EVENT, function(Event $event) use($data) {
             $data->data = $event->target();
         });
 
@@ -198,9 +208,26 @@ class AmpEngineTest extends UnitTestCase {
         };
         $app = $this->exceptionHandlerApp($appCb, $handlerCb);
         $engine->run($app);
-
         $this->assertInstanceOf(InvalidStateException::class, $data->data);
-        $this->assertSame('Engine::run() MUST NOT be called while already running.', $data->data->getMessage());
+        $this->assertSame(Engine::class . '::run MUST NOT be called while already running.', $data->data->getMessage());
+        $this->assertSame(Exceptions::ENGINE_ERR_MULTIPLE_RUN_CALLS, $data->data->getCode());
+    }
+
+    public function testEngineStateBeforeRunIsIdle() {
+        $engine = $this->getEngine();
+        $this->assertSame(Engine::IDLE_STATE, $engine->getState());
+    }
+
+    public function testEngineStateDuringRunIsRunning() {
+        $engine = $this->getEngine();
+        $data = new \stdClass();
+        $app = $this->callbackApp(function() use($engine, $data) {
+            $data->state = $engine->getState();
+        });
+
+        $engine->run($app);
+
+        $this->assertSame(Engine::RUNNING_STATE, $data->state);
     }
 
     public function testEngineStateAfterRunIsIdle() {
@@ -208,13 +235,24 @@ class AmpEngineTest extends UnitTestCase {
         $app = new NoopApplication();
         $engine->run($app);
 
-        $this->assertAttributeSame('idle', 'engineState', $engine);
+        $this->assertSame(Engine::IDLE_STATE, $engine->getState());
+    }
+
+    public function testEngineStateAfterExceptionIsCrashed() {
+        $app = $this->callbackApp(
+            function() { throw new RuntimeException('foobar', 42);}, function($err) { }
+        );
+        $engine = $this->getEngine();
+
+        $engine->run($app);
+
+        $this->assertSame(Engine::CRASHED_STATE, $engine->getState());
     }
 
     public function testEngineBootupEventCalledOnceOnMultipleRunCalls() {
         $data = new \stdClass();
         $data->data = [];
-        $this->emitter->on(Engine::ENGINE_BOOTUP_EVENT, function() use($data) {
+        $this->emitter->on(Engine::START_UP_EVENT, function() use($data) {
             $data->data[] = 1;
         });
 
@@ -229,4 +267,106 @@ class AmpEngineTest extends UnitTestCase {
         $actual = $this->getEngine()->getEmitter();
         $this->assertSame($this->emitter, $actual);
     }
+
+    public function testApplicationLoadPluginsCalled() {
+        $pluggable = $this->getMockBuilder(Pluggable::class)->getMock();
+        $app = new LoadPluginCalledApplication($pluggable, function() {});
+
+        $this->getEngine()->run($app);
+
+        $expected = ['load', 'execute'];
+
+        $this->assertSame($expected, $app->callOrder(), 'Expected the Application::loadPlugins to be called before Application::execute');
+    }
+
+    public function testLogMessagesOnSuccessfulApplicationRunNoPlugins() {
+        $app = new NoopApplication();
+        $engine = $this->getEngine();
+        $engine->run($app);
+
+        $expectedRecords = [
+            [
+                'level' => 'info',
+                'message' => 'Starting Plugin loading process.',
+                'context' => []
+            ],
+            [
+                'level' => 'info',
+                'message' => 'Completed Plugin loading process.',
+                'context' => []
+            ],
+            [
+                'level' => 'info',
+                'message' => 'Starting Application process.',
+                'context' => []
+            ],
+            [
+                'level' => 'info',
+                'message' => 'Completed Application process.',
+                'context' => []
+            ],
+            [
+                'level' => 'info',
+                'message' => 'Starting Application cleanup process.',
+                'context' => []
+            ],
+            [
+                'level' => 'info',
+                'message' => 'Completed Application cleanup process. Engine shutting down.',
+                'context' => []
+            ]
+        ];
+
+        $this->assertSame($expectedRecords, $this->logger->records);
+    }
+
+    public function testLogMessagesOnSuccessfulApplicationRunWithPlugins() {
+        $app = $this->exceptionHandlerApp(
+            function() { throw new RuntimeException('foobar', 42);}, function($err) { }
+        );
+        $lineNum = __LINE__ - 2;
+        $engine = $this->getEngine();
+
+        try {
+            $engine->run($app);
+        } catch (RuntimeException $runtimeException) {
+            $this->assertSame('foobar', $runtimeException->getMessage());
+        }
+
+        $expectedRecords = [
+            [
+                'level' => 'info',
+                'message' => 'Starting Plugin loading process.',
+                'context' => []
+            ],
+            [
+                'level' => 'info',
+                'message' => 'Completed Plugin loading process.',
+                'context' => []
+            ],
+            [
+                'level' => 'info',
+                'message' => 'Starting Application process.',
+                'context' => []
+            ],
+            [
+                'level' => 'alert',
+                'message' => 'The Application threw an exception: ' . RuntimeException::class . ' "foobar"',
+                'context' => ['file' => __FILE__, 'line' => $lineNum]
+            ],
+            [
+                'level' => 'info',
+                'message' => 'Starting Application cleanup process.',
+                'context' => []
+            ],
+            [
+                'level' => 'info',
+                'message' => 'Completed Application cleanup process. Engine shutting down.',
+                'context' => []
+            ]
+        ];
+
+        $this->assertSame($expectedRecords, $this->logger->records);
+    }
+
 }

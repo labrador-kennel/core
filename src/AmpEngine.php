@@ -7,6 +7,7 @@ use Cspray\Labrador\AsyncEvent\EventFactory;
 use Cspray\Labrador\AsyncEvent\StandardEventFactory;
 use Cspray\Labrador\Exception\InvalidStateException;
 use Amp\Loop;
+use Psr\Log\LoggerAwareTrait;
 
 /**
  * An implementation of the Engine interface running on the global amphp Loop.
@@ -16,9 +17,11 @@ use Amp\Loop;
  */
 class AmpEngine implements Engine {
 
+    use LoggerAwareTrait;
+
     private $emitter;
     private $eventFactory;
-    private $engineState = 'idle';
+    private $engineState = self::IDLE_STATE;
     private $engineBooted = false;
 
     public function __construct(
@@ -27,6 +30,10 @@ class AmpEngine implements Engine {
     ) {
         $this->emitter = $emitter;
         $this->eventFactory = $eventFactory ?? new StandardEventFactory();
+    }
+
+    public function getState() : string {
+        return $this->engineState;
     }
 
     public function getEmitter() : Emitter {
@@ -39,7 +46,7 @@ class AmpEngine implements Engine {
      * @return AmpEngine
      */
     public function onEngineBootup(callable $cb, array $listenerData = []) : self {
-        $this->emitter->on(self::ENGINE_BOOTUP_EVENT, $cb, $listenerData);
+        $this->emitter->on(self::START_UP_EVENT, $cb, $listenerData);
         return $this;
     }
 
@@ -49,7 +56,7 @@ class AmpEngine implements Engine {
      * @return $this
      */
     public function onEngineShutdown(callable $cb, array $listenerData = []) : self {
-        $this->emitter->on(self::ENGINE_SHUTDOWN_EVENT, $cb, $listenerData);
+        $this->emitter->on(self::SHUT_DOWN_EVENT, $cb, $listenerData);
         return $this;
     }
 
@@ -59,42 +66,66 @@ class AmpEngine implements Engine {
      * @throws InvalidStateException
      */
     public function run(Application $application) : void {
-        if ($this->engineState !== 'idle') {
-            throw new InvalidStateException('Engine::run() MUST NOT be called while already running.');
+        if ($this->engineState !== self::IDLE_STATE) {
+            /** @var InvalidStateException $exception */
+            $exception = Exceptions::createException(
+                Exceptions::ENGINE_ERR_MULTIPLE_RUN_CALLS,
+                null
+            );
+            throw $exception;
         }
 
         Loop::setErrorHandler(function(\Throwable $error) use($application) {
+            $this->logger->alert(
+                sprintf(
+                    'The Application threw an exception: %s "%s"',
+                    get_class($error),
+                    $error->getMessage()
+                ),
+                ['file' => $error->getFile(), 'line' => $error->getLine()]
+            );
             $application->exceptionHandler($error);
             Loop::defer(function() use($application) {
-                yield $this->emitAppCleanupEvent($application);
+                $this->logger->info('Starting Application cleanup process.');
+                yield $this->emitEngineShutDownEvent($application);
+                $this->logger->info('Completed Application cleanup process. Engine shutting down.');
+                $this->engineState = self::CRASHED_STATE;
             });
         });
 
-        $this->emitter->once(self::ENGINE_BOOTUP_EVENT, function() {
-        });
 
         Loop::run(function() use($application) {
-            $this->engineState = 'running';
+            $this->engineState = self::RUNNING_STATE;
 
+            $this->emitter->once(self::START_UP_EVENT, function() use($application) {
+                $this->logger->info('Starting Plugin loading process.');
+                yield $application->loadPlugins();
+                $this->logger->info('Completed Plugin loading process.');
+            });
 
             if (!$this->engineBooted) {
-                yield $this->emitEngineBootupEvent();
+                yield $this->emitEngineStartUpEvent();
                 $this->engineBooted = true;
             }
 
+            $this->logger->info('Starting Application process.');
             yield $application->execute();
-            yield $this->emitAppCleanupEvent($application);
-            $this->engineState = 'idle';
+            $this->logger->info('Completed Application process.');
+
+            $this->logger->info('Starting Application cleanup process.');
+            yield $this->emitEngineShutDownEvent($application);
+            $this->logger->info('Completed Application cleanup process. Engine shutting down.');
+            $this->engineState = self::IDLE_STATE;
         });
     }
 
-    private function emitEngineBootupEvent() {
-        $event = $this->eventFactory->create(self::ENGINE_BOOTUP_EVENT, $this);
+    private function emitEngineStartUpEvent() {
+        $event = $this->eventFactory->create(self::START_UP_EVENT, $this);
         return $this->emitter->emit($event);
     }
 
-    private function emitAppCleanupEvent(Application $application) {
-        $event = $this->eventFactory->create(self::ENGINE_SHUTDOWN_EVENT, $application);
+    private function emitEngineShutDownEvent(Application $application) {
+        $event = $this->eventFactory->create(self::SHUT_DOWN_EVENT, $application);
         $promise = $this->emitter->emit($event);
         return $promise;
     }

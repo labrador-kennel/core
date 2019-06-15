@@ -1,0 +1,12 @@
+{
+  "labrador": {
+    "logging": {
+      "name": "test-env",
+      "outputPath": "php://stdout"
+    },
+    "injectorProviderPath": "file://yadda/yadda",
+    "plugins": [
+      "Cspray\\Labrador\\Test\\Stub\\PluginStub"
+    ]
+  }
+}

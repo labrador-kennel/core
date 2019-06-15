@@ -5,7 +5,9 @@ Ensures basic integration works
 
 require_once dirname(dirname(__DIR__)) . '/vendor/autoload.php';
 
-$injector = (new \Cspray\Labrador\DependencyGraph())->wireObjectGraph();
+$logger = new \Monolog\Logger('app-integration-test');
+$logger->pushHandler(new \Monolog\Handler\NullHandler());
+$injector = (new \Cspray\Labrador\DependencyGraph($logger))->wireObjectGraph();
 $engine = $injector->make(\Cspray\Labrador\Engine::class);
 
 $engine->onEngineBootup(function() {
@@ -15,17 +17,18 @@ $engine->onEngineBootup(function() {
     echo "shutdown";
 });
 
-$app = new \Cspray\Labrador\Test\Stub\ExceptionHandlerApplication(
-    function() {
+$app = $injector->make(\Cspray\Labrador\CallbackApplication::class, [
+    'pluggable' => \Cspray\Labrador\Plugin\PluginManager::class,
+    ':executeHandler' => function() {
         echo "oops in app\n";
         throw new RuntimeException('exception in app');
     },
-    function(Throwable $event) {
+    ':exceptionHandler' => function(Throwable $event) {
         $exc = get_class($event);
         echo "handle {$exc}\n";
     }
-);
 
+]);
 
 $engine->run($app);
 ?>

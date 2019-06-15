@@ -3,14 +3,13 @@
 namespace Cspray\Labrador\Plugin;
 
 use Amp\Promise;
-use Cspray\Labrador\Exception\InvalidStateException;
-use Cspray\Labrador\Exception\CircularDependencyException;
-use Cspray\Labrador\Exception\InvalidArgumentException;
-use Cspray\Labrador\Exception\NotFoundException;
 use Cspray\Labrador\AsyncEvent\Emitter;
 use Auryn\Injector;
 
 use function Amp\call;
+use Cspray\Labrador\Exceptions;
+use Psr\Log\LoggerAwareInterface;
+use Psr\Log\LoggerAwareTrait;
 
 /**
  * De facto Pluggable implementation that manages the lifecycle of Plugins for all out-of-the-box Applications.
@@ -27,7 +26,9 @@ use function Amp\call;
  * @package Cspray\Labrador\Plugin
  * @license See LICENSE in source root
  */
-final class PluginManager implements Pluggable {
+final class PluginManager implements Pluggable, LoggerAwareInterface {
+
+    use LoggerAwareTrait;
 
     private $emitter;
     private $injector;
@@ -37,7 +38,7 @@ final class PluginManager implements Pluggable {
     private $removeHandlers = [];
     private $loading = [];
 
-    private $pluginsBooted = false;
+    private $pluginsLoaded = false;
 
     public function __construct(Injector $injector, Emitter $emitter) {
         $this->injector = $injector;
@@ -49,31 +50,55 @@ final class PluginManager implements Pluggable {
     }
 
     public function registerPlugin(string $plugin) : void {
+        if ($exception = $this->guardRegisterPluginIsValid($plugin)) {
+            throw $exception;
+        }
+        $this->plugins[$plugin] = null;
+        $this->logger->info(sprintf('Registered Plugin "%s".', $plugin));
+    }
+
+    private function guardRegisterPluginIsValid(string $plugin) : ?\Throwable {
         if ($this->hasPluginBeenRegistered($plugin)) {
-            $msg = "A Plugin with name $plugin has already been registered and may not be registered again.";
-            throw new InvalidArgumentException($msg);
+            return Exceptions::createException(
+                Exceptions::PLUGIN_ERR_HAS_BEEN_REGISTERED,
+                null,
+                $plugin
+            );
         }
 
-        if ($this->pluginsBooted) {
-            $msg = 'Plugins have already been loaded and you MUST NOT register plugins after this has taken place.';
-            throw new InvalidStateException($msg);
+        if ($this->pluginsLoaded) {
+            return Exceptions::createException(
+                Exceptions::PLUGIN_ERR_REGISTER_PLUGIN_POSTLOAD,
+                null
+            );
         }
 
         $implementedTypes = class_implements($plugin);
         if (!in_array(Plugin::class, $implementedTypes)) {
-            $msg = 'Attempted to register a Plugin that does not implement the ' . Plugin::class . ' interface';
-            throw new InvalidArgumentException($msg);
+            return Exceptions::createException(
+                Exceptions::PLUGIN_ERR_REGISTER_NOT_PLUGIN_TYPE,
+                null,
+                $plugin
+            );
         }
 
-        $this->plugins[$plugin] = null;
+        return null;
     }
 
-    public function loadPlugins(): Promise {
+    public function loadPlugins() : Promise {
         return call(function() {
+            $this->logger->info(sprintf(
+                'Initiating Plugin loading. Loading %d registered Plugins, not including dependencies.',
+                count($this->plugins)
+            ));
             foreach ($this->getRegisteredPlugins() as $pluginName) {
                 yield $this->loadPlugin($pluginName);
             }
-            $this->pluginsBooted = true;
+            $this->logger->info(sprintf(
+                'Finished loading %d Plugins, including dependencies.',
+                count($this->plugins)
+            ));
+            $this->pluginsLoaded = true;
         });
     }
 
@@ -92,6 +117,7 @@ final class PluginManager implements Pluggable {
                 }
             }
         }
+        $this->logger->info(sprintf('Removed Plugin "%s".', $name));
         unset($this->plugins[$name]);
     }
 
@@ -104,18 +130,25 @@ final class PluginManager implements Pluggable {
     }
 
     public function havePluginsLoaded() : bool {
-        return $this->pluginsBooted;
+        return $this->pluginsLoaded;
     }
 
     public function getLoadedPlugin(string $name) : Plugin {
         if (!array_key_exists($name, $this->plugins)) {
-            $msg = 'Could not find a registered plugin named "%s"';
-            throw new NotFoundException(sprintf($msg, $name));
+            $exception = Exceptions::createException(
+                Exceptions::PLUGIN_ERR_PLUGIN_NOT_FOUND,
+                null,
+                $name
+            );
+            throw $exception;
         }
 
         if (!isset($this->plugins[$name])) {
-            $msg = 'A loaded Plugin may only be gathered after ' . Pluggable::class . '::loadPlugins invoked';
-            throw new InvalidStateException($msg);
+            $exception = Exceptions::createException(
+                Exceptions::PLUGIN_ERR_INVALID_PLUGIN_ACCESS_PRELOAD,
+                null
+            );
+            throw $exception;
         }
 
         return $this->plugins[$name];
@@ -123,8 +156,11 @@ final class PluginManager implements Pluggable {
 
     public function getLoadedPlugins() : array {
         if (!$this->havePluginsLoaded()) {
-            $msg = 'Loaded plugins may only be gathered after ' . Pluggable::class . '::loadPlugins invoked';
-            throw new InvalidStateException($msg);
+            $exception = Exceptions::createException(
+                Exceptions::PLUGIN_ERR_INVALID_PLUGIN_ACCESS_PRELOAD,
+                null
+            );
+            throw $exception;
         }
         return array_values($this->plugins);
     }
@@ -155,10 +191,12 @@ final class PluginManager implements Pluggable {
     }
 
     private function startLoading(string $plugin) {
+        $this->logger->info(sprintf('Starting to load %s.', $plugin));
         $this->loading[] = $plugin;
     }
 
     private function finishLoading(Plugin $plugin) {
+        $this->logger->info(sprintf('Finished loading %s.', get_class($plugin)));
         $name = get_class($plugin);
         $this->loading = array_diff($this->loading, [$name]);
         $this->plugins[$name] = $plugin;
@@ -173,34 +211,63 @@ final class PluginManager implements Pluggable {
             $implementedTypes = class_implements($plugin);
             if (in_array(PluginDependentPlugin::class, $implementedTypes)) {
                 foreach (call_user_func([$plugin, 'dependsOn']) as $reqPluginName) {
-                    if ($this->isLoading($reqPluginName)) {
-                        $msg = 'A circular dependency was found with %s requiring %s.';
-                        $msg = sprintf($msg, $plugin, $reqPluginName);
-                        throw new CircularDependencyException($msg);
+                    if ($exception = $this->guardLoadingValidPluginDependency($plugin, $reqPluginName)) {
+                        throw $exception;
                     }
 
-                    $dependencyTypes = class_implements($reqPluginName);
-                    if (!in_array(Plugin::class, $dependencyTypes)) {
-                        $msg = 'A Plugin, ' . $plugin . ', depends on a ';
-                        $msg .= 'type, ' . $reqPluginName . ', that does not implement ' . Plugin::class;
-                        throw new InvalidStateException($msg);
-                    }
-
-
+                    $this->logger->info(sprintf(
+                         'Loading dependencies for %s.',
+                        $plugin
+                    ));
                     yield $this->loadPlugin($reqPluginName);
+                    $this->logger->info(sprintf(
+                        'Finished loading dependencies for %s.',
+                        $plugin
+                    ));
                 }
             }
         });
     }
 
+    private function guardLoadingValidPluginDependency(string $plugin, string $reqPluginName) : ?\Throwable {
+        if ($this->isLoading($reqPluginName)) {
+            return Exceptions::createException(
+                Exceptions::PLUGIN_ERR_CIRCULAR_DEPENDENCY,
+                null,
+                $plugin,
+                $reqPluginName
+            );
+        }
+
+        $dependencyTypes = class_implements($reqPluginName);
+        if (!in_array(Plugin::class, $dependencyTypes)) {
+            return Exceptions::createException(
+                Exceptions::PLUGIN_ERR_DEPENDENCY_NOT_PLUGIN_TYPE,
+                null,
+                $plugin,
+                $reqPluginName
+            );
+        }
+
+        return null;
+    }
+
     private function handlePluginServices(Plugin $plugin) {
         if ($plugin instanceof InjectorAwarePlugin) {
+            $this->logger->info(sprintf(
+                'Wiring object graph for %s.',
+                get_class($plugin)
+            ));
             $plugin->wireObjectGraph($this->injector);
         }
     }
 
     private function handlePluginEvents(Plugin $plugin) {
         if ($plugin instanceof EventAwarePlugin) {
+            $this->logger->info(sprintf(
+                'Registering event listeners for %s.',
+                get_class($plugin)
+            ));
             $plugin->registerEventListeners($this->emitter);
         }
     }
@@ -209,9 +276,19 @@ final class PluginManager implements Pluggable {
         return call(function() use($plugin) {
             foreach ($this->loadHandlers as $type => $pluginHandlers) {
                 if ($plugin instanceof $type) {
+                    $pluginName = get_class($plugin);
+                    $this->logger->info(sprintf(
+                        'Found %d custom handlers for %s.',
+                        count($pluginHandlers),
+                        $pluginName
+                    ));
                     foreach ($pluginHandlers as list($pluginHandler, $pluginHandlerArgs)) {
                         yield call($pluginHandler, $plugin, ...$pluginHandlerArgs);
                     }
+                    $this->logger->info(sprintf(
+                        'Finished loading custom handlers for %s.',
+                        $pluginName
+                    ));
                 }
             }
         });
@@ -220,7 +297,16 @@ final class PluginManager implements Pluggable {
     private function bootPlugin(Plugin $plugin) : Promise {
         return call(function() use($plugin) {
             if ($plugin instanceof BootablePlugin) {
+                $pluginName = get_class($plugin);
+                $this->logger->info(sprintf(
+                    'Starting %s boot procedure.',
+                    $pluginName
+                ));
                 yield $plugin->boot();
+                $this->logger->info(sprintf(
+                    'Finished %s boot procedure.',
+                    $pluginName
+                ));
             }
         });
     }
