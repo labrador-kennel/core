@@ -1,4 +1,3 @@
-<?xml version="1.0" encoding="UTF-8" ?>
 <phpunit backupGlobals="true"
          backupStaticAttributes="false"
          bootstrap="vendor/autoload.php"
@@ -28,7 +27,7 @@
              lowUpperBound="35" highLowerBound="70" showUncoveredFiles="true" />
         <log type="coverage-xml" target="./build/logs/coverage"/>
     </logging>
-    -->
+-->
     <filter>
         <whitelist processUncoveredFilesFromWhitelist="true">
             <directory suffix=".php">./src</directory>

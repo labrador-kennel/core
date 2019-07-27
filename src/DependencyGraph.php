@@ -6,6 +6,8 @@ use Auryn\Injector;
 use Cspray\Labrador\AsyncEvent\Emitter;
 use Cspray\Labrador\AsyncEvent\AmpEmitter;
 use Cspray\Labrador\Plugin\PluginManager;
+use Psr\Log\LoggerAwareInterface;
+use Psr\Log\LoggerInterface;
 
 /**
  * An object that wires together an object graph to ensure that Labrador works out-of-the-box.
@@ -19,6 +21,12 @@ use Cspray\Labrador\Plugin\PluginManager;
  */
 final class DependencyGraph {
 
+    private $logger;
+
+    public function __construct(LoggerInterface $logger) {
+        $this->logger = $logger;
+    }
+
     /**
      * Returns an Injector that will allow the creation of the dependencies that Labrador needs out-of-the-box.
      *
@@ -31,6 +39,7 @@ final class DependencyGraph {
      * @param Injector|null $injector
      * @return Injector
      * @throws \Auryn\ConfigException
+     * @throws \Auryn\InjectionException
      */
     public function wireObjectGraph(Injector $injector = null) : Injector {
         $injector = $injector ?? new Injector();
@@ -42,8 +51,15 @@ final class DependencyGraph {
         $injector->define(PluginManager::class, [
             ':injector' => $injector
         ]);
+
         $injector->share(AmpEngine::class);
         $injector->alias(Engine::class, AmpEngine::class);
+
+        $injector->share($this->logger);
+        $injector->alias(LoggerInterface::class, get_class($this->logger));
+        $injector->prepare(LoggerAwareInterface::class, function(LoggerAwareInterface $aware) {
+            $aware->setLogger($this->logger);
+        });
 
         return $injector;
     }

@@ -1,0 +1,115 @@
+#!/usr/bin/env php
+<?php
+
+$rootDir = dirname(__DIR__);
+$workingDir = getcwd();
+
+$args = $argv;
+array_shift($args);
+$appNamespace = $args[0] ?? null;
+
+if (!$appNamespace) {
+    echo 'You MUST provide a namespace for your project when creating a Labrador app skeleton' . PHP_EOL;
+    exit(255);
+}
+
+if (!$workingDir) {
+    echo 'We could not determine the working directory and cannot safely create files' . PHP_EOL;
+    exit(255);
+}
+
+$templateRenderer = function(string $templateName, array $variables) use($rootDir) {
+    $path = $rootDir . '/resources/templates/app_skeleton/' . $templateName . '.php';
+    ob_start();
+    extract($variables);
+    include $path;
+    $contents = ob_get_clean();
+    return $contents;
+};
+
+$directories = [
+    $workingDir . '/resources/config',
+    $workingDir . '/src',
+    $workingDir . '/test'
+];
+
+foreach ($directories as $directory) {
+    if (!file_exists($directory)) {
+        mkdir($directory, 0777, true);
+    }
+}
+
+$globalTemplateVars = [
+    'appNamespace' => $appNamespace
+];
+
+$phpPrefix = '<?php declare(strict_types=1);' . PHP_EOL . PHP_EOL;
+$xmlPrefix = '<?xml version="1.0" encoding="UTF-8" ?>' . PHP_EOL;
+
+$files = [
+    [
+        'template' => 'injector_provider',
+        'outputPath' => $workingDir . '/resources/config/injector_provider.php',
+        'variables' => $globalTemplateVars,
+        'prefix' => $phpPrefix
+    ],
+    [
+        'template' => 'xml_configuration',
+        'outputPath' => $workingDir . '/resources/config/labrador_configuration.xml',
+        'variables' => array_merge([], $globalTemplateVars, [
+            'appNamespace' => str_replace('\\', '.', $appNamespace),
+            'injectorProviderPath' => 'resources/config/injector_provider.php'
+        ]),
+        'prefix' => $xmlPrefix
+    ],
+    [
+        'template' => 'application',
+        'outputPath' => $workingDir . '/src/Application.php',
+        'variables' => $globalTemplateVars,
+        'prefix' => $phpPrefix
+    ],
+    [
+        'template' => 'application_test',
+        'outputPath' => $workingDir . '/test/ApplicationTest.php',
+        'variables' => $globalTemplateVars,
+        'prefix' => $phpPrefix
+    ],
+    [
+        'template' => 'dependency_graph',
+        'outputPath' => $workingDir . '/src/DependencyGraph.php',
+        'variables' => $globalTemplateVars,
+        'prefix' => $phpPrefix
+    ],
+    [
+        'template' => 'dependency_graph_test',
+        'outputPath' => $workingDir . '/test/DependencyGraphTest.php',
+        'variables' => $globalTemplateVars,
+        'prefix' => $phpPrefix
+    ],
+    [
+        'template' => 'readme',
+        'outputPath' => $workingDir . '/README.md',
+        'variables' => $globalTemplateVars,
+        'prefix' => ''
+    ],
+    [
+        'template' => 'phpunit.xml',
+        'outputPath' => $workingDir . '/phpunit.xml.dist',
+        'variables' => $globalTemplateVars,
+        'prefix' => $xmlPrefix
+    ]
+];
+
+foreach ($files as $file) {
+    $contents = $templateRenderer($file['template'], $file['variables']);
+    if (!file_exists($file['outputPath'])) {
+        file_put_contents($file['outputPath'], $file['prefix'] . $contents);
+    }
+}
+
+echo "Would you like to have unit testing framework installed? Y/n: ";
+$response = trim(fgets(STDIN));
+
+if (empty($response) || strtolower($response) === 'y') {
+    exec('composer require --dev phpunit/phpunit amphp/phpunit-util:dev-master');
+}

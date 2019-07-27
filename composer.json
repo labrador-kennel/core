@@ -13,16 +13,20 @@
   ],
   "require": {
     "php": ">=7.2",
+    "ext-dom": "*",
+    "ext-json": "*",
+    "ext-libxml": "*",
     "amphp/amp": "~2.1",
+    "amphp/file": "^0.3.5",
     "cspray/labrador-async-event": "2.0.0-rc1",
+    "monolog/monolog": "^1.24",
+    "opis/json-schema": "^1.0",
     "rdlowrey/auryn": "~1.4"
   },
   "require-dev": {
     "amphp/phpunit-util": "dev-master",
     "cspray/labrador-coding-standard": "0.1.0",
-    "phpunit/phpunit": "~7",
-    "phploc/phploc": "^5.0",
-    "theseer/phpdox": "^0.12.0"
+    "phpunit/phpunit": "~7"
   },
   "autoload": {
     "psr-4": {

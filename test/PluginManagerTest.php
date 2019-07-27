@@ -38,6 +38,7 @@ use Cspray\Labrador\Test\Stub\ServicesRegisteredPlugin;
 use Cspray\Labrador\AsyncEvent\AmpEmitter as EventEmitter;
 use Auryn\Injector;
 use Auryn\ConfigException;
+use Psr\Log\Test\TestLogger;
 use stdClass;
 use Generator;
 
@@ -47,14 +48,20 @@ class PluginManagerTest extends AsyncTestCase {
     /** @var Injector */
     private $injector;
 
+    /** @var TestLogger */
+    private $logger;
+
     public function setUp() {
         parent::setUp();
         $this->emitter = new EventEmitter();
         $this->injector = new Injector();
+        $this->logger = new TestLogger();
     }
 
-    private function getPluginManager() {
-        return new PluginManager($this->injector, $this->emitter);
+    private function getPluginManager() : PluginManager {
+        $pluginManager = new PluginManager($this->injector, $this->emitter);
+        $pluginManager->setLogger($this->logger);
+        return $pluginManager;
     }
 
     /**
@@ -78,7 +85,7 @@ class PluginManagerTest extends AsyncTestCase {
      */
     public function testGettingUnregisteredPluginThrowsException() {
         $manager = $this->getPluginManager();
-        $msg = 'Could not find a registered plugin named "%s"';
+        $msg = 'Could not find a Plugin named "%s"';
 
         $this->expectException(NotFoundException::class);
         $this->expectExceptionMessage(sprintf($msg, PluginStub::class));
@@ -427,7 +434,7 @@ class PluginManagerTest extends AsyncTestCase {
         $manager = $this->getPluginManager();
 
         $this->expectException(InvalidStateException::class);
-        $msg = 'Loaded plugins may only be gathered after ' . Pluggable::class . '::loadPlugins invoked';
+        $msg = 'Loaded Plugins may only be gathered after ' . Pluggable::class . '::loadPlugins has been invoked';
         $this->expectExceptionMessage($msg);
 
         $manager->getLoadedPlugins();
@@ -472,7 +479,7 @@ class PluginManagerTest extends AsyncTestCase {
         $manager->registerPlugin(PluginStub::class);
 
         $this->expectException(InvalidStateException::class);
-        $msg = 'A loaded Plugin may only be gathered after ' . Pluggable::class . '::loadPlugins invoked';
+        $msg = 'Loaded Plugins may only be gathered after ' . Pluggable::class . '::loadPlugins has been invoked';
         $this->expectExceptionMessage($msg);
 
         $manager->getLoadedPlugin(PluginStub::class);
@@ -564,7 +571,8 @@ class PluginManagerTest extends AsyncTestCase {
         $manager = $this->getPluginManager();
 
         $this->expectException(InvalidArgumentException::class);
-        $msg = "Attempted to register a Plugin that does not implement the " . Plugin::class . " interface";
+        $msg = "Attempted to register a Plugin, " . Engine::class . ", that does not ";
+        $msg .= "implement the " . Plugin::class . " interface";
         $this->expectExceptionMessage($msg);
 
         $manager->registerPlugin(Engine::class);
@@ -691,6 +699,12 @@ class PluginManagerTest extends AsyncTestCase {
         $this->assertSame($plugin, $handlerArgs->data);
     }
 
+    /**
+     * @return Generator
+     * @throws CircularDependencyException
+     * @throws InvalidArgumentException
+     * @throws InvalidStateException
+     */
     public function testCustomHandlerReturnsPromise() {
         $manager = $this->getPluginManager();
         $actual = new stdClass();
@@ -710,5 +724,322 @@ class PluginManagerTest extends AsyncTestCase {
         yield $manager->loadPlugins();
 
         $this->assertSame(3, $actual->counter);
+    }
+
+    public function testRegisterPluginLogsMessage() {
+        $this->getPluginManager()->registerPlugin(PluginStub::class);
+
+        $expected = [
+            [
+                'level' => 'info',
+                'message' => 'Registered Plugin "' . PluginStub::class . '".',
+                'context' => []
+            ]
+        ];
+
+        $this->assertSame($expected, $this->logger->records);
+    }
+
+    public function testRemovingPluginNotLoaded() {
+        $this->getPluginManager()->removePlugin(PluginStub::class);
+
+        $expected = [
+            [
+                'level' => 'info',
+                'message' => 'Removed Plugin "' . PluginStub::class . '".',
+                'context' => []
+            ]
+        ];
+
+        $this->assertSame($expected, $this->logger->records);
+    }
+
+    public function testLoadingPluginOnlyIdentifyingInterface() {
+        $pluginManager = $this->getPluginManager();
+        $pluginManager->registerPlugin(PluginStub::class);
+        $this->logger->reset();
+        yield $pluginManager->loadPlugins();
+
+        $expected = [
+            [
+                'level' => 'info',
+                'message' => 'Initiating Plugin loading. Loading 1 registered Plugins, not including dependencies.',
+                'context' => []
+            ],
+            [
+                'level' => 'info',
+                'message' => 'Starting to load ' . PluginStub::class . '.',
+                'context' => []
+            ],
+            [
+                'level' => 'info',
+                'message' => 'Finished loading ' . PluginStub::class . '.',
+                'context' => []
+            ],
+            [
+                'level' => 'info',
+                'message' => 'Finished loading 1 Plugins, including dependencies.',
+                'context' => []
+            ]
+        ];
+
+        $this->assertSame($expected, $this->logger->records);
+    }
+
+    public function testLoadingPluginOnlyInjectorAwareInterface() {
+        $pluginManager = $this->getPluginManager();
+        $pluginManager->registerPlugin(ServicesRegisteredPlugin::class);
+        $this->logger->reset();
+        yield $pluginManager->loadPlugins();
+
+        $expected = [
+            [
+                'level' => 'info',
+                'message' => 'Initiating Plugin loading. Loading 1 registered Plugins, not including dependencies.',
+                'context' => []
+            ],
+            [
+                'level' => 'info',
+                'message' => 'Starting to load ' . ServicesRegisteredPlugin::class . '.',
+                'context' => []
+            ],
+            [
+                'level' => 'info',
+                'message' => 'Wiring object graph for ' . ServicesRegisteredPlugin::class . '.',
+                'context' => []
+
+            ],
+            [
+                'level' => 'info',
+                'message' => 'Finished loading ' . ServicesRegisteredPlugin::class . '.',
+                'context' => []
+            ],
+            [
+                'level' => 'info',
+                'message' => 'Finished loading 1 Plugins, including dependencies.',
+                'context' => []
+            ]
+        ];
+
+        $this->assertSame($expected, $this->logger->records);
+    }
+
+    public function testLoadingPluginOnlyEventAwareInterface() {
+        $pluginManager = $this->getPluginManager();
+        $pluginManager->registerPlugin(EventsRegisteredPlugin::class);
+        $this->logger->reset();
+        yield $pluginManager->loadPlugins();
+
+        $expected = [
+            [
+                'level' => 'info',
+                'message' => 'Initiating Plugin loading. Loading 1 registered Plugins, not including dependencies.',
+                'context' => []
+            ],
+            [
+                'level' => 'info',
+                'message' => 'Starting to load ' . EventsRegisteredPlugin::class . '.',
+                'context' => []
+            ],
+            [
+                'level' => 'info',
+                'message' => 'Registering event listeners for ' . EventsRegisteredPlugin::class . '.',
+                'context' => []
+
+            ],
+            [
+                'level' => 'info',
+                'message' => 'Finished loading ' . EventsRegisteredPlugin::class . '.',
+                'context' => []
+            ],
+            [
+                'level' => 'info',
+                'message' => 'Finished loading 1 Plugins, including dependencies.',
+                'context' => []
+            ]
+        ];
+
+        $this->assertSame($expected, $this->logger->records);
+    }
+
+    public function testLoadingPluginOnlyBootableInterface() {
+        $pluginManager = $this->getPluginManager();
+        $pluginManager->registerPlugin(BootCalledPlugin::class);
+        $this->logger->reset();
+        yield $pluginManager->loadPlugins();
+
+        $expected = [
+            [
+                'level' => 'info',
+                'message' => 'Initiating Plugin loading. Loading 1 registered Plugins, not including dependencies.',
+                'context' => []
+            ],
+            [
+                'level' => 'info',
+                'message' => 'Starting to load ' . BootCalledPlugin::class . '.',
+                'context' => []
+            ],
+            [
+                'level' => 'info',
+                'message' => 'Starting ' . BootCalledPlugin::class . ' boot procedure.',
+                'context' => []
+
+            ],
+            [
+                'level' => 'info',
+                'message' => 'Finished ' . BootCalledPlugin::class . ' boot procedure.',
+                'context' => []
+            ],
+            [
+                'level' => 'info',
+                'message' => 'Finished loading ' . BootCalledPlugin::class . '.',
+                'context' => []
+            ],
+            [
+                'level' => 'info',
+                'message' => 'Finished loading 1 Plugins, including dependencies.',
+                'context' => []
+            ]
+        ];
+
+        $this->assertSame($expected, $this->logger->records);
+    }
+
+    public function testLoadingPluginWithPluginDependentPluginInterface() {
+        $pluginManager = $this->getPluginManager();
+        $pluginManager->registerPlugin(FooPluginDependentStub::class);
+        $this->logger->reset();
+        yield $pluginManager->loadPlugins();
+
+        $expected = [
+            [
+                'level' => 'info',
+                'message' => 'Initiating Plugin loading. Loading 1 registered Plugins, not including dependencies.',
+                'context' => []
+            ],
+            [
+                'level' => 'info',
+                'message' => 'Starting to load ' . FooPluginDependentStub::class . '.',
+                'context' => []
+            ],
+            [
+                'level' => 'info',
+                'message' => 'Loading dependencies for ' . FooPluginDependentStub::class . '.',
+                'context' => []
+            ],
+            [
+                'level' => 'info',
+                'message' => 'Starting to load ' . FooPluginStub::class . '.',
+                'context' => []
+            ],
+            [
+                'level' => 'info',
+                'message' => 'Wiring object graph for ' . FooPluginStub::class . '.',
+                'context' => []
+            ],
+            [
+                'level' => 'info',
+                'message' => 'Starting ' . FooPluginStub::class . ' boot procedure.',
+                'context' => []
+
+            ],
+            [
+                'level' => 'info',
+                'message' => 'Finished ' . FooPluginStub::class . ' boot procedure.',
+                'context' => []
+            ],
+            [
+                'level' => 'info',
+                'message' => 'Finished loading ' . FooPluginStub::class . '.',
+                'context' => []
+            ],
+            [
+                'level' => 'info',
+                'message' => 'Finished loading dependencies for ' . FooPluginDependentStub::class . '.',
+                'context' => []
+            ],
+            [
+                'level' => 'info',
+                'message' => 'Starting ' . FooPluginDependentStub::class . ' boot procedure.',
+                'context' => []
+
+            ],
+            [
+                'level' => 'info',
+                'message' => 'Finished ' . FooPluginDependentStub::class . ' boot procedure.',
+                'context' => []
+            ],
+            [
+                'level' => 'info',
+                'message' => 'Finished loading ' . FooPluginDependentStub::class . '.',
+                'context' => []
+            ],
+            [
+                'level' => 'info',
+                'message' => 'Finished loading 2 Plugins, including dependencies.',
+                'context' => []
+            ]
+        ];
+
+        $this->assertSame($expected, $this->logger->records);
+    }
+
+    public function testLoadingPluginOnlyCustomHandler() {
+        $pluginManager = $this->getPluginManager();
+        $pluginManager->registerPlugin(CustomPluginStub::class);
+        $pluginManager->registerPluginLoadHandler(
+            CustomPluginStub::class,
+            function(CustomPluginStub $customPluginStub) {
+            }
+        );
+        $pluginManager->registerPluginLoadHandler(
+            CustomPluginStub::class,
+            function(CustomPluginStub $customPluginStub) {
+            }
+        );
+        $pluginManager->registerPluginLoadHandler(
+            CustomPluginStub::class,
+            function(CustomPluginStub $customPluginStub) {
+            }
+        );
+        $this->logger->reset();
+        yield $pluginManager->loadPlugins();
+
+        $expected = [
+            [
+                'level' => 'info',
+                'message' => 'Initiating Plugin loading. Loading 1 registered Plugins, not including dependencies.',
+                'context' => []
+            ],
+            [
+                'level' => 'info',
+                'message' => 'Starting to load ' . CustomPluginStub::class . '.',
+                'context' => []
+            ],
+            [
+                'level' => 'info',
+                'message' => 'Found 3 custom handlers for ' . CustomPluginStub::class . '.',
+                'context' => []
+
+            ],
+            [
+                'level' => 'info',
+                'message' => 'Finished loading custom handlers for ' . CustomPluginStub::class . '.',
+                'context' => []
+
+            ],
+            [
+                'level' => 'info',
+                'message' => 'Finished loading ' . CustomPluginStub::class . '.',
+                'context' => []
+            ],
+            [
+                'level' => 'info',
+                'message' => 'Finished loading 1 Plugins, including dependencies.',
+                'context' => []
+            ]
+        ];
+
+        $this->assertSame($expected, $this->logger->records);
     }
 }

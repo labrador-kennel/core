@@ -1,10 +1,9 @@
 baseurl: "/core"
 layouts_dir: ".shared/_layouts"
 
-keep_files: ["api/"]
-
 external_css:
   - //cdnjs.cloudflare.com/ajax/libs/highlight.js/9.14.2/styles/default.min.css
+  - core_css/styles.css
 
 external_js:
   - //cdnjs.cloudflare.com/ajax/libs/highlight.js/9.14.2/highlight.min.js

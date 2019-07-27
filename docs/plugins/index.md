@@ -52,15 +52,11 @@ class AnalyticsTrackerInjectorPlugin implements InjectorAwarePlugin {
 }
 ```
 
-<div class="message is-info">
-    <div class="message-header">
-        Auryn Injector
-    </div>
-    <div class="message-body">
-        If you're unsure what the above code does you should take a look over the <a href="https://github.com/rdlowrey/auryn">
-        Auryn Injector documentation</a>.
-    </div>
-</div>
+{% include message.html
+   message_type="is-info"
+   title="Auryn Injector"
+   body="If you're unsure what the above code does you should take a look over the <a href=\"https://github.com/rdlowrey/auryn\">Auryn Injector documentation</a>."
+%}
 
 Next, we'll create a Plugin that implements several interfaces to provide the rest of the described functionality.
 
@@ -140,37 +136,28 @@ during the loading process for any Plugin that matches the type assigned to the 
 asynchronous and can return a Promise or a Generator and it will resolve to completion.
 
 If you are making use of the `Pluggable::removePlugin` method and need your Plugin to execute a corresponding unload 
-
-If you are making use of the `Pluggable::removePlugin` method and need your Plugin to execute a corresponding unload 
 procedure take a look at a `Pluggable::registerPluginRemoveHandler`.
 
 ## Plugin Loading Process
 
-when the Plugin's Pluggable has its loadPlugins method invoked each Plugin registered with the Pluggable will go through 
+When the Plugin's Pluggable has its loadPlugins method invoked each Plugin registered with the Pluggable will go through 
 the loading process. This process happens linearly; meaning that each Plugin is loaded in its entirety before the
 next Plugin is started. Some aspects of this process can execute asynchronous code.
 
 While each responsibility of a Plugin is handled by its own interface it is certainly possible to implement all
 of them. Or perhaps you're implementing your own Pluggable (have you taken a look at PluginManager?). In either of 
 these cases it might be important to know in what order each method will be called. Plugins SHOULD BE loaded in 
-a specific order. This order is guaranteed when using the provided Labrador Pluggable and should be implemented in 
-your own Pluggable.
+a specific order. This order is guaranteed when using provided Labrador implementations of Pluggable and should 
+be implemented in your own Pluggable.
 
-It is highly recommended that you review the <a target="_blank" href="api/html/interfaces/Cspray_Labrador_Plugin_Pluggable.html">API 
-Documentation for the Pluggable interface</a> as it describes in detail the expected loading process.
+It is highly recommended that you review the [API Documentation for the Pluggable interface][pluggable-api-src] as it 
+describes in detail the expected loading process.
 
-<hr />
+Next up is the Engine, the piece that makes your Application run.
 
-<a href="" class="is-pulled-left is-size-6">
-  <span class="icon">
-    <i class="fas fa-angle-left"></i>
-  </span>
-  Home
-</a>
+{% include next_previous_article_nav.md 
+   previous_article_name="Applications"
+   next_article_name="Engines"
+%}
 
-<a href="applications" class="is-pulled-right is-size-6">
-  Applications
-  <span class="icon">
-    <i class="fas fa-angle-right"></i>
-  </span>
-</a>
+[pluggable-api-src]: https://github.com/labrador-kennel/core/blob/master/src/Plugin/Pluggable.php

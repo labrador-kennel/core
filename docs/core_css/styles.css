@@ -1,0 +1,16 @@
+ul, ol {
+    list-style-position: inside;
+}
+
+dl {
+    padding: 5px;
+}
+
+dt {
+    font-weight: bolder;
+}
+
+dd {
+    margin-left: 1em;
+    margin-bottom: .5em;
+}

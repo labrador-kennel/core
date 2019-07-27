@@ -1,0 +1,11 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<labrador xmlns="https://labrador-kennel.io/core/schemas/configuration.schema.xsd">
+  <logging>
+    <name>xml-config-log</name>
+    <outputPath>php://stdout</outputPath>
+  </logging>
+  <injectorProviderPath>file://yadda/yadda/xml</injectorProviderPath>
+  <plugins>
+    <plugin>Cspray\Labrador\Test\Stub\PluginStub</plugin>
+  </plugins>
+</labrador>

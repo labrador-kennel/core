@@ -3,6 +3,8 @@
 namespace Cspray\Labrador;
 
 use Amp\Promise;
+use Cspray\Labrador\Plugin\Pluggable;
+use Psr\Log\LoggerAwareInterface;
 use Throwable;
 
 /**
@@ -12,7 +14,7 @@ use Throwable;
  * @package Cspray\Labrador
  * @license See LICENSE in source root
  */
-interface Application {
+interface Application extends Pluggable, LoggerAwareInterface {
 
     /**
      * Perform whatever logic or operations your application requires; return a Promise that resolves when you app is

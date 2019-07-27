@@ -1,13 +1,13 @@
 [
   {
-    "name": "Home",
+    "name": "Quick Start",
     "url": "",
     "active_check": "/"
   },
   {
-    "name": "Plugins",
-    "url": "plugins",
-    "active_check": "/plugins/"
+    "name": "Configuration",
+    "url": "configuration",
+    "active_check": "/configuration/"
   },
   {
     "name": "Applications",
@@ -15,13 +15,13 @@
     "active_check": "/applications/"
   },
   {
+    "name": "Plugins",
+    "url": "plugins",
+    "active_check": "/plugins/"
+  },
+  {
     "name": "Engines",
     "url": "engines",
     "active_check": "/engines/"
-  },
-  {
-    "name": "API Docs",
-    "url": "api/html",
-    "active_check": "api/html"
   }
 ]

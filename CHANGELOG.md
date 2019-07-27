@@ -18,6 +18,18 @@ place. Attempting to call this method before loading has occurred will result in
 this method before loading has occurred will result in an exception.
 - Added `EventAwarePlugin::removeEventListeners` that will be invoked whenever a loaded Plugin is 
 removed from its Pluggable.
+- Added the Monolog library and implemented PSR-3 logging throughout the provided Engine and PluginManager.
+Additionally the DependencyGraph object has been setup so that any objet implement the LoggerAwareInterface 
+will automatically have the appropriate Logger set to it.
+- Added the `Engine::getState` method that normalizes the idea of an Engine having a state and allows 
+consuming code to determine that state with a known API.
+- Added the `LoggerAwareInterface` to `Application` so that all apps can easily log whatever data is necessary 
+for their execution.
+- Added the `Configuration` interface and the ability to load a Configuration that will help determine how Labrador
+works out-of-the-box. This configuration can be written in native PHP, JSON, or XML. Please checkout the Configuration 
+docs for more information.
+- Introduces a `labrador-app-skeleton` binary that is meant to easily get started with Labrador by creating some 
+boilerplate configuration, Application skeleton, and a DependencyGraph.
 
 #### Changed
 
@@ -42,7 +54,9 @@ provided before the Plugin is instantiated.
 - Changed the Plugin loading process such that a Plugin dependency does not need to be registered 
 to complete the loading process. The Plugin dependency need only be able to be instantiated by the 
 Injector.
-- Changed the name of the `Engine::APP_CLEANUP_EVENT` -> `Engine::ENGINE_SHUTDOWN_EVENT` to be more 
+- Changed the name of the `Engine::ENGINE_BOOTUP_EVENT` -> `Engine::START_UP_EVENT` to be more consistent 
+with its accompanying event.
+- Changed the name of the `Engine::APP_CLEANUP_EVENT` -> `Engine::SHUT_DOWN_EVENT` to be more 
 semantic with its counterpart.
 
 #### Removed
