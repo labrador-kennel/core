@@ -26,5 +26,4 @@ class LoadPluginCalledApplication extends CallbackApplication {
     public function callOrder() : array {
         return $this->callOrder;
     }
-
 }

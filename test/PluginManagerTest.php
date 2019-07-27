@@ -988,13 +988,19 @@ class PluginManagerTest extends AsyncTestCase {
         $pluginManager = $this->getPluginManager();
         $pluginManager->registerPlugin(CustomPluginStub::class);
         $pluginManager->registerPluginLoadHandler(
-            CustomPluginStub::class, function(CustomPluginStub $customPluginStub) {}
+            CustomPluginStub::class,
+            function(CustomPluginStub $customPluginStub) {
+            }
         );
         $pluginManager->registerPluginLoadHandler(
-            CustomPluginStub::class, function(CustomPluginStub $customPluginStub) {}
+            CustomPluginStub::class,
+            function(CustomPluginStub $customPluginStub) {
+            }
         );
         $pluginManager->registerPluginLoadHandler(
-            CustomPluginStub::class, function(CustomPluginStub $customPluginStub) {}
+            CustomPluginStub::class,
+            function(CustomPluginStub $customPluginStub) {
+            }
         );
         $this->logger->reset();
         yield $pluginManager->loadPlugins();

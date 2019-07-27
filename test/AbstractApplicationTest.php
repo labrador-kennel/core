@@ -86,7 +86,8 @@ class AbstractApplicationTest extends TestCase {
     }
 
     public function testRegisterPluginLoadHandlerDelegatedToPluggable() {
-        $handler = function() {};
+        $handler = function() {
+        };
         $this->pluggable->expects($this->once())
             ->method('registerPluginLoadHandler')
             ->with('PluginClass', $handler, 1, 2, 'foo');
@@ -95,7 +96,8 @@ class AbstractApplicationTest extends TestCase {
     }
 
     public function testRegisterPluginRemoveHandlerDelegatedToPluggable() {
-        $handler = function() {};
+        $handler = function() {
+        };
         $this->pluggable->expects($this->once())
             ->method('registerPluginRemoveHandler')
             ->with('PluginClass', $handler, 1, 2, 'foo');

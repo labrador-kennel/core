@@ -28,9 +28,9 @@ class ConfigurationFactory {
         $extension = pathinfo($configurationPath, PATHINFO_EXTENSION);
         if ($extension === 'json') {
             $configData = $this->loadJsonConfigData($configurationPath);
-        } else if ($extension === 'xml') {
+        } elseif ($extension === 'xml') {
             $configData = $this->loadXmlConfigData($configurationPath);
-        } else if ($extension === 'php') {
+        } elseif ($extension === 'php') {
             $configData = $this->loadPhpConfigData($configurationPath);
         } else {
             throw Exceptions::createException(Exceptions::CONFIG_ERR_FILE_UNSUPPORTED_EXTENSION);
@@ -84,14 +84,13 @@ class ConfigurationFactory {
         $phpConfig = include $configurationPath;
         if (is_array($phpConfig)) {
             return $this->validateJsonSource(json_encode($phpConfig));
-        } else if (is_object($phpConfig) && $phpConfig instanceof Configuration) {
+        } elseif (is_object($phpConfig) && $phpConfig instanceof Configuration) {
             $configData = new stdClass();
             $configData->configuration = $phpConfig;
             return $configData;
         } else {
             throw Exceptions::createException(Exceptions::CONFIG_ERR_PHP_INVALID_RETURN_TYPE);
         }
-
     }
 
     private function validateJsonSource(string $jsonSource) : stdClass {
@@ -161,5 +160,4 @@ class ConfigurationFactory {
             }
         };
     }
-
 }

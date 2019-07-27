@@ -216,7 +216,7 @@ final class PluginManager implements Pluggable, LoggerAwareInterface {
                     }
 
                     $this->logger->info(sprintf(
-                         'Loading dependencies for %s.',
+                        'Loading dependencies for %s.',
                         $plugin
                     ));
                     yield $this->loadPlugin($reqPluginName);

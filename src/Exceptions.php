@@ -83,7 +83,8 @@ class Exceptions {
 
     private static $codeMsgMap = [];
 
-    private function __construct() {}
+    private function __construct() {
+    }
 
     public static function createException(int $errorCode, Throwable $nestedException = null, ...$msgArguments) : Throwable {
         if (empty(self::$codeMsgMap)) {
@@ -101,7 +102,9 @@ class Exceptions {
             'type' => InvalidStateException::class,
             'message' => function() {
                 return sprintf(
-                    '%s::%s MUST NOT be called while already running.', Engine::class, 'run'
+                    '%s::%s MUST NOT be called while already running.',
+                    Engine::class,
+                    'run'
                 );
             }
         ];
@@ -131,7 +134,6 @@ class Exceptions {
                     $plugin,
                     Plugin::class
                 );
-
             }
         ];
 
@@ -213,5 +215,4 @@ class Exceptions {
             }
         ];
     }
-
 }

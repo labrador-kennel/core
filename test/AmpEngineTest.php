@@ -240,7 +240,10 @@ class AmpEngineTest extends UnitTestCase {
 
     public function testEngineStateAfterExceptionIsCrashed() {
         $app = $this->callbackApp(
-            function() { throw new RuntimeException('foobar', 42);}, function($err) { }
+            function() { throw new RuntimeException('foobar', 42);
+            },
+            function($err) {
+            }
         );
         $engine = $this->getEngine();
 
@@ -270,7 +273,8 @@ class AmpEngineTest extends UnitTestCase {
 
     public function testApplicationLoadPluginsCalled() {
         $pluggable = $this->getMockBuilder(Pluggable::class)->getMock();
-        $app = new LoadPluginCalledApplication($pluggable, function() {});
+        $app = new LoadPluginCalledApplication($pluggable, function() {
+        });
 
         $this->getEngine()->run($app);
 
@@ -322,7 +326,10 @@ class AmpEngineTest extends UnitTestCase {
 
     public function testLogMessagesOnSuccessfulApplicationRunWithPlugins() {
         $app = $this->exceptionHandlerApp(
-            function() { throw new RuntimeException('foobar', 42);}, function($err) { }
+            function() { throw new RuntimeException('foobar', 42);
+            },
+            function($err) {
+            }
         );
         $lineNum = __LINE__ - 2;
         $engine = $this->getEngine();
@@ -368,5 +375,4 @@ class AmpEngineTest extends UnitTestCase {
 
         $this->assertSame($expectedRecords, $this->logger->records);
     }
-
 }

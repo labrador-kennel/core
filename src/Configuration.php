@@ -39,5 +39,4 @@ interface Configuration {
      * @return string[]
      */
     public function getPlugins() : array;
-
 }

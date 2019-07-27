@@ -107,5 +107,4 @@ class ConfigurationFactoryTest extends TestCase {
         $this->assertSame('file://yadda/yadda/instance', $config->getInjectorProviderPath());
         $this->assertSame([PluginStub::class, FooPluginStub::class], $config->getPlugins());
     }
-
 }

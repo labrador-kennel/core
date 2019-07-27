@@ -53,15 +53,15 @@ class CallbackApplicationTest extends AsyncTestCase {
     }
 
     public function testCallbackApplicationHandlesExceptionHandlerNotPresent() {
-       $pluggable = $this->getMockBuilder(Pluggable::class)->getMock();
-       $subject = new CallbackApplication(
-           $pluggable,
-           function() {}
-       );
+        $pluggable = $this->getMockBuilder(Pluggable::class)->getMock();
+        $subject = new CallbackApplication(
+            $pluggable,
+            function() {
+            }
+        );
 
-       $subject->exceptionHandler(new \RuntimeException());
+        $subject->exceptionHandler(new \RuntimeException());
 
-       $this->assertTrue(true, 'Expected to not throw an error so if we get here everything is good');
+        $this->assertTrue(true, 'Expected to not throw an error so if we get here everything is good');
     }
-
 }
