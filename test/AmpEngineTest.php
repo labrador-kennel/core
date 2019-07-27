@@ -330,12 +330,13 @@ class AmpEngineTest extends UnitTestCase {
 
     public function testLogMessagesOnSuccessfulApplicationRunWithPlugins() {
         $app = $this->exceptionHandlerApp(
-            function() { throw new RuntimeException('foobar', 42);
+            function() {
+                throw new RuntimeException('foobar', 42);
             },
             function($err) {
             }
         );
-        $lineNum = __LINE__ - 2;
+        $lineNum = __LINE__ - 5;
         $engine = $this->getEngine();
 
         try {
