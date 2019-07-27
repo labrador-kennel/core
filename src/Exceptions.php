@@ -86,7 +86,7 @@ class Exceptions {
     private function __construct() {
     }
 
-    public static function createException(int $errorCode, Throwable $nestedException = null, ...$msgArguments) : Throwable {
+    public static function createException(int $errorCode, Throwable $nestedException = null, ...$msgArgs) : Throwable {
         if (empty(self::$codeMsgMap)) {
             self::loadCodeMessageMap();
         }
@@ -94,7 +94,7 @@ class Exceptions {
         $type = $errorInfo['type'];
         $messageCallback = $errorInfo['message'];
 
-        return new $type($messageCallback(...$msgArguments), $errorCode, $nestedException);
+        return new $type($messageCallback(...$msgArgs), $errorCode, $nestedException);
     }
 
     private static function loadCodeMessageMap() {

@@ -280,7 +280,11 @@ class AmpEngineTest extends UnitTestCase {
 
         $expected = ['load', 'execute'];
 
-        $this->assertSame($expected, $app->callOrder(), 'Expected the Application::loadPlugins to be called before Application::execute');
+        $this->assertSame(
+            $expected,
+            $app->callOrder(),
+            'Expected the Application::loadPlugins to be called before Application::execute'
+        );
     }
 
     public function testLogMessagesOnSuccessfulApplicationRunNoPlugins() {
