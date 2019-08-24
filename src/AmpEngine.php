@@ -65,7 +65,6 @@ class AmpEngine implements Engine {
 
     /**
      * @param Application $application
-     * @throws Exception\InvalidArgumentException
      * @throws InvalidStateException
      */
     public function run(Application $application) : void {

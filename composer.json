@@ -20,11 +20,12 @@
     "amphp/amp": "~2.1",
     "amphp/file": "^0.3.5",
     "cspray/labrador-async-event": "2.0.0-rc1",
+    "cspray/labrador-exceptions": "^1.1",
+    "cspray/yape": "^1.1",
     "monolog/monolog": "^1.24",
     "opis/json-schema": "^1.0",
     "php-ds/php-ds": "^1.2",
-    "rdlowrey/auryn": "~1.4",
-    "cspray/yape": "^1.1"
+    "rdlowrey/auryn": "~1.4"
   },
   "require-dev": {
     "amphp/phpunit-util": "~1.1",

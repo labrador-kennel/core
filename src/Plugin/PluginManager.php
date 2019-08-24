@@ -6,6 +6,7 @@ use Amp\Promise;
 use Cspray\Labrador\AsyncEvent\Emitter;
 use Auryn\Injector;
 
+use Cspray\Labrador\Exception\DependencyInjectionException;
 use Cspray\Labrador\Exception\Exception;
 use Cspray\Labrador\Exception\InvalidArgumentException;
 use Cspray\Labrador\Exception\InvalidStateException;
@@ -93,7 +94,6 @@ final class PluginManager implements Pluggable, LoggerAwareInterface {
     /**
      * @param string $plugin
      * @return Exception|null
-     * @throws InvalidArgumentException
      */
     private function guardRegisterPluginIsValid(string $plugin) : ?Exception {
         if ($this->hasPluginBeenRegistered($plugin)) {
@@ -210,7 +210,6 @@ final class PluginManager implements Pluggable, LoggerAwareInterface {
 
     /**
      * @return Set
-     * @throws InvalidArgumentException
      * @throws InvalidStateException
      */
     public function getLoadedPlugins() : Set {
@@ -293,7 +292,6 @@ final class PluginManager implements Pluggable, LoggerAwareInterface {
      * @param string $plugin
      * @param string $reqPluginName
      * @return Exception|null
-     * @throws InvalidArgumentException
      */
     private function guardLoadingValidPluginDependency(string $plugin, string $reqPluginName) : ?Exception {
         if ($this->isLoading($reqPluginName)) {
@@ -318,6 +316,10 @@ final class PluginManager implements Pluggable, LoggerAwareInterface {
         return null;
     }
 
+    /**
+     * @param Plugin $plugin
+     * @throws DependencyInjectionException
+     */
     private function handlePluginServices(Plugin $plugin) {
         if ($plugin instanceof InjectorAwarePlugin) {
             $this->logger->info(sprintf(
