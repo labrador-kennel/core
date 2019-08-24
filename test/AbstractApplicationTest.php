@@ -6,6 +6,7 @@ use Amp\Success;
 use Cspray\Labrador\AbstractApplication;
 use Cspray\Labrador\Plugin\Pluggable;
 use Cspray\Labrador\Test\Stub\PluginStub;
+use Ds\Set;
 use PHPUnit\Framework\TestCase;
 
 /**
@@ -19,7 +20,7 @@ class AbstractApplicationTest extends TestCase {
     /** @var AbstractApplication */
     private $subject;
 
-    public function setUp() {
+    public function setUp() : void {
         $this->pluggable = $this->getMockBuilder(Pluggable::class)->getMock();
         $this->subject = $this->getMockForAbstractClass(AbstractApplication::class, [$this->pluggable]);
     }
@@ -43,18 +44,18 @@ class AbstractApplicationTest extends TestCase {
     }
 
     public function testGetRegisteredPluginsDelegatedToPluggable() {
-        $this->pluggable->expects($this->once())->method('getRegisteredPlugins')->willReturn(['PluginClass']);
+        $this->pluggable->expects($this->once())->method('getRegisteredPlugins')->willReturn(new Set(['PluginClass']));
         $actual = $this->subject->getRegisteredPlugins();
 
-        $this->assertSame(['PluginClass'], $actual);
+        $this->assertSame(['PluginClass'], $actual->toArray());
     }
 
     public function testGetLoadedPluginsDelegatedToPluggable() {
         $plugin = new PluginStub();
-        $this->pluggable->expects($this->once())->method('getLoadedPlugins')->willReturn([$plugin]);
+        $this->pluggable->expects($this->once())->method('getLoadedPlugins')->willReturn(new Set([$plugin]));
         $actual = $this->subject->getLoadedPlugins();
 
-        $this->assertSame([$plugin], $actual);
+        $this->assertSame([$plugin], $actual->toArray());
     }
 
     public function testGetLoadedPluginDelegatedToPluggable() {

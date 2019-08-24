@@ -13,6 +13,7 @@ use Amp\Success;
 use Cspray\Labrador\Plugin\BootablePlugin;
 use Cspray\Labrador\Plugin\PluginDependentPlugin;
 use Auryn\Injector;
+use Ds\Set;
 
 class RecursivelyDependentPluginStub implements PluginDependentPlugin, BootablePlugin {
 
@@ -43,7 +44,7 @@ class RecursivelyDependentPluginStub implements PluginDependentPlugin, BootableP
      *
      * @return array
      */
-    public static function dependsOn() : array {
-        return [FooPluginDependentStub::class];
+    public static function dependsOn() : Set {
+        return new Set([FooPluginDependentStub::class]);
     }
 }

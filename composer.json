@@ -14,6 +14,7 @@
   "require": {
     "php": ">=7.2",
     "ext-dom": "*",
+    "ext-ds": "*",
     "ext-json": "*",
     "ext-libxml": "*",
     "amphp/amp": "~2.1",
@@ -21,12 +22,13 @@
     "cspray/labrador-async-event": "2.0.0-rc1",
     "monolog/monolog": "^1.24",
     "opis/json-schema": "^1.0",
+    "php-ds/php-ds": "^1.2",
     "rdlowrey/auryn": "~1.4"
   },
   "require-dev": {
-    "amphp/phpunit-util": "dev-master",
-    "cspray/labrador-coding-standard": "0.1.0",
-    "phpunit/phpunit": "~7"
+    "amphp/phpunit-util": "~1.1",
+    "cspray/labrador-coding-standard": "0.2.0",
+    "phpunit/phpunit": "~8"
   },
   "autoload": {
     "psr-4": {

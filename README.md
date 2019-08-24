@@ -10,6 +10,14 @@
 - **Application** An interface that you implement that provides the primary integration point for your code and Labrador.
 - **Engine** A service that ties Events, Plugins, and your Application to execute your code.
 
+## Requirements
+
+- PHP 7.2+
+- ext-ds
+- ext-dom            
+- ext-json
+- ext-libxml
+
 ## Installation
 
 We only support installing Labrador via [Composer](https://getcomposer.org)
