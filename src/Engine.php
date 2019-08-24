@@ -34,28 +34,11 @@ interface Engine extends LoggerAwareInterface {
     const SHUT_DOWN_EVENT = 'labrador.engine_shut_down';
 
     /**
-     * A state that represents the Engine is not running; this could be returned before and after the Engine::run
-     * method is invoked.
-     */
-    const IDLE_STATE = 'idle';
-
-    /**
-     * A state that represents the Engine::run method has been invoked and the Engine is currently processing your
-     * Application code, either by loading Plugins or invoking Application::execute.
-     */
-    const RUNNING_STATE = 'running';
-
-    /**
-     * A state that represents when the
-     */
-    const CRASHED_STATE = 'crashed';
-
-    /**
      * Return the state of the Engine; this SHOULD BE one of the defined Engine constants that ends in _STATE.
      *
-     * @return string
+     * @return EngineState
      */
-    public function getState() : string;
+    public function getState() : EngineState;
 
     /**
      * Return the event emitter that will emit the events for this Engine.

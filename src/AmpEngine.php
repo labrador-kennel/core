@@ -2,12 +2,14 @@
 
 namespace Cspray\Labrador;
 
+use Amp\Promise;
 use Cspray\Labrador\AsyncEvent\Emitter;
 use Cspray\Labrador\AsyncEvent\EventFactory;
 use Cspray\Labrador\AsyncEvent\StandardEventFactory;
 use Cspray\Labrador\Exception\InvalidStateException;
 use Amp\Loop;
 use Psr\Log\LoggerAwareTrait;
+use Throwable;
 
 /**
  * An implementation of the Engine interface running on the global amphp Loop.
@@ -21,7 +23,7 @@ class AmpEngine implements Engine {
 
     private $emitter;
     private $eventFactory;
-    private $engineState = self::IDLE_STATE;
+    private $engineState;
     private $engineBooted = false;
 
     public function __construct(
@@ -30,9 +32,10 @@ class AmpEngine implements Engine {
     ) {
         $this->emitter = $emitter;
         $this->eventFactory = $eventFactory ?? new StandardEventFactory();
+        $this->engineState = EngineState::Idle();
     }
 
-    public function getState() : string {
+    public function getState() : EngineState {
         return $this->engineState;
     }
 
@@ -62,11 +65,11 @@ class AmpEngine implements Engine {
 
     /**
      * @param Application $application
-     * @return void
+     * @throws Exception\InvalidArgumentException
      * @throws InvalidStateException
      */
     public function run(Application $application) : void {
-        if ($this->engineState !== self::IDLE_STATE) {
+        if (!$this->engineState->isIdling()) {
             /** @var InvalidStateException $exception */
             $exception = Exceptions::createException(
                 Exceptions::ENGINE_ERR_MULTIPLE_RUN_CALLS,
@@ -75,7 +78,7 @@ class AmpEngine implements Engine {
             throw $exception;
         }
 
-        Loop::setErrorHandler(function(\Throwable $error) use($application) {
+        Loop::setErrorHandler(function(Throwable $error) use($application) {
             $this->logger->alert(
                 sprintf(
                     'The Application threw an exception: %s "%s"',
@@ -89,13 +92,13 @@ class AmpEngine implements Engine {
                 $this->logger->info('Starting Application cleanup process.');
                 yield $this->emitEngineShutDownEvent($application);
                 $this->logger->info('Completed Application cleanup process. Engine shutting down.');
-                $this->engineState = self::CRASHED_STATE;
+                $this->engineState = EngineState::Crashed();
             });
         });
 
 
         Loop::run(function() use($application) {
-            $this->engineState = self::RUNNING_STATE;
+            $this->engineState = EngineState::Running();
 
             $this->emitter->once(self::START_UP_EVENT, function() use($application) {
                 $this->logger->info('Starting Plugin loading process.');
@@ -115,16 +118,25 @@ class AmpEngine implements Engine {
             $this->logger->info('Starting Application cleanup process.');
             yield $this->emitEngineShutDownEvent($application);
             $this->logger->info('Completed Application cleanup process. Engine shutting down.');
-            $this->engineState = self::IDLE_STATE;
+            $this->engineState = EngineState::Idle();
         });
     }
 
-    private function emitEngineStartUpEvent() {
+    /**
+     * @return Promise
+     * @throws Exception\InvalidArgumentException
+     */
+    private function emitEngineStartUpEvent() : Promise {
         $event = $this->eventFactory->create(self::START_UP_EVENT, $this);
         return $this->emitter->emit($event);
     }
 
-    private function emitEngineShutDownEvent(Application $application) {
+    /**
+     * @param Application $application
+     * @return Promise
+     * @throws Exception\InvalidArgumentException
+     */
+    private function emitEngineShutDownEvent(Application $application) : Promise {
         $event = $this->eventFactory->create(self::SHUT_DOWN_EVENT, $application);
         $promise = $this->emitter->emit($event);
         return $promise;

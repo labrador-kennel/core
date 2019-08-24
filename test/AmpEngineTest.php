@@ -14,6 +14,7 @@ use Amp\Success;
 use Cspray\Labrador\Application;
 use Cspray\Labrador\Engine;
 use Cspray\Labrador\AmpEngine;
+use Cspray\Labrador\EngineState;
 use Cspray\Labrador\Exception\InvalidStateException;
 use Cspray\Labrador\Exception\Exception;
 use Cspray\Labrador\Exceptions;
@@ -215,7 +216,7 @@ class AmpEngineTest extends UnitTestCase {
 
     public function testEngineStateBeforeRunIsIdle() {
         $engine = $this->getEngine();
-        $this->assertSame(Engine::IDLE_STATE, $engine->getState());
+        $this->assertSame(EngineState::Idle(), $engine->getState());
     }
 
     public function testEngineStateDuringRunIsRunning() {
@@ -227,7 +228,7 @@ class AmpEngineTest extends UnitTestCase {
 
         $engine->run($app);
 
-        $this->assertSame(Engine::RUNNING_STATE, $data->state);
+        $this->assertSame(EngineState::Running(), $data->state);
     }
 
     public function testEngineStateAfterRunIsIdle() {
@@ -235,7 +236,7 @@ class AmpEngineTest extends UnitTestCase {
         $app = new NoopApplication();
         $engine->run($app);
 
-        $this->assertSame(Engine::IDLE_STATE, $engine->getState());
+        $this->assertSame(EngineState::Idle(), $engine->getState());
     }
 
     public function testEngineStateAfterExceptionIsCrashed() {
@@ -249,7 +250,7 @@ class AmpEngineTest extends UnitTestCase {
 
         $engine->run($app);
 
-        $this->assertSame(Engine::CRASHED_STATE, $engine->getState());
+        $this->assertSame(EngineState::Crashed(), $engine->getState());
     }
 
     public function testEngineBootupEventCalledOnceOnMultipleRunCalls() {

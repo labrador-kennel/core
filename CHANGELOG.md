@@ -6,6 +6,12 @@
 
 - Adds the ext-ds extension and refactors the use of arrays as data structure to more semantic, 
 efficient structures.
+- Adds the `cspray/yape` library to create type-safe, powerful enums. Adds a new EngineState 
+enum.
+
+#### Changed
+
+- The `Engine::getState` method now returns an EngineState enum as opposed to an arbitrary string.
 
 ## 3.0.0-beta5 2019-05-11
 
@@ -26,7 +32,7 @@ this method before loading has occurred will result in an exception.
 - Added `EventAwarePlugin::removeEventListeners` that will be invoked whenever a loaded Plugin is 
 removed from its Pluggable.
 - Added the Monolog library and implemented PSR-3 logging throughout the provided Engine and PluginManager.
-Additionally the DependencyGraph object has been setup so that any objet implement the LoggerAwareInterface 
+Additionally the DependencyGraph object has been setup so that any object implement the LoggerAwareInterface 
 will automatically have the appropriate Logger set to it.
 - Added the `Engine::getState` method that normalizes the idea of an Engine having a state and allows 
 consuming code to determine that state with a known API.

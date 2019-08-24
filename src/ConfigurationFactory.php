@@ -22,6 +22,12 @@ class ConfigurationFactory {
         $this->schemasDirectory = dirname(__DIR__, 1) . '/resources/schemas';
     }
 
+    /**
+     * @param string $configurationPath
+     * @return Configuration
+     * @throws Exception\Exception
+     * @throws Exception\InvalidArgumentException
+     */
     public function createFromFilePath(string $configurationPath) : Configuration {
         if (!file_exists($configurationPath)) {
             throw Exceptions::createException(Exceptions::CONFIG_ERR_FILE_NOT_EXIST);
@@ -40,10 +46,21 @@ class ConfigurationFactory {
         return $this->createConfiguration($configData);
     }
 
+    /**
+     * @param string $configurationPath
+     * @return stdClass
+     * @throws Exception\Exception
+     */
     private function loadJsonConfigData(string $configurationPath) : stdClass {
         return $this->validateJsonSource(file_get_contents($configurationPath));
     }
 
+    /**
+     * @param string $configurationPath
+     * @return stdClass
+     * @throws Exception\Exception
+     * @throws Exception\InvalidArgumentException
+     */
     private function loadXmlConfigData(string $configurationPath) : stdClass {
         $xmlSchemaPath = $this->schemasDirectory . '/configuration.schema.xsd';
         libxml_use_internal_errors(true);
@@ -81,6 +98,12 @@ class ConfigurationFactory {
         return $configData;
     }
 
+    /**
+     * @param string $configurationPath
+     * @return stdClass
+     * @throws Exception\Exception
+     * @throws Exception\InvalidArgumentException
+     */
     private function loadPhpConfigData(string $configurationPath) : stdClass {
         $phpConfig = include $configurationPath;
         if (is_array($phpConfig)) {
@@ -94,6 +117,12 @@ class ConfigurationFactory {
         }
     }
 
+    /**
+     * @param string $jsonSource
+     * @return stdClass
+     * @throws Exception\Exception
+     * @throws Exception\InvalidArgumentException
+     */
     private function validateJsonSource(string $jsonSource) : stdClass {
         $jsonSchemaPath = $this->schemasDirectory . '/configuration.schema.json';
         $jsonSchema = Schema::fromJsonString(file_get_contents($jsonSchemaPath));
