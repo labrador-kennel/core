@@ -51,5 +51,4 @@ final class EngineState implements Enum {
     public function toString() : string {
         return get_class($this) . '@' . $this->enumConstName;
     }
-
 }
