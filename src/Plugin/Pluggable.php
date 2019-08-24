@@ -7,7 +7,6 @@ use Cspray\Labrador\Exception\CircularDependencyException;
 use Cspray\Labrador\Exception\InvalidArgumentException;
 use Cspray\Labrador\Exception\InvalidStateException;
 use Cspray\Labrador\Exception\NotFoundException;
-use Ds\Sequence;
 use Ds\Set;
 
 /**

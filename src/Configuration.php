@@ -36,9 +36,9 @@ interface Configuration {
     public function getInjectorProviderPath() : string;
 
     /**
-     * Return an array of fully qualified class names for the Plugins that should be added to your Application.
+     * Return a Set of fully qualified class names for the Plugins that should be added to your Application.
      *
-     * @return string[]
+     * @return Set<string>
      */
     public function getPlugins() : Set;
 }

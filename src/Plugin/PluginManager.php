@@ -6,6 +6,9 @@ use Amp\Promise;
 use Cspray\Labrador\AsyncEvent\Emitter;
 use Auryn\Injector;
 
+use Cspray\Labrador\Exception\Exception;
+use Cspray\Labrador\Exception\InvalidArgumentException;
+use Cspray\Labrador\Exception\InvalidStateException;
 use Ds\Map;
 use Ds\Pair;
 use Ds\Set;
@@ -73,7 +76,13 @@ final class PluginManager implements Pluggable, LoggerAwareInterface {
         $vector->push(new Pair($pluginHandler, $arguments));
     }
 
+    /**
+     * @param string $plugin
+     * @throws InvalidArgumentException
+     * @throws InvalidStateException
+     */
     public function registerPlugin(string $plugin) : void {
+        /** @var InvalidArgumentException|InvalidStateException $exception */
         if ($exception = $this->guardRegisterPluginIsValid($plugin)) {
             throw $exception;
         }
@@ -81,7 +90,12 @@ final class PluginManager implements Pluggable, LoggerAwareInterface {
         $this->logger->info(sprintf('Registered Plugin "%s".', $plugin));
     }
 
-    private function guardRegisterPluginIsValid(string $plugin) : ?\Throwable {
+    /**
+     * @param string $plugin
+     * @return Exception|null
+     * @throws InvalidArgumentException
+     */
+    private function guardRegisterPluginIsValid(string $plugin) : ?Exception {
         if ($this->hasPluginBeenRegistered($plugin)) {
             return Exceptions::createException(
                 Exceptions::PLUGIN_ERR_HAS_BEEN_REGISTERED,
@@ -164,8 +178,15 @@ final class PluginManager implements Pluggable, LoggerAwareInterface {
         return $this->pluginsLoaded;
     }
 
+    /**
+     * @param string $name
+     * @return Plugin
+     * @throws InvalidArgumentException
+     * @throws InvalidStateException
+     */
     public function getLoadedPlugin(string $name) : Plugin {
         if (!$this->hasPluginBeenRegistered($name)) {
+            /** @var InvalidArgumentException $exception */
             $exception = Exceptions::createException(
                 Exceptions::PLUGIN_ERR_PLUGIN_NOT_FOUND,
                 null,
@@ -176,6 +197,7 @@ final class PluginManager implements Pluggable, LoggerAwareInterface {
 
         $plugin = $this->plugins->get($name);
         if ($plugin === null) {
+            /** @var InvalidStateException $exception */
             $exception = Exceptions::createException(
                 Exceptions::PLUGIN_ERR_INVALID_PLUGIN_ACCESS_PRELOAD,
                 null
@@ -186,8 +208,14 @@ final class PluginManager implements Pluggable, LoggerAwareInterface {
         return $plugin;
     }
 
+    /**
+     * @return Set
+     * @throws InvalidArgumentException
+     * @throws InvalidStateException
+     */
     public function getLoadedPlugins() : Set {
         if (!$this->havePluginsLoaded()) {
+            /** @var InvalidStateException $exception */
             $exception = Exceptions::createException(
                 Exceptions::PLUGIN_ERR_INVALID_PLUGIN_ACCESS_PRELOAD,
                 null
@@ -261,7 +289,13 @@ final class PluginManager implements Pluggable, LoggerAwareInterface {
         });
     }
 
-    private function guardLoadingValidPluginDependency(string $plugin, string $reqPluginName) : ?\Throwable {
+    /**
+     * @param string $plugin
+     * @param string $reqPluginName
+     * @return Exception|null
+     * @throws InvalidArgumentException
+     */
+    private function guardLoadingValidPluginDependency(string $plugin, string $reqPluginName) : ?Exception {
         if ($this->isLoading($reqPluginName)) {
             return Exceptions::createException(
                 Exceptions::PLUGIN_ERR_CIRCULAR_DEPENDENCY,

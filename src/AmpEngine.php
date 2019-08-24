@@ -2,12 +2,14 @@
 
 namespace Cspray\Labrador;
 
+use Amp\Promise;
 use Cspray\Labrador\AsyncEvent\Emitter;
 use Cspray\Labrador\AsyncEvent\EventFactory;
 use Cspray\Labrador\AsyncEvent\StandardEventFactory;
 use Cspray\Labrador\Exception\InvalidStateException;
 use Amp\Loop;
 use Psr\Log\LoggerAwareTrait;
+use Throwable;
 
 /**
  * An implementation of the Engine interface running on the global amphp Loop.
@@ -63,7 +65,7 @@ class AmpEngine implements Engine {
 
     /**
      * @param Application $application
-     * @return void
+     * @throws Exception\InvalidArgumentException
      * @throws InvalidStateException
      */
     public function run(Application $application) : void {
@@ -76,7 +78,7 @@ class AmpEngine implements Engine {
             throw $exception;
         }
 
-        Loop::setErrorHandler(function(\Throwable $error) use($application) {
+        Loop::setErrorHandler(function(Throwable $error) use($application) {
             $this->logger->alert(
                 sprintf(
                     'The Application threw an exception: %s "%s"',
@@ -120,12 +122,21 @@ class AmpEngine implements Engine {
         });
     }
 
-    private function emitEngineStartUpEvent() {
+    /**
+     * @return Promise
+     * @throws Exception\InvalidArgumentException
+     */
+    private function emitEngineStartUpEvent() : Promise {
         $event = $this->eventFactory->create(self::START_UP_EVENT, $this);
         return $this->emitter->emit($event);
     }
 
-    private function emitEngineShutDownEvent(Application $application) {
+    /**
+     * @param Application $application
+     * @return Promise
+     * @throws Exception\InvalidArgumentException
+     */
+    private function emitEngineShutDownEvent(Application $application) : Promise {
         $event = $this->eventFactory->create(self::SHUT_DOWN_EVENT, $application);
         $promise = $this->emitter->emit($event);
         return $promise;

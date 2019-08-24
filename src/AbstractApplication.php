@@ -5,7 +5,6 @@ namespace Cspray\Labrador;
 use Amp\Promise;
 use Cspray\Labrador\Plugin\Pluggable;
 use Cspray\Labrador\Plugin\Plugin;
-use Ds\Sequence;
 use Ds\Set;
 use Psr\Log\LoggerAwareTrait;
 use Throwable;
