@@ -23,7 +23,8 @@
     "monolog/monolog": "^1.24",
     "opis/json-schema": "^1.0",
     "php-ds/php-ds": "^1.2",
-    "rdlowrey/auryn": "~1.4"
+    "rdlowrey/auryn": "~1.4",
+    "cspray/yape": "^1.1"
   },
   "require-dev": {
     "amphp/phpunit-util": "~1.1",

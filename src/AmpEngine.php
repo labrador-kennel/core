@@ -21,7 +21,7 @@ class AmpEngine implements Engine {
 
     private $emitter;
     private $eventFactory;
-    private $engineState = self::IDLE_STATE;
+    private $engineState;
     private $engineBooted = false;
 
     public function __construct(
@@ -30,9 +30,10 @@ class AmpEngine implements Engine {
     ) {
         $this->emitter = $emitter;
         $this->eventFactory = $eventFactory ?? new StandardEventFactory();
+        $this->engineState = EngineState::Idle();
     }
 
-    public function getState() : string {
+    public function getState() : EngineState {
         return $this->engineState;
     }
 
@@ -66,7 +67,7 @@ class AmpEngine implements Engine {
      * @throws InvalidStateException
      */
     public function run(Application $application) : void {
-        if ($this->engineState !== self::IDLE_STATE) {
+        if (!$this->engineState->isIdling()) {
             /** @var InvalidStateException $exception */
             $exception = Exceptions::createException(
                 Exceptions::ENGINE_ERR_MULTIPLE_RUN_CALLS,
@@ -89,13 +90,13 @@ class AmpEngine implements Engine {
                 $this->logger->info('Starting Application cleanup process.');
                 yield $this->emitEngineShutDownEvent($application);
                 $this->logger->info('Completed Application cleanup process. Engine shutting down.');
-                $this->engineState = self::CRASHED_STATE;
+                $this->engineState = EngineState::Crashed();
             });
         });
 
 
         Loop::run(function() use($application) {
-            $this->engineState = self::RUNNING_STATE;
+            $this->engineState = EngineState::Running();
 
             $this->emitter->once(self::START_UP_EVENT, function() use($application) {
                 $this->logger->info('Starting Plugin loading process.');
@@ -115,7 +116,7 @@ class AmpEngine implements Engine {
             $this->logger->info('Starting Application cleanup process.');
             yield $this->emitEngineShutDownEvent($application);
             $this->logger->info('Completed Application cleanup process. Engine shutting down.');
-            $this->engineState = self::IDLE_STATE;
+            $this->engineState = EngineState::Idle();
         });
     }
 

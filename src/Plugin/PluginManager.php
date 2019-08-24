@@ -16,7 +16,7 @@ use Psr\Log\LoggerAwareInterface;
 use Psr\Log\LoggerAwareTrait;
 
 /**
- * De facto Pluggable implementation that manages the lifecycle of Plugins for all out-of-the-box Applications.
+ * The default Pluggable implementation that manages the lifecycle of Plugins for all out-of-the-box Applications.
  *
  * It is HIGHLY recommended that if you implement your own Pluggable interface that you delegate the actual
  * responsibilities for handling the lifecycle of the Plugin to an instance of this object; it is well tested and
@@ -44,6 +44,17 @@ final class PluginManager implements Pluggable, LoggerAwareInterface {
 
     private $pluginsLoaded = false;
 
+    /**
+     * Constructs the PluginManager with dependencies required to be provided to certain Plugin types.
+     *
+     * There are 2 primary reasons for asking for the Injector in this class; the first is that we are required to
+     * construct Plugins from a string and constructing objects in a fashion that all known dependencies are provided
+     * is a natural responsibility of the Injector. The second is that the InjectorAwarePlugin requires that an Injector
+     * be provided during the plugin loading process.
+     *
+     * @param Injector $injector
+     * @param Emitter $emitter
+     */
     public function __construct(Injector $injector, Emitter $emitter) {
         $this->injector = $injector;
         $this->emitter = $emitter;
