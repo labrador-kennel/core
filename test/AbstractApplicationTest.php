@@ -19,7 +19,7 @@ class AbstractApplicationTest extends TestCase {
     /** @var AbstractApplication */
     private $subject;
 
-    public function setUp() {
+    public function setUp() : void {
         $this->pluggable = $this->getMockBuilder(Pluggable::class)->getMock();
         $this->subject = $this->getMockForAbstractClass(AbstractApplication::class, [$this->pluggable]);
     }

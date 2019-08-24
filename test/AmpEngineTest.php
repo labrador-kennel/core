@@ -45,7 +45,7 @@ class AmpEngineTest extends UnitTestCase {
      */
     private $logger;
 
-    public function setUp() {
+    public function setUp() : void {
         $this->injector = new Injector();
         $this->emitter = new AmpEmitter();
         $this->logger = new TestLogger();

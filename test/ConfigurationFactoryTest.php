@@ -23,7 +23,7 @@ class ConfigurationFactoryTest extends TestCase {
      */
     private $subject;
 
-    public function setUp() {
+    public function setUp() : void {
         parent::setUp();
         $this->subject = new ConfigurationFactory();
     }
