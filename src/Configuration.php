@@ -2,6 +2,8 @@
 
 namespace Cspray\Labrador;
 
+use Ds\Set;
+
 /**
  * Implementations define the data for the ConfiguredApplicationInvoker, the out-of-the-box way your Application
  * instance is executed.
@@ -38,5 +40,5 @@ interface Configuration {
      *
      * @return string[]
      */
-    public function getPlugins() : array;
+    public function getPlugins() : Set;
 }

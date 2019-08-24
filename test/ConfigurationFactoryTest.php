@@ -52,7 +52,7 @@ class ConfigurationFactoryTest extends TestCase {
     public function testValidJsonConfigurationReturnsCorrectValues() {
         $config = $this->subject->createFromFilePath(__DIR__ . '/_data/valid-json-configuration.json');
 
-        $this->assertSame([PluginStub::class], $config->getPlugins());
+        $this->assertSame([PluginStub::class], $config->getPlugins()->toArray());
         $this->assertSame("test-env", $config->getLogName());
         $this->assertSame("php://stdout", $config->getLogPath());
         $this->assertSame('file://yadda/yadda', $config->getInjectorProviderPath());
@@ -70,7 +70,7 @@ class ConfigurationFactoryTest extends TestCase {
 
         $this->assertSame("xml-config-log", $config->getLogName());
         $this->assertSame("php://stdout", $config->getLogPath());
-        $this->assertSame([PluginStub::class], $config->getPlugins());
+        $this->assertSame([PluginStub::class], $config->getPlugins()->toArray());
         $this->assertSame('file://yadda/yadda/xml', $config->getInjectorProviderPath());
     }
 
@@ -94,7 +94,7 @@ class ConfigurationFactoryTest extends TestCase {
 
         $this->assertSame('php-array-log', $config->getLogName());
         $this->assertSame('php://stdout', $config->getLogPath());
-        $this->assertSame([PluginStub::class, FooPluginDependentStub::class], $config->getPlugins());
+        $this->assertSame([PluginStub::class, FooPluginDependentStub::class], $config->getPlugins()->toArray());
         $this->assertSame('file://yadda/yadda/array', $config->getInjectorProviderPath());
     }
 
@@ -105,6 +105,6 @@ class ConfigurationFactoryTest extends TestCase {
         $this->assertSame('php-instance-log', $config->getLogName());
         $this->assertSame('php://stdout', $config->getLogPath());
         $this->assertSame('file://yadda/yadda/instance', $config->getInjectorProviderPath());
-        $this->assertSame([PluginStub::class, FooPluginStub::class], $config->getPlugins());
+        $this->assertSame([PluginStub::class, FooPluginStub::class], $config->getPlugins()->toArray());
     }
 }

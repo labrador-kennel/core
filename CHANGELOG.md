@@ -1,6 +1,13 @@
 # Changelog
 
-## 3.0.0-beta5 2019-??-??
+## 3.0.0-beta6 201-??-??
+
+#### Added
+
+- Adds the ext-ds extension and refactors the use of arrays as data structure to more semantic, 
+efficient structures.
+
+## 3.0.0-beta5 2019-05-11
 
 This release represents a major refactor to the Plugin system in an attempt to make the more common use 
 case easier to facilitate and to provide more async support for Plugins.

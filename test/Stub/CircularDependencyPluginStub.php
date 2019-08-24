@@ -9,6 +9,7 @@ declare(strict_types = 1);
 namespace Cspray\Labrador\Test\Stub;
 
 use Cspray\Labrador\Plugin\PluginDependentPlugin;
+use Ds\Set;
 
 class CircularDependencyPluginStub implements PluginDependentPlugin {
 
@@ -17,7 +18,7 @@ class CircularDependencyPluginStub implements PluginDependentPlugin {
      *
      * @return array
      */
-    public static function dependsOn() : array {
-        return [RequiresCircularDependentStub::class];
+    public static function dependsOn() : Set {
+        return new Set([RequiresCircularDependentStub::class]);
     }
 }

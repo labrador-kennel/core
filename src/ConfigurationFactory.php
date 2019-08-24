@@ -2,6 +2,7 @@
 
 namespace Cspray\Labrador;
 
+use Ds\Set;
 use Opis\JsonSchema\Schema;
 use Opis\JsonSchema\Validator;
 use DOMDocument;
@@ -69,9 +70,9 @@ class ConfigurationFactory {
         $configData->labrador->logging->outputPath = $xpath->evaluate('/l:labrador/l:logging/l:outputPath/text()')
                                                             ->item(0)->nodeValue;
 
-        $configData->labrador->plugins = [];
+        $configData->labrador->plugins = new Set();
         foreach ($xpath->query('/l:labrador/l:plugins/l:plugin') as $pluginNode) {
-            $configData->labrador->plugins[] = $pluginNode->nodeValue;
+            $configData->labrador->plugins->add($pluginNode->nodeValue);
         }
 
         $configData->labrador->injectorProviderPath = $xpath->evaluate('/l:labrador/l:injectorProviderPath/text()')
@@ -106,6 +107,8 @@ class ConfigurationFactory {
             throw $exception;
         }
 
+        $configData->labrador->plugins = new Set($configData->labrador->plugins);
+
         return $configData;
     }
 
@@ -134,7 +137,7 @@ class ConfigurationFactory {
             public function __construct(
                 string $logName,
                 string $logPath,
-                array $plugins,
+                Set $plugins,
                 string $injectorProviderPath
             ) {
                 $this->logName = $logName;
@@ -151,7 +154,7 @@ class ConfigurationFactory {
                 return $this->logPath;
             }
 
-            public function getPlugins() : array {
+            public function getPlugins() : Set {
                 return $this->plugins;
             }
 
