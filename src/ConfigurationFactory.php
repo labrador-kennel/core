@@ -6,6 +6,7 @@ use Ds\Set;
 use Opis\JsonSchema\Schema;
 use Opis\JsonSchema\Validator;
 use DOMDocument;
+use DOMXPath;
 use stdClass;
 
 /**
@@ -26,7 +27,6 @@ class ConfigurationFactory {
      * @param string $configurationPath
      * @return Configuration
      * @throws Exception\Exception
-     * @throws Exception\InvalidArgumentException
      */
     public function createFromFilePath(string $configurationPath) : Configuration {
         if (!file_exists($configurationPath)) {
@@ -59,7 +59,6 @@ class ConfigurationFactory {
      * @param string $configurationPath
      * @return stdClass
      * @throws Exception\Exception
-     * @throws Exception\InvalidArgumentException
      */
     private function loadXmlConfigData(string $configurationPath) : stdClass {
         $xmlSchemaPath = $this->schemasDirectory . '/configuration.schema.xsd';
@@ -75,7 +74,7 @@ class ConfigurationFactory {
         libxml_clear_errors();
         libxml_use_internal_errors(false);
 
-        $xpath = new \DOMXPath($dom);
+        $xpath = new DOMXPath($dom);
         $xpath->registerNamespace('l', 'https://labrador-kennel.io/core/schemas/configuration.schema.xsd');
 
         $configData = new stdClass();
@@ -102,7 +101,6 @@ class ConfigurationFactory {
      * @param string $configurationPath
      * @return stdClass
      * @throws Exception\Exception
-     * @throws Exception\InvalidArgumentException
      */
     private function loadPhpConfigData(string $configurationPath) : stdClass {
         $phpConfig = include $configurationPath;
@@ -121,7 +119,6 @@ class ConfigurationFactory {
      * @param string $jsonSource
      * @return stdClass
      * @throws Exception\Exception
-     * @throws Exception\InvalidArgumentException
      */
     private function validateJsonSource(string $jsonSource) : stdClass {
         $jsonSchemaPath = $this->schemasDirectory . '/configuration.schema.json';

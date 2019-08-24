@@ -4,7 +4,7 @@
         "Read more about it at https://getcomposer.org/doc/01-basic-usage.md#installing-dependencies",
         "This file is @generated automatically"
     ],
-    "content-hash": "77419ca3283c74b557c6e0564fab53e7",
+    "content-hash": "42fe1554237e9e81784038620cbd3033",
     "packages": [
         {
             "name": "amphp/amp",
@@ -483,16 +483,16 @@
         },
         {
             "name": "cspray/labrador-exceptions",
-            "version": "1.0.0",
+            "version": "1.1.0",
             "source": {
                 "type": "git",
                 "url": "https://github.com/labrador-kennel/exception.git",
-                "reference": "5b98e8cd1456e783545ad8c21cc2aac1959bdf65"
+                "reference": "1efc08033cd6f06f59805a2ae2c68d650edab0b5"
             },
             "dist": {
                 "type": "zip",
-                "url": "https://api.github.com/repos/labrador-kennel/exception/zipball/5b98e8cd1456e783545ad8c21cc2aac1959bdf65",
-                "reference": "5b98e8cd1456e783545ad8c21cc2aac1959bdf65",
+                "url": "https://api.github.com/repos/labrador-kennel/exception/zipball/1efc08033cd6f06f59805a2ae2c68d650edab0b5",
+                "reference": "1efc08033cd6f06f59805a2ae2c68d650edab0b5",
                 "shasum": ""
             },
             "require": {
@@ -513,12 +513,12 @@
             "authors": [
                 {
                     "name": "Charles Sprayberry",
+                    "role": "Benevolent Dictator For Life",
                     "email": "cspray+labrador@gmail.com",
-                    "homepage": "http://labrador.cspray.net",
-                    "role": "Benevolent Dictator For Life"
+                    "homepage": "http://labrador.cspray.net"
                 }
             ],
-            "time": "2017-05-13T04:23:17+00:00"
+            "time": "2019-08-24T21:08:26+00:00"
         },
         {
             "name": "cspray/yape",

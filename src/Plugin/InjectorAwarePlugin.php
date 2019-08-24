@@ -3,6 +3,7 @@
 namespace Cspray\Labrador\Plugin;
 
 use Auryn\Injector;
+use Cspray\Labrador\Exception\DependencyInjectionException;
 
 /**
  * Plugin responsible for wiring an object graph to a given Injector.
@@ -19,9 +20,13 @@ interface InjectorAwarePlugin extends Plugin {
      * objects that are intended to be single instances, and configuring any factory methods onto your Injector. Making
      * an object here is likely a sign that your implementation is doing too much.
      *
+     * If an error is encountered that would cause an Auryn\InjectorException to be thrown it MUST be caught and
+     * rethrown as a DependencyInjectionException. We should endeavor to prohibit 3rd party exceptions from leaking out
+     * of Labrador components.
      *
      * @param Injector $injector
      * @return void
+     * @throws DependencyInjectionException
      */
     public function wireObjectGraph(Injector $injector) : void;
 }

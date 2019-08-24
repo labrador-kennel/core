@@ -3,8 +3,10 @@
 namespace Cspray\Labrador;
 
 use Auryn\Injector;
+use Auryn\InjectorException;
 use Cspray\Labrador\AsyncEvent\Emitter;
 use Cspray\Labrador\AsyncEvent\AmpEmitter;
+use Cspray\Labrador\Exception\DependencyInjectionException;
 use Cspray\Labrador\Plugin\PluginManager;
 use Psr\Log\LoggerAwareInterface;
 use Psr\Log\LoggerInterface;
@@ -30,37 +32,36 @@ final class DependencyGraph {
     /**
      * Returns an Injector that will allow the creation of the dependencies that Labrador needs out-of-the-box.
      *
-     * The current mapping that this Injector provides:
-     *
-     * - Cspray\Labrador\AsyncEvent\Emitter -> Cspray\Labrador\AsyncEvent\AmpEmitter
-     * - Cspray\Labrador\Plugin\PluginManager -> ''
-     * - Cspray\Labrador\Engine -> Cspray\Labrador\AmpEngine
-     *
      * @param Injector|null $injector
      * @return Injector
-     * @throws \Auryn\ConfigException
-     * @throws \Auryn\InjectionException
+     * @throws DependencyInjectionException
      */
     public function wireObjectGraph(Injector $injector = null) : Injector {
-        $injector = $injector ?? new Injector();
+        try {
+            $injector = $injector ?? new Injector();
 
-        $injector->share(AmpEmitter::class);
-        $injector->alias(Emitter::class, AmpEmitter::class);
+            $injector->share(AmpEmitter::class);
+            $injector->alias(Emitter::class, AmpEmitter::class);
 
-        $injector->share(PluginManager::class);
-        $injector->define(PluginManager::class, [
-            ':injector' => $injector
-        ]);
+            $injector->share(PluginManager::class);
+            $injector->define(PluginManager::class, [
+                ':injector' => $injector
+            ]);
 
-        $injector->share(AmpEngine::class);
-        $injector->alias(Engine::class, AmpEngine::class);
+            $injector->share(AmpEngine::class);
+            $injector->alias(Engine::class, AmpEngine::class);
 
-        $injector->share($this->logger);
-        $injector->alias(LoggerInterface::class, get_class($this->logger));
-        $injector->prepare(LoggerAwareInterface::class, function(LoggerAwareInterface $aware) {
-            $aware->setLogger($this->logger);
-        });
+            $injector->share($this->logger);
+            $injector->alias(LoggerInterface::class, get_class($this->logger));
+            $injector->prepare(LoggerAwareInterface::class, function(LoggerAwareInterface $aware) {
+                $aware->setLogger($this->logger);
+            });
 
-        return $injector;
+            return $injector;
+        } catch (InjectorException $injectorException) {
+            /** @var DependencyInjectionException $exception */
+            $exception = Exceptions::createException(Exceptions::DEPENDENCY_GRAPH_INJECTION_ERR, $injectorException);
+            throw $exception;
+        }
     }
 }

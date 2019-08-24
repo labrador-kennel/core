@@ -2,7 +2,10 @@
 
 namespace Cspray\Labrador;
 
+use Auryn\InjectionException;
+use Auryn\InjectorException;
 use Cspray\Labrador\Exception\CircularDependencyException;
+use Cspray\Labrador\Exception\DependencyInjectionException;
 use Cspray\Labrador\Exception\Exception;
 use Cspray\Labrador\Exception\InvalidArgumentException;
 use Cspray\Labrador\Exception\InvalidStateException;
@@ -138,6 +141,14 @@ class Exceptions {
     const CONFIG_ERR_FILE_UNSUPPORTED_EXTENSION = 1204;
 
     /**
+     * An error code when an error occurs with creating the Auryn Injector for the library's DependencyGraph.
+     *
+     *@var int Exception code when this error occurs
+     *@msgArg InjectorException
+     */
+    const DEPENDENCY_GRAPH_INJECTION_ERR = 2000;
+
+    /**
      * @var Map
      */
     private static $codeMsgMap;
@@ -155,7 +166,6 @@ class Exceptions {
      * @param Throwable|null $nestedException
      * @param mixed ...$msgArgs
      * @return Exception A Labrador Exception
-     * @throws InvalidArgumentException
      */
     public static function createException(int $errorCode, Throwable $nestedException = null, ...$msgArgs) : Exception {
         if (!isset(self::$codeMsgMap)) {
@@ -168,7 +178,7 @@ class Exceptions {
             return new $pair->key($msg, $errorCode, $nestedException);
         }
 
-        throw new InvalidArgumentException('The error code provided is not mapped to a known exception');
+        return new Exception("An unknown error code was encountered", $errorCode, $nestedException);
     }
 
     private static function loadCodeMessageMap() {
@@ -259,5 +269,15 @@ class Exceptions {
         $map->put(self::CONFIG_ERR_FILE_UNSUPPORTED_EXTENSION, new Pair($invalidArg, function() {
             return 'The file extension for the provided configuration is not supported.';
         }));
+
+        $map->put(
+            self::DEPENDENCY_GRAPH_INJECTION_ERR,
+            new Pair(
+                DependencyInjectionException::class,
+                function() {
+                    return 'An error occurred creating the appropriate Injector for the DependencyGraph';
+                }
+            )
+        );
     }
 }

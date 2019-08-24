@@ -7,9 +7,7 @@ use Cspray\Labrador\AmpEngine;
 use Cspray\Labrador\DependencyGraph;
 use Auryn\Injector;
 use Cspray\Labrador\Plugin\PluginManager;
-use Cspray\Labrador\Test\Stub\AbstractApplicationStub;
 use Cspray\Labrador\Test\Stub\LoggerAwareStub;
-use Cspray\Labrador\Test\Stub\PluginStub;
 use PHPUnit\Framework\TestCase as UnitTestCase;
 use Psr\Log\LoggerInterface;
 
