@@ -38,8 +38,8 @@ class DependencyGraphTest extends AsyncTestCase {
             }
 
             /**
-             * Return a path in which the file returns a callable that accepts a single Configuration instance and returns an
-             * Injector.
+             * Return a path in which the file returns a callable that accepts a single Configuration instance and
+             * returns an Injector.
              *
              * @return string
              */
