@@ -5,9 +5,26 @@ Ensures basic integration works
 
 require_once dirname(dirname(__DIR__)) . '/vendor/autoload.php';
 
-$logger = new \Monolog\Logger('app-integration-test');
-$logger->pushHandler(new \Monolog\Handler\NullHandler());
-$injector = (new \Cspray\Labrador\DependencyGraph($logger))->wireObjectGraph();
+$configuration = new class implements \Cspray\Labrador\Configuration {
+
+        public function getLogName() : string {
+            return 'integration-test';
+        }
+
+        public function getLogPath() : string {
+            return '/dev/null';
+        }
+
+        public function getInjectorProviderPath() : string {
+            throw new \RuntimeException('Did not expect this to be called');
+        }
+
+        public function getPlugins() : \Ds\Set {
+            throw new \RuntimeException('Did not expect this to be called');
+        }
+};
+
+$injector = (new \Cspray\Labrador\DependencyGraph($configuration))->wireObjectGraph();
 $engine = $injector->make(\Cspray\Labrador\Engine::class);
 
 $engine->onEngineBootup(function() {
@@ -15,6 +32,10 @@ $engine->onEngineBootup(function() {
 })
 ->onEngineShutdown(function() {
     echo "shutdown";
+});
+
+set_error_handler(function(...$args) {
+    var_dump($args);
 });
 
 $app = $injector->make(\Cspray\Labrador\CallbackApplication::class, [

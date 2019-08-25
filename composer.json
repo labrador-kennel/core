@@ -25,9 +25,11 @@
     "monolog/monolog": "^1.24",
     "opis/json-schema": "^1.0",
     "php-ds/php-ds": "^1.2",
-    "rdlowrey/auryn": "~1.4"
+    "rdlowrey/auryn": "~1.4",
+    "amphp/log": "^1.0"
   },
   "require-dev": {
+    "adlawson/vfs": "^0.12.1",
     "amphp/phpunit-util": "~1.1",
     "cspray/labrador-coding-standard": "0.2.0",
     "phpunit/phpunit": "~8"

@@ -8,10 +8,14 @@
 efficient structures.
 - Adds the `cspray/yape` library to create type-safe, powerful enums. Adds a new EngineState 
 enum.
+- Adds the `amphp/log` library to facilitate asynchronous logging using Monolog\Logger.
 
 #### Changed
 
 - The `Engine::getState` method now returns an EngineState enum as opposed to an arbitrary string.
+- The DependencyGraph implementation now expects a Configuration instance as its only constructor 
+dependency. A Monolog\Logger will be created using the configured log name and log path with a 
+Amp\Log\StreamHandler as the only registered handler. Additional handlers may be registered
 
 ## 3.0.0-beta5 2019-05-11
 
