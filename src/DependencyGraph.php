@@ -2,12 +2,16 @@
 
 namespace Cspray\Labrador;
 
+use Amp\ByteStream\OutputBuffer;
+use Amp\ByteStream\ResourceOutputStream;
+use Amp\Log\StreamHandler;
 use Auryn\Injector;
 use Auryn\InjectorException;
 use Cspray\Labrador\AsyncEvent\Emitter;
 use Cspray\Labrador\AsyncEvent\AmpEmitter;
 use Cspray\Labrador\Exception\DependencyInjectionException;
 use Cspray\Labrador\Plugin\PluginManager;
+use Monolog\Logger;
 use Psr\Log\LoggerAwareInterface;
 use Psr\Log\LoggerInterface;
 
@@ -23,10 +27,10 @@ use Psr\Log\LoggerInterface;
  */
 final class DependencyGraph {
 
-    private $logger;
+    private $configuration;
 
-    public function __construct(LoggerInterface $logger) {
-        $this->logger = $logger;
+    public function __construct(Configuration $configuration) {
+        $this->configuration = $configuration;
     }
 
     /**
@@ -51,10 +55,13 @@ final class DependencyGraph {
             $injector->share(AmpEngine::class);
             $injector->alias(Engine::class, AmpEngine::class);
 
-            $injector->share($this->logger);
-            $injector->alias(LoggerInterface::class, get_class($this->logger));
-            $injector->prepare(LoggerAwareInterface::class, function(LoggerAwareInterface $aware) {
-                $aware->setLogger($this->logger);
+            $logger = new Logger($this->configuration->getLogName());
+            $handler = new StreamHandler(new ResourceOutputStream(@fopen($this->configuration->getLogPath(), 'wb')));
+            $logger->pushHandler($handler);
+            $injector->share($logger);
+            $injector->alias(LoggerInterface::class, get_class($logger));
+            $injector->prepare(LoggerAwareInterface::class, function(LoggerAwareInterface $aware) use($logger) {
+                $aware->setLogger($logger);
             });
 
             return $injector;
