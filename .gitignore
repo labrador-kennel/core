@@ -9,3 +9,4 @@ Vagrantfile
 /puphpet
 docs/_site/
 docs/.sass-cache
+.phpunit.results.cache
