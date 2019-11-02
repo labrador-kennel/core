@@ -8,6 +8,8 @@ use Cspray\Labrador\AmpEngine;
 use Cspray\Labrador\Configuration;
 use Cspray\Labrador\DependencyGraph;
 use Auryn\Injector;
+use Cspray\Labrador\Engine;
+use Cspray\Labrador\Plugin\Pluggable;
 use Cspray\Labrador\Plugin\PluginManager;
 use Cspray\Labrador\Test\Stub\LoggerAwareStub;
 use Monolog\Logger;
@@ -69,10 +71,28 @@ class DependencyGraphTest extends AsyncTestCase {
         $this->assertNotSame($injector, $injector->make(Injector::class));
     }
 
-    public function testInjectorCreatesEngine() {
+    public function testEngineAliasedToAmpEngine() {
         $injector = (new DependencyGraph($this->getConfiguration()))->wireObjectGraph();
 
-        $this->assertInstanceOf(AmpEngine::class, $injector->make(AmpEngine::class));
+        $this->assertInstanceOf(AmpEngine::class, $injector->make(Engine::class));
+    }
+
+    public function testEngineShared() {
+        $injector = (new DependencyGraph($this->getConfiguration()))->wireObjectGraph();
+
+        $this->assertSame($injector->make(Engine::class), $injector->make(Engine::class));
+    }
+
+    public function testPluggableAliasedToPluginManager() {
+        $injector = (new DependencyGraph($this->getConfiguration()))->wireObjectGraph();
+
+        $this->assertInstanceOf(PluginManager::class, $injector->make(Pluggable::class));
+    }
+
+    public function testPluggableShared() {
+        $injector = (new DependencyGraph($this->getConfiguration()))->wireObjectGraph();
+
+        $this->assertSame($injector->make(Pluggable::class), $injector->make(Pluggable::class));
     }
 
     public function testPluginManagerGetsCorrectInjector() {

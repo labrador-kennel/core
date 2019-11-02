@@ -2,7 +2,6 @@
 
 namespace Cspray\Labrador;
 
-use Amp\ByteStream\OutputBuffer;
 use Amp\ByteStream\ResourceOutputStream;
 use Amp\Log\StreamHandler;
 use Auryn\Injector;
@@ -10,6 +9,7 @@ use Auryn\InjectorException;
 use Cspray\Labrador\AsyncEvent\Emitter;
 use Cspray\Labrador\AsyncEvent\AmpEmitter;
 use Cspray\Labrador\Exception\DependencyInjectionException;
+use Cspray\Labrador\Plugin\Pluggable;
 use Cspray\Labrador\Plugin\PluginManager;
 use Monolog\Logger;
 use Psr\Log\LoggerAwareInterface;
@@ -44,15 +44,16 @@ final class DependencyGraph {
         try {
             $injector = $injector ?? new Injector();
 
-            $injector->share(AmpEmitter::class);
+            $injector->share(Emitter::class);
             $injector->alias(Emitter::class, AmpEmitter::class);
 
-            $injector->share(PluginManager::class);
+            $injector->share(Pluggable::class);
+            $injector->alias(Pluggable::class, PluginManager::class);
             $injector->define(PluginManager::class, [
                 ':injector' => $injector
             ]);
 
-            $injector->share(AmpEngine::class);
+            $injector->share(Engine::class);
             $injector->alias(Engine::class, AmpEngine::class);
 
             $logger = new Logger($this->configuration->getLogName());

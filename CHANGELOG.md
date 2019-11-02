@@ -1,5 +1,12 @@
 # Changelog
 
+## 3.0.0-beta6 2019-11-02
+
+#### Fixed
+
+- Fixes the DependencyGraph aliases to ensure that the appropriate services are shared and aliased to the correct 
+default implementation.
+
 ## 3.0.0-beta5 2019-11-02
 
 This release represents a major refactor to the Plugin system in an attempt to make the more common use 
