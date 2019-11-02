@@ -16,6 +16,7 @@ use Psr\Log\LoggerAwareInterface;
 use Psr\Log\LoggerAwareTrait;
 
 use function Amp\call;
+
 /**
  * The default Pluggable implementation that manages the lifecycle of Plugins for all out-of-the-box Applications.
  *
