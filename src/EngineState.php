@@ -3,52 +3,34 @@
 namespace Cspray\Labrador;
 
 use Cspray\Yape\Enum;
+use Cspray\Yape\EnumTrait;
 
 final class EngineState implements Enum {
 
-    private static $container = [];
-
-    private $enumConstName;
-    private $value;
-
-    private function __construct(string $enumConstName, string $value) {
-        $this->enumConstName = $enumConstName;
-        $this->value = $value;
-    }
-
-    protected static function getSingleton($value, ...$additionalConstructorArgs) {
-        if (!isset(self::$container[$value])) {
-            self::$container[$value] = new self(...array_merge([$value], $additionalConstructorArgs));
-        }
-
-        return self::$container[$value];
-    }
+    use EnumTrait;
 
     public static function Idle() : EngineState {
-        return self::getSingleton('Idle', 'idle');
+        return self::getSingleton('Idle');
     }
 
     public static function Running() : EngineState {
-        return self::getSingleton('Running', 'running');
+        return self::getSingleton('Running');
     }
 
     public static function Crashed() : EngineState {
-        return self::getSingleton('Crashed', 'crashed');
+        return self::getSingleton('Crashed');
     }
 
-    public function getValue() : string {
-        return $this->value;
+    public function isIdling() : bool {
+        return $this->equals(self::Idle());
     }
 
-    public function isIdling() : bool  {
-        return $this->equals(EngineState::Idle());
-    }
-
-    public function equals(EngineState $engineState) : bool {
-        return $this === $engineState;
-    }
-
-    public function toString() : string {
-        return get_class($this) . '@' . $this->enumConstName;
+    /**
+     * Return an array of enum values, that correspond to static method constructors, that are allowed for this Enum.
+     *
+     * @return string[]
+     */
+    protected static function getAllowedValues() : array {
+        return ['Idle', 'Running', 'Crashed'];
     }
 }
