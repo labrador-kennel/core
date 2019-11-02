@@ -21,7 +21,7 @@
     "amphp/log": "^1.0",
     "cspray/labrador-async-event": "2.0.0-rc1",
     "cspray/labrador-exceptions": "^1.1",
-    "cspray/yape": "^1.1",
+    "cspray/yape": "^2.1",
     "monolog/monolog": "^1.24",
     "opis/json-schema": "^1.0",
     "rdlowrey/auryn": "~1.4"
