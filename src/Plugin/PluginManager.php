@@ -2,15 +2,20 @@
 
 namespace Cspray\Labrador\Plugin;
 
-use Amp\Promise;
 use Cspray\Labrador\AsyncEvent\Emitter;
+use Cspray\Labrador\Exception\DependencyInjectionException;
+use Cspray\Labrador\Exceptions;
+use Cspray\Labrador\Exception\Exception;
+use Cspray\Labrador\Exception\InvalidArgumentException;
+use Cspray\Labrador\Exception\InvalidStateException;
+
+use Amp\Promise;
 use Auryn\Injector;
 
-use function Amp\call;
-use Cspray\Labrador\Exceptions;
 use Psr\Log\LoggerAwareInterface;
 use Psr\Log\LoggerAwareTrait;
 
+use function Amp\call;
 /**
  * The default Pluggable implementation that manages the lifecycle of Plugins for all out-of-the-box Applications.
  *
@@ -172,6 +177,7 @@ final class PluginManager implements Pluggable, LoggerAwareInterface {
         }
 
         if (!isset($this->plugins[$name])) {
+            /** @var InvalidStateException $exception */
             $exception = Exceptions::createException(
                 Exceptions::PLUGIN_ERR_INVALID_PLUGIN_ACCESS_PRELOAD,
                 null

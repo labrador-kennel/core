@@ -2,8 +2,6 @@
 
 namespace Cspray\Labrador;
 
-use Auryn\InjectionException;
-use Auryn\InjectorException;
 use Cspray\Labrador\Exception\CircularDependencyException;
 use Cspray\Labrador\Exception\DependencyInjectionException;
 use Cspray\Labrador\Exception\Exception;

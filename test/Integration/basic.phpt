@@ -19,7 +19,7 @@ $configuration = new class implements \Cspray\Labrador\Configuration {
             throw new \RuntimeException('Did not expect this to be called');
         }
 
-        public function getPlugins() : \Ds\Set {
+        public function getPlugins() : array {
             throw new \RuntimeException('Did not expect this to be called');
         }
 };

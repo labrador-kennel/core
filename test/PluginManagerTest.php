@@ -51,7 +51,7 @@ class PluginManagerTest extends AsyncTestCase {
     /** @var TestLogger */
     private $logger;
 
-    public function setUp() {
+    public function setUp() : void {
         parent::setUp();
         $this->emitter = new EventEmitter();
         $this->injector = new Injector();
