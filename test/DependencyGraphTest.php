@@ -10,7 +10,6 @@ use Cspray\Labrador\DependencyGraph;
 use Auryn\Injector;
 use Cspray\Labrador\Plugin\PluginManager;
 use Cspray\Labrador\Test\Stub\LoggerAwareStub;
-use Ds\Set;
 use Monolog\Logger;
 use Psr\Log\LoggerInterface;
 
@@ -52,7 +51,7 @@ class DependencyGraphTest extends AsyncTestCase {
              *
              * @return Set<string>
              */
-            public function getPlugins() : Set {
+            public function getPlugins() : array {
                 throw new \RuntimeException('Did not expect this to be called');
             }
         };

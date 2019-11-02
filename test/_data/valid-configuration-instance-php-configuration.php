@@ -3,7 +3,6 @@
 use Cspray\Labrador\Configuration;
 use Cspray\Labrador\Test\Stub\FooPluginStub;
 use Cspray\Labrador\Test\Stub\PluginStub;
-use Ds\Set;
 
 return new class implements Configuration {
 
@@ -23,8 +22,8 @@ return new class implements Configuration {
         return 'php://stdout';
     }
 
-    public function getPlugins() : Set {
-        return new Set([PluginStub::class, FooPluginStub::class]);
+    public function getPlugins() : array {
+        return [PluginStub::class, FooPluginStub::class];
     }
 
     public function getInjectorProviderPath() : string {

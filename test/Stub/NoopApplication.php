@@ -13,7 +13,6 @@ use Cspray\Labrador\Exception\InvalidStateException;
 use Cspray\Labrador\Exception\NotFoundException;
 use Cspray\Labrador\Plugin\Pluggable;
 use Cspray\Labrador\Plugin\Plugin;
-use Ds\Set;
 use Psr\Log\LoggerAwareTrait;
 use Throwable;
 
@@ -160,7 +159,7 @@ class NoopApplication implements Application {
      * @return Plugin[]
      * @throws InvalidStateException
      */
-    public function getLoadedPlugins(): Set {
+    public function getLoadedPlugins(): array {
         // TODO: Implement getLoadedPlugins() method.
     }
 
@@ -170,7 +169,7 @@ class NoopApplication implements Application {
      *
      * @return string[]
      */
-    public function getRegisteredPlugins(): Set {
+    public function getRegisteredPlugins(): array {
         // TODO: Implement getRegisteredPlugins() method.
     }
 }

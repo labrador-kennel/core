@@ -14,23 +14,21 @@
   "require": {
     "php": ">=7.2",
     "ext-dom": "*",
-    "ext-ds": "*",
     "ext-json": "*",
     "ext-libxml": "*",
     "amphp/amp": "~2.1",
     "amphp/file": "^0.3.5",
+    "amphp/log": "^1.0",
     "cspray/labrador-async-event": "2.0.0-rc1",
     "cspray/labrador-exceptions": "^1.1",
     "cspray/yape": "^1.1",
     "monolog/monolog": "^1.24",
     "opis/json-schema": "^1.0",
-    "php-ds/php-ds": "^1.2",
-    "rdlowrey/auryn": "~1.4",
-    "amphp/log": "^1.0"
+    "rdlowrey/auryn": "~1.4"
   },
   "require-dev": {
     "adlawson/vfs": "^0.12.1",
-    "amphp/phpunit-util": "~1.1",
+    "amphp/phpunit-util": "~1.2",
     "cspray/labrador-coding-standard": "0.2.0",
     "phpunit/phpunit": "~8"
   },

@@ -2,22 +2,20 @@
 
 namespace Cspray\Labrador\Plugin;
 
-use Amp\Promise;
 use Cspray\Labrador\AsyncEvent\Emitter;
-use Auryn\Injector;
-
 use Cspray\Labrador\Exception\DependencyInjectionException;
+use Cspray\Labrador\Exceptions;
 use Cspray\Labrador\Exception\Exception;
 use Cspray\Labrador\Exception\InvalidArgumentException;
 use Cspray\Labrador\Exception\InvalidStateException;
-use Ds\Map;
-use Ds\Pair;
-use Ds\Set;
-use Ds\Vector;
-use function Amp\call;
-use Cspray\Labrador\Exceptions;
+
+use Amp\Promise;
+use Auryn\Injector;
+
 use Psr\Log\LoggerAwareInterface;
 use Psr\Log\LoggerAwareTrait;
+
+use function Amp\call;
 
 /**
  * The default Pluggable implementation that manages the lifecycle of Plugins for all out-of-the-box Applications.
@@ -41,10 +39,10 @@ final class PluginManager implements Pluggable, LoggerAwareInterface {
     private $emitter;
     private $injector;
 
-    private $plugins;
-    private $loadHandlers;
-    private $removeHandlers;
-    private $loading;
+    private $plugins = [];
+    private $loadHandlers = [];
+    private $removeHandlers = [];
+    private $loading = [];
 
     private $pluginsLoaded = false;
 
@@ -62,19 +60,10 @@ final class PluginManager implements Pluggable, LoggerAwareInterface {
     public function __construct(Injector $injector, Emitter $emitter) {
         $this->injector = $injector;
         $this->emitter = $emitter;
-        $this->loading = new Set();
-        $this->plugins = new Map();
-        $this->loadHandlers = new Map();
-        $this->removeHandlers = new Map();
     }
 
     public function registerPluginLoadHandler(string $pluginType, callable $pluginHandler, ...$arguments): void {
-        if (!$this->loadHandlers->hasKey($pluginType)) {
-            $this->loadHandlers->put($pluginType, new Vector());
-        }
-
-        $vector = $this->loadHandlers->get($pluginType);
-        $vector->push(new Pair($pluginHandler, $arguments));
+        $this->loadHandlers[$pluginType][] = [$pluginHandler, $arguments];
     }
 
     /**
@@ -87,7 +76,7 @@ final class PluginManager implements Pluggable, LoggerAwareInterface {
         if ($exception = $this->guardRegisterPluginIsValid($plugin)) {
             throw $exception;
         }
-        $this->plugins->put($plugin, null);
+        $this->plugins[$plugin] = null;
         $this->logger->info(sprintf('Registered Plugin "%s".', $plugin));
     }
 
@@ -125,12 +114,11 @@ final class PluginManager implements Pluggable, LoggerAwareInterface {
 
     public function loadPlugins() : Promise {
         return call(function() {
-            $plugins = $this->getRegisteredPlugins();
             $this->logger->info(sprintf(
                 'Initiating Plugin loading. Loading %d registered Plugins, not including dependencies.',
-                count($plugins)
+                count($this->plugins)
             ));
-            foreach ($plugins as $pluginName) {
+            foreach ($this->getRegisteredPlugins() as $pluginName) {
                 yield $this->loadPlugin($pluginName);
             }
             $this->logger->info(sprintf(
@@ -142,36 +130,30 @@ final class PluginManager implements Pluggable, LoggerAwareInterface {
     }
 
     public function removePlugin(string $name) : void {
-        if ($this->plugins->hasKey($name)) {
-            $plugin = $this->plugins->get($name);
+        if (isset($this->plugins[$name])) {
+            $plugin = $this->plugins[$name];
             if ($plugin instanceof EventAwarePlugin) {
                 $plugin->removeEventListeners($this->emitter);
             }
 
             foreach ($this->removeHandlers as $pluginType => $handlers) {
                 if ($plugin instanceof $pluginType) {
-                    foreach ($handlers as $handlerPair) {
-                        ($handlerPair->key)($plugin, ...$handlerPair->value);
+                    foreach ($handlers as list($handler, $args)) {
+                        $handler($plugin, ...$args);
                     }
                 }
             }
-
-            $this->plugins->remove($name);
         }
         $this->logger->info(sprintf('Removed Plugin "%s".', $name));
+        unset($this->plugins[$name]);
     }
 
     public function registerPluginRemoveHandler(string $pluginType, callable $pluginHandler, ...$arguments) : void {
-        if (!$this->removeHandlers->hasKey($pluginType)) {
-            $this->removeHandlers->put($pluginType, new Vector());
-        }
-
-        $vector = $this->removeHandlers->get($pluginType) ;
-        $vector->push(new Pair($pluginHandler, $arguments));
+        $this->removeHandlers[$pluginType][] = [$pluginHandler, $arguments];
     }
 
     public function hasPluginBeenRegistered(string $name) : bool {
-        return $this->plugins->hasKey($name);
+        return array_key_exists($name, $this->plugins);
     }
 
     public function havePluginsLoaded() : bool {
@@ -195,8 +177,7 @@ final class PluginManager implements Pluggable, LoggerAwareInterface {
             throw $exception;
         }
 
-        $plugin = $this->plugins->get($name);
-        if ($plugin === null) {
+        if (!isset($this->plugins[$name])) {
             /** @var InvalidStateException $exception */
             $exception = Exceptions::createException(
                 Exceptions::PLUGIN_ERR_INVALID_PLUGIN_ACCESS_PRELOAD,
@@ -205,14 +186,10 @@ final class PluginManager implements Pluggable, LoggerAwareInterface {
             throw $exception;
         }
 
-        return $plugin;
+        return $this->plugins[$name];
     }
 
-    /**
-     * @return Set
-     * @throws InvalidStateException
-     */
-    public function getLoadedPlugins() : Set {
+    public function getLoadedPlugins() : array {
         if (!$this->havePluginsLoaded()) {
             /** @var InvalidStateException $exception */
             $exception = Exceptions::createException(
@@ -221,11 +198,11 @@ final class PluginManager implements Pluggable, LoggerAwareInterface {
             );
             throw $exception;
         }
-        return new Set($this->plugins->values());
+        return array_values($this->plugins);
     }
 
-    public function getRegisteredPlugins() : Set {
-        return $this->plugins->keys();
+    public function getRegisteredPlugins() : array {
+        return array_keys($this->plugins);
     }
 
     private function loadPlugin(string $pluginName) : Promise {
@@ -246,23 +223,23 @@ final class PluginManager implements Pluggable, LoggerAwareInterface {
     }
 
     private function notLoaded(string $plugin) {
-        return !$this->plugins->hasKey($plugin) || $this->plugins->get($plugin) === null;
+        return !isset($this->plugins[$plugin]);
     }
 
     private function startLoading(string $plugin) {
         $this->logger->info(sprintf('Starting to load %s.', $plugin));
-        $this->loading->add($plugin);
+        $this->loading[] = $plugin;
     }
 
     private function finishLoading(Plugin $plugin) {
         $this->logger->info(sprintf('Finished loading %s.', get_class($plugin)));
         $name = get_class($plugin);
-        $this->loading->remove($name);
-        $this->plugins->put($name, $plugin);
+        $this->loading = array_diff($this->loading, [$name]);
+        $this->plugins[$name] = $plugin;
     }
 
     private function isLoading(string $plugin) {
-        return $this->loading->contains($plugin);
+        return in_array($plugin, $this->loading);
     }
 
     private function handlePluginDependencies(string $plugin) : Promise {
@@ -350,8 +327,8 @@ final class PluginManager implements Pluggable, LoggerAwareInterface {
                         count($pluginHandlers),
                         $pluginName
                     ));
-                    foreach ($pluginHandlers as $handlerPair) {
-                        yield call($handlerPair->key, $plugin, ...$handlerPair->value);
+                    foreach ($pluginHandlers as list($pluginHandler, $pluginHandlerArgs)) {
+                        yield call($pluginHandler, $plugin, ...$pluginHandlerArgs);
                     }
                     $this->logger->info(sprintf(
                         'Finished loading custom handlers for %s.',

@@ -5,7 +5,6 @@ namespace Cspray\Labrador;
 use Amp\Promise;
 use Cspray\Labrador\Plugin\Pluggable;
 use Cspray\Labrador\Plugin\Plugin;
-use Ds\Set;
 use Psr\Log\LoggerAwareTrait;
 use Throwable;
 
@@ -81,11 +80,11 @@ abstract class AbstractApplication implements Application {
         return $this->pluggable->getLoadedPlugin($pluginType);
     }
 
-    public function getLoadedPlugins() : Set {
+    public function getLoadedPlugins() : array {
         return $this->pluggable->getLoadedPlugins();
     }
 
-    public function getRegisteredPlugins() : Set {
+    public function getRegisteredPlugins() : array {
         return $this->pluggable->getRegisteredPlugins();
     }
 }
