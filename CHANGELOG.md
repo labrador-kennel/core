@@ -1,6 +1,6 @@
 # Changelog
 
-## 3.0.0-beta6 201-??-??
+## 3.0.0-beta5 2019-11-02
 
 This release represents a major refactor to the Plugin system in an attempt to make the more common use 
 case easier to facilitate and to provide more async support for Plugins.

@@ -10,3 +10,4 @@ Vagrantfile
 docs/_site/
 docs/.sass-cache
 .phpunit.result.cache
+tmp/
