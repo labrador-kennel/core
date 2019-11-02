@@ -30,7 +30,7 @@ final class EngineState implements Enum {
      *
      * @return string[]
      */
-    static protected function getAllowedValues() : array {
+    protected static function getAllowedValues() : array {
         return ['Idle', 'Running', 'Crashed'];
     }
 }
