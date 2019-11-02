@@ -2,28 +2,14 @@
 
 ## 3.0.0-beta6 201-??-??
 
-#### Added
-
-- Adds the ext-ds extension and refactors the use of arrays as data structure to more semantic, 
-efficient structures.
-- Adds the `cspray/yape` library to create type-safe, powerful enums. Adds a new EngineState 
-enum.
-- Adds the `amphp/log` library to facilitate asynchronous logging using Monolog\Logger.
-
-#### Changed
-
-- The `Engine::getState` method now returns an EngineState enum as opposed to an arbitrary string.
-- The DependencyGraph implementation now expects a Configuration instance as its only constructor 
-dependency. A Monolog\Logger will be created using the configured log name and log path with a 
-Amp\Log\StreamHandler as the only registered handler. Additional handlers may be registered
-
-## 3.0.0-beta5 2019-05-11
-
 This release represents a major refactor to the Plugin system in an attempt to make the more common use 
 case easier to facilitate and to provide more async support for Plugins.
 
 #### Added
 
+- Adds the `cspray/yape` library to create type-safe, powerful enums. Adds a new EngineState 
+enum.
+- Adds the `amphp/log` library to facilitate asynchronous logging using Monolog\Logger.
 - `Pluggable::registerPluginRemoveHandler` was added that allows invoking a custom function whenever a 
 Plugin is removed AFTER the loading process has been completed. These handlers will not run if the Plugin 
 is removed before loading is initiated.
@@ -50,6 +36,10 @@ boilerplate configuration, Application skeleton, and a DependencyGraph.
 
 #### Changed
 
+- The `Engine::getState` method now returns an EngineState enum as opposed to an arbitrary string.
+- The DependencyGraph implementation now expects a Configuration instance as its only constructor 
+dependency. A Monolog\Logger will be created using the configured log name and log path with a 
+Amp\Log\StreamHandler as the only registered handler. Additional handlers may be registered
 - `Pluggable::registerPlugin(Plugin)` was changed to `Pluggable::registerPlugin(string)` where the string
 is the fully qualified class name of a type that implements the Plugin interface. This was done to more 
 easily facilitate the use case where a Plugin may depend on a service to be constructed.

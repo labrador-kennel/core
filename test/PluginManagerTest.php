@@ -9,9 +9,6 @@
 
 namespace Cspray\Labrador\Test;
 
-use Cspray\Labrador\AmpEngine;
-use Cspray\Labrador\AsyncEvent\AmpEmitter;
-use Cspray\Labrador\AsyncEvent\Emitter;
 use function Amp\call;
 use Amp\Delayed;
 use Amp\PHPUnit\AsyncTestCase;
@@ -54,7 +51,7 @@ class PluginManagerTest extends AsyncTestCase {
     /** @var TestLogger */
     private $logger;
 
-    public function setUp() : void {
+    public function setUp() {
         parent::setUp();
         $this->emitter = new EventEmitter();
         $this->injector = new Injector();
@@ -399,7 +396,7 @@ class PluginManagerTest extends AsyncTestCase {
         ];
 
         $msg = 'Expected dependent Plugins to be added to registered list';
-        $this->assertSame($expected, $registeredPlugins->toArray(), $msg);
+        $this->assertSame($expected, $registeredPlugins, $msg);
     }
 
 
@@ -427,7 +424,7 @@ class PluginManagerTest extends AsyncTestCase {
         $expected = [$pluginStub, $fooStub];
 
         $msg = 'Expected loaded plugins to be the objects that were created';
-        $this->assertSame($expected, $loadedPlugins->toArray(), $msg);
+        $this->assertSame($expected, $loadedPlugins, $msg);
     }
 
     /**

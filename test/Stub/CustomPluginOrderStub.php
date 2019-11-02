@@ -11,7 +11,6 @@ use Cspray\Labrador\Plugin\BootablePlugin;
 use Cspray\Labrador\Plugin\EventAwarePlugin;
 use Cspray\Labrador\Plugin\PluginDependentPlugin;
 use Cspray\Labrador\Plugin\InjectorAwarePlugin;
-use Ds\Set;
 use stdClass;
 
 class CustomPluginOrderStub implements BootablePlugin, EventAwarePlugin, InjectorAwarePlugin, PluginDependentPlugin {
@@ -54,9 +53,9 @@ class CustomPluginOrderStub implements BootablePlugin, EventAwarePlugin, Injecto
      *
      * @return array
      */
-    public static function dependsOn(): Set {
+    public static function dependsOn(): array {
         self::$callOrderObject->callOrder[] = 'depends';
-        return new Set();
+        return [];
     }
 
     /**

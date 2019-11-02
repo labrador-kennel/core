@@ -7,7 +7,6 @@ use Cspray\Labrador\Exception\CircularDependencyException;
 use Cspray\Labrador\Exception\InvalidArgumentException;
 use Cspray\Labrador\Exception\InvalidStateException;
 use Cspray\Labrador\Exception\NotFoundException;
-use Ds\Set;
 
 /**
  * Allows Plugins to be attached to objects implementing this interface; the Pluggable is responsible for instantiating
@@ -155,16 +154,16 @@ interface Pluggable {
      * completed before Plugin objects are available and this is a distinct case separate from there not being any
      * Plugins after the loading process making an empty array ill-suited for this error condition.
      *
-     * @return Set<Plugin>
+     * @return Plugin[]
      * @throws InvalidStateException
      */
-    public function getLoadedPlugins() : Set;
+    public function getLoadedPlugins() : array;
 
     /**
      * An array of Plugin types that have been registered with this Pluggable, either through the registerPlugin method
      * or implicitly during the loading of PluginDependentPlugins.
      *
-     * @return Set<string>
+     * @return string[]
      */
-    public function getRegisteredPlugins() : Set;
+    public function getRegisteredPlugins() : array;
 }

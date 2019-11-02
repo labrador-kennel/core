@@ -3,7 +3,6 @@
 .DS_Store
 .vagrant
 .idea
-.phpunit.result.cache
 /vendor
 /build
 Vagrantfile
