@@ -1,5 +1,27 @@
 # Changelog
 
+## 3.0.0-beta7 2019-11-03
+
+#### Added
+
+- Adds `Application::getState` which returns an enum `ApplicationState` signifying whether the Application is Started, 
+Stopped, or Crashed.
+
+#### Changed
+
+- The DependencyGraph object now expects you to provide a Logger implementation as a constructor dependency instead of 
+the DependencyGraph creating the Logger object based off of a configuration.
+
+#### Removed
+
+- Removed the Configuration interface and corresponding ConfigurationFactory. In practice this Configuration was 
+tied to a process for providing an out-of-the-box solution for invoking Applications that was clunky and not well 
+thought out. For now instead of moving forward with a sub-optimal solution each app will need to provide its own 
+boilerplate for executing the app. As more experience is gathered in running real-life apps on this framework we 
+may revisit the Configuration concept.
+- Removed the shell script that created a rough app skeleton. More thought needs to go into how this would work before 
+it is released live.
+
 ## 3.0.0-beta6 2019-11-02
 
 #### Fixed

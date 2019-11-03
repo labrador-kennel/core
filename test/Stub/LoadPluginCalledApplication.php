@@ -17,7 +17,7 @@ class LoadPluginCalledApplication extends CallbackApplication {
         });
     }
 
-    public function execute(): Promise {
+    public function start(): Promise {
         return call(function() {
             $this->callOrder[] = "execute";
         });

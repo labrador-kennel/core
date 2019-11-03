@@ -2,7 +2,11 @@
 
 namespace Cspray\Labrador;
 
+use Amp\Deferred;
+use Amp\Loop;
 use Amp\Promise;
+use Amp\Success;
+use Cspray\Labrador\Exception\InvalidStateException;
 use Cspray\Labrador\Plugin\Pluggable;
 use Cspray\Labrador\Plugin\Plugin;
 use Psr\Log\LoggerAwareTrait;
@@ -29,11 +33,69 @@ abstract class AbstractApplication implements Application {
 
     use LoggerAwareTrait;
 
+    /**
+     * @var Pluggable
+     */
     private $pluggable;
+
+    /**
+     * @var Deferred
+     */
+    private $deferred;
+
+    /**
+     * @var ApplicationState
+     */
+    private $state;
 
     public function __construct(Pluggable $pluggable) {
         $this->pluggable = $pluggable;
+        $this->state = ApplicationState::Stopped();
     }
+
+    public function start() : Promise {
+        if (!$this->state->equals(ApplicationState::Stopped())) {
+            $msg = 'Application must be in a Stopped state to start but it\'s current state is %s';
+            throw new InvalidStateException(sprintf($msg, $this->state->toString()));
+        }
+        $this->deferred = new Deferred();
+
+        $this->state = ApplicationState::Started();
+        $this->doStart()->onResolve(function($err) {
+            // This ensures we properly handle the case where doStart may return a Promise that resolves immediately
+            // In such a case we would call resolveDeferred(), which sets $deferred to null, before we actually
+            // returned the Promise for the $deferred required by Application::start(). By resolving the Promise for
+            // when this is done executing on the next tick of the event loop we ensure there's actually something to
+            // return for the start() method.
+            Loop::defer(function() use($err) {
+                $this->resolveDeferred($err);
+            });
+        });
+
+        return $this->deferred->promise();
+    }
+
+    public function stop() : Promise {
+        $this->resolveDeferred();
+        return new Success();
+    }
+
+    private function resolveDeferred(Throwable $throwable = null) : void {
+        if (isset($throwable)) {
+            $this->state = ApplicationState::Crashed();
+            $this->deferred->fail($throwable);
+        } else {
+            $this->state = ApplicationState::Stopped();
+            $this->deferred->resolve();
+        }
+        $this->deferred = null;
+    }
+
+    public function getState() : ApplicationState {
+        return $this->state;
+    }
+
+    abstract protected function doStart() : Promise;
 
     /**
      * This implementation does nothing by default, logging of the exception itself for Labrador's purposes are handled
@@ -44,7 +106,7 @@ abstract class AbstractApplication implements Application {
      *
      * @param Throwable $throwable
      */
-    public function exceptionHandler(Throwable $throwable) : void {
+    public function handleException(Throwable $throwable) : void {
         // noop
     }
 

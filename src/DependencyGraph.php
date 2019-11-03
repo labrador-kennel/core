@@ -27,10 +27,10 @@ use Psr\Log\LoggerInterface;
  */
 final class DependencyGraph {
 
-    private $configuration;
+    private $logger;
 
-    public function __construct(Configuration $configuration) {
-        $this->configuration = $configuration;
+    public function __construct(LoggerInterface $logger) {
+        $this->logger = $logger;
     }
 
     /**
@@ -56,9 +56,7 @@ final class DependencyGraph {
             $injector->share(Engine::class);
             $injector->alias(Engine::class, AmpEngine::class);
 
-            $logger = new Logger($this->configuration->getLogName());
-            $handler = new StreamHandler(new ResourceOutputStream(@fopen($this->configuration->getLogPath(), 'wb')));
-            $logger->pushHandler($handler);
+            $logger = $this->logger;
             $injector->share($logger);
             $injector->alias(LoggerInterface::class, get_class($logger));
             $injector->prepare(LoggerAwareInterface::class, function(LoggerAwareInterface $aware) use($logger) {
