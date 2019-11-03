@@ -29,7 +29,7 @@ class CallbackApplicationTest extends AsyncTestCase {
             }
         );
 
-        yield $subject->execute();
+        yield $subject->start();
 
         $this->assertSame(3, $counter);
     }
@@ -47,7 +47,7 @@ class CallbackApplicationTest extends AsyncTestCase {
             }
         );
 
-        $subject->exceptionHandler($exceptionToThrow);
+        $subject->handleException($exceptionToThrow);
 
         $this->assertSame($exception, $exceptionToThrow);
     }
@@ -60,7 +60,7 @@ class CallbackApplicationTest extends AsyncTestCase {
             }
         );
 
-        $subject->exceptionHandler(new \RuntimeException());
+        $subject->handleException(new \RuntimeException());
 
         $this->assertTrue(true, 'Expected to not throw an error so if we get here everything is good');
     }

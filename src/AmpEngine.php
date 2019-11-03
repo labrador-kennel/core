@@ -86,7 +86,7 @@ class AmpEngine implements Engine {
                 ),
                 ['file' => $error->getFile(), 'line' => $error->getLine()]
             );
-            $application->exceptionHandler($error);
+            $application->handleException($error);
             Loop::defer(function() use($application) {
                 $this->logger->info('Starting Application cleanup process.');
                 yield $this->emitEngineShutDownEvent($application);
@@ -111,7 +111,7 @@ class AmpEngine implements Engine {
             }
 
             $this->logger->info('Starting Application process.');
-            yield $application->execute();
+            yield $application->start();
             $this->logger->info('Completed Application process.');
 
             $this->logger->info('Starting Application cleanup process.');

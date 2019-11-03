@@ -5,7 +5,6 @@ namespace Cspray\Labrador\Test;
 use Amp\Log\StreamHandler;
 use Amp\PHPUnit\AsyncTestCase;
 use Cspray\Labrador\AmpEngine;
-use Cspray\Labrador\Configuration;
 use Cspray\Labrador\DependencyGraph;
 use Auryn\Injector;
 use Cspray\Labrador\Engine;
@@ -14,89 +13,50 @@ use Cspray\Labrador\Plugin\PluginManager;
 use Cspray\Labrador\Test\Stub\LoggerAwareStub;
 use Monolog\Logger;
 use Psr\Log\LoggerInterface;
+use Psr\Log\NullLogger;
 
 class DependencyGraphTest extends AsyncTestCase {
 
-    private function getConfiguration() : Configuration {
-        return new class implements Configuration {
-
-            /**
-             * Return the name of the log that Monolog will use to identify log messages from this Application.
-             *
-             * @return string
-             */
-            public function getLogName() : string {
-                return 'dependency-graph-test';
-            }
-
-            /**
-             * Return a path that can be used as a resource stream to write log messages to.
-             *
-             * @return string
-             */
-            public function getLogPath() : string {
-                return 'php://memory';
-            }
-
-            /**
-             * Return a path in which the file returns a callable that accepts a single Configuration instance and
-             * returns an Injector.
-             *
-             * @return string
-             */
-            public function getInjectorProviderPath() : string {
-                throw new \RuntimeException('Did not expect this to be called');
-            }
-
-            /**
-             * Return a Set of fully qualified class names for the Plugins that should be added to your Application.
-             *
-             * @return Set<string>
-             */
-            public function getPlugins() : array {
-                throw new \RuntimeException('Did not expect this to be called');
-            }
-        };
-    }
+    private $logger;
 
     public function testInjectorInstanceCreated() {
-        $injector = (new DependencyGraph($this->getConfiguration()))->wireObjectGraph();
+        $injector = $this->getInjector();
 
         $this->assertInstanceOf(Injector::class, $injector);
     }
 
     public function testInjectorIsNotShared() {
-        $injector = (new DependencyGraph($this->getConfiguration()))->wireObjectGraph();
+        $injector = $this->getInjector();
 
         $this->assertNotSame($injector, $injector->make(Injector::class));
     }
 
     public function testEngineAliasedToAmpEngine() {
-        $injector = (new DependencyGraph($this->getConfiguration()))->wireObjectGraph();
+        $injector = $this->getInjector();
 
         $this->assertInstanceOf(AmpEngine::class, $injector->make(Engine::class));
     }
 
     public function testEngineShared() {
-        $injector = (new DependencyGraph($this->getConfiguration()))->wireObjectGraph();
+        $injector = $this->getInjector();
 
         $this->assertSame($injector->make(Engine::class), $injector->make(Engine::class));
     }
 
     public function testPluggableAliasedToPluginManager() {
-        $injector = (new DependencyGraph($this->getConfiguration()))->wireObjectGraph();
+        $injector = $this->getInjector();
 
         $this->assertInstanceOf(PluginManager::class, $injector->make(Pluggable::class));
     }
 
     public function testPluggableShared() {
-        $injector = (new DependencyGraph($this->getConfiguration()))->wireObjectGraph();
+        $injector = $this->getInjector();
 
         $this->assertSame($injector->make(Pluggable::class), $injector->make(Pluggable::class));
     }
 
     public function testPluginManagerGetsCorrectInjector() {
-        $injector = (new DependencyGraph($this->getConfiguration()))->wireObjectGraph();
+        $injector = $this->getInjector();
         $pluginManager = $injector->make(PluginManager::class);
         $reflectedPluginManager = new \ReflectionObject($pluginManager);
         $injectorProp = $reflectedPluginManager->getProperty('injector');
@@ -105,44 +65,34 @@ class DependencyGraphTest extends AsyncTestCase {
     }
 
     public function testLoggerIsShared() {
-        $injector = (new DependencyGraph($this->getConfiguration()))->wireObjectGraph();
+        $injector = $this->getInjector();
 
         $this->assertSame($injector->make(LoggerInterface::class), $injector->make(LoggerInterface::class));
     }
 
     public function testLoggerIsAliased() {
-        $injector = (new DependencyGraph($this->getConfiguration()))->wireObjectGraph();
+        $injector = $this->getInjector();
 
         $actual = $injector->make(LoggerInterface::class);
-        $expected = Logger::class;
 
-        $this->assertInstanceOf($expected, $actual);
+        $this->assertSame($this->logger, $actual);
     }
 
     public function testLoggerAwareObjectsHaveLoggerSet() {
-        $injector = (new DependencyGraph($this->getConfiguration()))->wireObjectGraph();
+        $injector = $this->getInjector();
 
         $stub = $injector->make(LoggerAwareStub::class);
 
         $this->assertSame($injector->make(LoggerInterface::class), $stub->logger);
     }
 
-    public function testLoggerHasConfiguredName() {
-        $injector = (new DependencyGraph($this->getConfiguration()))->wireObjectGraph();
-
-        /** @var Logger $logger */
-        $logger = $injector->make(LoggerInterface::class);
-
-        $this->assertSame('dependency-graph-test', $logger->getName());
-    }
-
-    public function testLoggerHasStreamingHandler() {
-        $injector = (new DependencyGraph($this->getConfiguration()))->wireObjectGraph();
-
-        /** @var Logger $logger */
-        $logger = $injector->make(LoggerInterface::class);
-
-        $this->assertCount(1, $logger->getHandlers());
-        $this->assertInstanceOf(StreamHandler::class, $logger->getHandlers()[0]);
+    /**
+     * @return Injector
+     * @throws \Cspray\Labrador\Exception\DependencyInjectionException
+     */
+    private function getInjector() : Injector {
+        $this->logger = new NullLogger();
+        $injector = (new DependencyGraph($this->logger))->wireObjectGraph();
+        return $injector;
     }
 }

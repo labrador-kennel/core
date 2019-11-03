@@ -59,14 +59,18 @@ class AmpEngineTest extends UnitTestCase {
         return $engine;
     }
 
+    private function mockPluggable() : Pluggable {
+        $pluggable = $this->getMockBuilder(Pluggable::class)->getMock();
+        $pluggable->expects($this->once())->method('loadPlugins')->willReturn(new Success());
+        return $pluggable;
+    }
+
     private function noopApp() : Application {
-        return new NoopApplication();
+        return new NoopApplication($this->mockPluggable());
     }
 
     private function callbackApp(callable $callback) : Application {
-        $pluggable = $this->getMockBuilder(Pluggable::class)->getMock();
-        $pluggable->expects($this->once())->method('loadPlugins')->willReturn(new Success());
-        return new CallbackApplication($pluggable, $callback);
+        return new CallbackApplication($this->mockPluggable(), $callback);
     }
 
     private function exceptionHandlerApp(callable $appCallback, callable $handler) : Application {
@@ -100,7 +104,7 @@ class AmpEngineTest extends UnitTestCase {
         $engine->onEngineBootup($bootUpCb);
         $engine->onEngineShutdown($cleanupCb);
 
-        $engine->run(new NoopApplication());
+        $engine->run($this->noopApp());
 
         $this->assertSame([1,2,3,4,5,6], $data->data);
     }
@@ -204,7 +208,7 @@ class AmpEngineTest extends UnitTestCase {
             $data->data = $throwable;
         };
         $appCb = function() use($engine) {
-            $engine->run($this->noopApp());
+            $engine->run(new NoopApplication($this->getMockBuilder(Pluggable::class)->getMock()));
             return new Success();
         };
         $app = $this->exceptionHandlerApp($appCb, $handlerCb);
@@ -233,7 +237,7 @@ class AmpEngineTest extends UnitTestCase {
 
     public function testEngineStateAfterRunIsIdle() {
         $engine = $this->getEngine();
-        $app = new NoopApplication();
+        $app = $this->noopApp();
         $engine->run($app);
 
         $this->assertSame(EngineState::Idle(), $engine->getState());
@@ -262,7 +266,7 @@ class AmpEngineTest extends UnitTestCase {
 
         $engine = $this->getEngine();
         $engine->run($this->noopApp());
-        $engine->run($this->noopApp());
+        $engine->run(new NoopApplication($this->getMockBuilder(Pluggable::class)->getMock()));
 
         $this->assertSame([1], $data->data);
     }
@@ -289,7 +293,7 @@ class AmpEngineTest extends UnitTestCase {
     }
 
     public function testLogMessagesOnSuccessfulApplicationRunNoPlugins() {
-        $app = new NoopApplication();
+        $app = $this->noopApp();
         $engine = $this->getEngine();
         $engine->run($app);
 

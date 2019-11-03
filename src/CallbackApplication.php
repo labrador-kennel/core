@@ -28,7 +28,7 @@ class CallbackApplication extends AbstractApplication {
      *
      * @return Promise<void>
      */
-    public function execute() : Promise {
+    protected function doStart() : Promise {
         return call($this->handler);
     }
 
@@ -38,7 +38,7 @@ class CallbackApplication extends AbstractApplication {
      * @param Throwable $throwable
      * @return void
      */
-    public function exceptionHandler(Throwable $throwable) : void {
+    public function handleException(Throwable $throwable) : void {
         if (isset($this->exceptionHandler)) {
             ($this->exceptionHandler)($throwable);
         }
