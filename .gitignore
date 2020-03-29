@@ -1,12 +1,5 @@
-.
-..
-.DS_Store
-.vagrant
-.idea
 /vendor
 /build
-Vagrantfile
-/puphpet
 docs/_site/
 docs/.sass-cache
 .phpunit.result.cache
