@@ -10,15 +10,15 @@ final class EngineState implements Enum {
     use EnumTrait;
 
     public static function Idle() : EngineState {
-        return self::getSingleton('Idle');
+        return self::getSingleton(__FUNCTION__);
     }
 
     public static function Running() : EngineState {
-        return self::getSingleton('Running');
+        return self::getSingleton(__FUNCTION__);
     }
 
     public static function Crashed() : EngineState {
-        return self::getSingleton('Crashed');
+        return self::getSingleton(__FUNCTION__);
     }
 
     public function isIdling() : bool {

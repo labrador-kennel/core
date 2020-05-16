@@ -1,6 +1,6 @@
 {
   "name": "cspray/labrador",
-  "description": "Core functionality powering Labrador Kennel applications through Plugins, Events, and Engines",
+  "description": "Core functionality powering Labrador Kennel Applications through Plugins, Events, and Engines",
   "keywords": ["amphp", "labrador-kennel"],
   "license": "MIT",
   "authors": [
@@ -17,24 +17,19 @@
   },
   "require": {
     "php": ">=7.2",
-    "ext-dom": "*",
-    "ext-json": "*",
-    "ext-libxml": "*",
-    "amphp/amp": "~2.3",
-    "amphp/file": "^1.0",
+    "amphp/amp": "^2.4",
     "amphp/log": "^1.1",
-    "cspray/labrador-async-event": "2.0.0-rc1",
+    "cspray/labrador-async-event": "^2.2",
     "cspray/labrador-exceptions": "^1.1",
-    "cspray/yape": "^2.1",
-    "monolog/monolog": "^1.25",
-    "opis/json-schema": "^1.0",
-    "rdlowrey/auryn": "~1.4"
+    "cspray/yape": "^3.0",
+    "monolog/monolog": "^2.0",
+    "rdlowrey/auryn": "^1.4"
   },
   "require-dev": {
-    "adlawson/vfs": "^0.12.1",
-    "amphp/phpunit-util": "~1.2",
-    "cspray/labrador-coding-standard": "0.2.0",
-    "phpunit/phpunit": "~8"
+    "amphp/phpunit-util": "^1.2",
+    "cspray/labrador-coding-standard": "^0.2",
+    "cspray/yape-cli": "^1.0",
+    "phpunit/phpunit": "~9.1"
   },
   "autoload": {
     "psr-4": {

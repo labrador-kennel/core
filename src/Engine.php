@@ -2,7 +2,7 @@
 
 namespace Cspray\Labrador;
 
-use Cspray\Labrador\AsyncEvent\Emitter;
+use Cspray\Labrador\AsyncEvent\EventEmitter;
 use Psr\Log\LoggerAwareInterface;
 
 /**
@@ -43,9 +43,9 @@ interface Engine extends LoggerAwareInterface {
     /**
      * Return the event emitter that will emit the events for this Engine.
      *
-     * @return Emitter
+     * @return EventEmitter
      */
-    public function getEmitter() : Emitter;
+    public function getEmitter() : EventEmitter;
 
     /**
      * Ensure that the Application has its plugins loaded and then execute its business logic.

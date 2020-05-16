@@ -1,9 +1,36 @@
 baseurl: "/core"
 layouts_dir: ".shared/_layouts"
 includes_dir: ".shared/_includes"
-
-external_css:
-  - //cdnjs.cloudflare.com/ajax/libs/highlight.js/9.14.2/styles/default.min.css
-
-external_js:
-  - //cdnjs.cloudflare.com/ajax/libs/highlight.js/9.14.2/highlight.min.js
+defaults:
+  - scope:
+      path: ""
+    values:
+      layout: "package"
+  - scope:
+      path: "_how-tos"
+    values:
+      layout: "article"
+  - scope:
+      path: "_tutorials"
+    values:
+      layout: "article"
+  - scope:
+      path: "_references"
+    values:
+      layout: "article"
+collections:
+  tutorials:
+    output: true
+    permalink: "/:collection/:name"
+    title: "Tutorial"
+    description: "Learn how to get started with this library."
+  how-tos:
+    output: true
+    permalink: "/:collection/:name"
+    title: "How To"
+    description: "Learn how to complete specific tasks with this library."
+  references:
+    output: true
+    permalink: "/:collection/:name"
+    title: "Reference"
+    description: "Learn more about the technical workings of this library."

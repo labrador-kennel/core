@@ -3,7 +3,7 @@
 namespace Cspray\Labrador\Test\Stub;
 
 use Cspray\Labrador\Plugin\EventAwarePlugin;
-use Cspray\Labrador\AsyncEvent\Emitter;
+use Cspray\Labrador\AsyncEvent\EventEmitter;
 
 class EventsRegisteredPlugin implements EventAwarePlugin {
 
@@ -21,14 +21,14 @@ class EventsRegisteredPlugin implements EventAwarePlugin {
     /**
      * Register the event listeners your Plugin responds to.
      *
-     * @param Emitter $emitter
+     * @param EventEmitter $emitter
      * @return void
      */
-    public function registerEventListeners(Emitter $emitter) : void {
+    public function registerEventListeners(EventEmitter $emitter) : void {
         $this->registered = true;
     }
 
-    public function removeEventListeners(Emitter $emitter): void {
+    public function removeEventListeners(EventEmitter $emitter): void {
         $this->removed = true;
     }
 }

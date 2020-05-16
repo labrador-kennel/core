@@ -23,8 +23,8 @@ use Cspray\Labrador\Plugin\Pluggable;
 use Cspray\Labrador\Test\Stub\LoadPluginCalledApplication;
 use Cspray\Labrador\Test\Stub\NoopApplication;
 use Auryn\Injector;
-use Cspray\Labrador\AsyncEvent\AmpEmitter;
-use Cspray\Labrador\AsyncEvent\Emitter;
+use Cspray\Labrador\AsyncEvent\AmpEventEmitter;
+use Cspray\Labrador\AsyncEvent\EventEmitter;
 use Cspray\Labrador\AsyncEvent\Event;
 use PHPUnit\Framework\TestCase as UnitTestCase;
 use Psr\Log\Test\TestLogger;
@@ -33,7 +33,7 @@ use RuntimeException;
 class AmpEngineTest extends UnitTestCase {
 
     /**
-     * @var Emitter
+     * @var EventEmitter
      */
     private $emitter;
     /**
@@ -48,11 +48,11 @@ class AmpEngineTest extends UnitTestCase {
 
     public function setUp() : void {
         $this->injector = new Injector();
-        $this->emitter = new AmpEmitter();
+        $this->emitter = new AmpEventEmitter();
         $this->logger = new TestLogger();
     }
 
-    private function getEngine(Emitter $eventEmitter = null) : AmpEngine {
+    private function getEngine(EventEmitter $eventEmitter = null) : AmpEngine {
         $emitter = $eventEmitter ?: $this->emitter;
         $engine = new AmpEngine($emitter);
         $engine->setLogger($this->logger);
@@ -190,7 +190,7 @@ class AmpEngineTest extends UnitTestCase {
         $data = new \stdClass();
         $data->data = null;
         $this->emitter->on(Engine::SHUT_DOWN_EVENT, function(Event $event) use($data) {
-            $data->data = $event->target();
+            $data->data = $event->getTarget();
         });
 
         $engine = $this->getEngine();

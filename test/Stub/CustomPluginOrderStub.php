@@ -6,7 +6,7 @@ namespace Cspray\Labrador\Test\Stub;
 use Amp\Promise;
 use Amp\Success;
 use Auryn\Injector;
-use Cspray\Labrador\AsyncEvent\Emitter;
+use Cspray\Labrador\AsyncEvent\EventEmitter;
 use Cspray\Labrador\Plugin\BootablePlugin;
 use Cspray\Labrador\Plugin\EventAwarePlugin;
 use Cspray\Labrador\Plugin\PluginDependentPlugin;
@@ -37,14 +37,14 @@ class CustomPluginOrderStub implements BootablePlugin, EventAwarePlugin, Injecto
     /**
      * Register the event listeners your Plugin responds to.
      *
-     * @param Emitter $emitter
+     * @param EventEmitter $emitter
      * @return void
      */
-    public function registerEventListeners(Emitter $emitter): void {
+    public function registerEventListeners(EventEmitter $emitter): void {
         self::$callOrderObject->callOrder[] = 'events';
     }
 
-    public function removeEventListeners(Emitter $emitter): void {
+    public function removeEventListeners(EventEmitter $emitter): void {
         self::$callOrderObject->callOrder[] = 'SHOULD NOT SHOW UP';
     }
 

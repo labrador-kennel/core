@@ -6,7 +6,7 @@ namespace Cspray\Labrador\Plugin;
 /**
  * An identifying interface for objects that extend or hook into Labrador provided functionality.
  *
- * typically you would not implement this interface directly but implement one of the interfaces that extend Plugin. It
+ * Typically you would not implement this interface directly but implement one of the interfaces that extend Plugin. It
  * is important that any custom Plugin types implement this interface or your Plugin will not be identified as such and
  * will not be loadable by the Pluggable you wish to attach it to.
  *
