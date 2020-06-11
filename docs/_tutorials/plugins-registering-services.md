@@ -38,6 +38,20 @@ final class BarServicePlugin implements InjectorAwarePlugin {
 }
 ```
 
+That's all there is to it! Obviously this is a simple example, your object graph may need much more advanced 
+configuration. Fortunately [Auryn] is incredibly powerful and should be able to handle anything you might need  from it. 
+Check out the Auryn documentation for more details.
 
+### Not for your Application dependencies
+
+The `InjectorAwarePlugin` is great if your functionality is very modular and can be used by different types of Labrador
+applications. This plugin type is **not** suitable for the dependencies your `Application` requires directly. It also 
+isn't well suited to dependencies that are overly coupled to your `Application` and wouldn't work easily in other Labrador 
+applications. In these type of use cases you should take a look at [Creating Your DependencyGraph][create-dependency-graph]
+
+### Next Steps
+
+{% include core/plugin_next_steps.md hide='services' %}
 
 [Auryn]: https://github.com/rdlowrey/auryn
+[create-dependency-graph]: {{site.baseurl}}/how-tos/creating-your-dependency-graph

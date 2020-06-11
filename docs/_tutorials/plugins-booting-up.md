@@ -8,3 +8,6 @@ complete its task after all other Plugin loading procedures have finished.
 
 ### Implementing `BootablePlugin`
 
+### Next Steps
+
+{% include core/plugin_next_steps.md hide='boot' %}
