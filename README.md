@@ -1,8 +1,10 @@
 # Labrador Core
 
+<div class="repo-badges">
 [![Travis](https://travis-ci.org/labrador-kennel/core.svg?branch=master)](https://travis-ci.org/labrador-kennel/core)
 [![GitHub license](https://img.shields.io/github/license/labrador-kennel/core.svg?style=flat-square)](http://opensource.org/licenses/MIT)
 [![GitHub release](https://img.shields.io/github/release/labrador-kennel/core.svg?style=flat-square)](https://github.com/cspray/labrador/releases/latest)
+</div>
 
 - **IoC Container** Provided through the [Auryn](https://github.com/rdlowrey/Auryn) library.
 - **Event** An event library designed to execute asynchronously in an Amp event loop. A part of Labrador, you can check out [its repo](https://github.com/labrador-kennel/async-event) for more information.
