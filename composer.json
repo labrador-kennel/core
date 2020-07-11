@@ -11,6 +11,10 @@
       "role": "Project Maintainer"
     }
   ],
+  "scripts": {
+    "code-lint": "vendor/bin/labrador-cs src/ test/",
+    "test": "vendor/bin/phpunit"
+  },
   "require": {
     "php": ">=7.2",
     "ext-dom": "*",
