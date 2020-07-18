@@ -91,7 +91,9 @@ final class AmpEngine implements Engine {
                 $this->engineState = EngineState::Crashed();
                 $this->logger->info('Starting Application cleanup process from exception handler.');
                 yield $this->emitEngineShutDownEvent($application);
-                $this->logger->info('Completed Application cleanup process from exception handler. Engine shutting down.');
+                $this->logger->info(
+                    'Completed Application cleanup process from exception handler. Engine shutting down.'
+                );
             });
         });
 
