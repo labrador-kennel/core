@@ -20,7 +20,7 @@ set_error_handler(function(...$args) {
     var_dump($args);
 });
 
-$app = $injector->make(\Cspray\Labrador\CallbackApplication::class, [
+$app = $injector->make(\Cspray\Labrador\Test\Stub\TestApplication::class, [
     'pluggable' => \Cspray\Labrador\Plugin\PluginManager::class,
     ':executeHandler' => function() {
         echo "oops in app\n";
