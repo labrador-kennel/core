@@ -3,7 +3,7 @@
 namespace Cspray\Labrador;
 
 use Amp\Promise;
-use Cspray\Labrador\AsyncEvent\Emitter;
+use Cspray\Labrador\AsyncEvent\EventEmitter;
 use Cspray\Labrador\AsyncEvent\EventFactory;
 use Cspray\Labrador\AsyncEvent\StandardEventFactory;
 use Cspray\Labrador\Exception\InvalidStateException;
@@ -17,7 +17,7 @@ use Throwable;
  * @package Cspray\Labrador
  * @license See LICENSE in source root
  */
-class AmpEngine implements Engine {
+final class AmpEngine implements Engine {
 
     use LoggerAwareTrait;
 
@@ -27,7 +27,7 @@ class AmpEngine implements Engine {
     private $engineBooted = false;
 
     public function __construct(
-        Emitter $emitter,
+        EventEmitter $emitter,
         EventFactory $eventFactory = null
     ) {
         $this->emitter = $emitter;
@@ -39,7 +39,7 @@ class AmpEngine implements Engine {
         return $this->engineState;
     }
 
-    public function getEmitter() : Emitter {
+    public function getEmitter() : EventEmitter {
         return $this->emitter;
     }
 
@@ -88,10 +88,12 @@ class AmpEngine implements Engine {
             );
             $application->handleException($error);
             Loop::defer(function() use($application) {
-                $this->logger->info('Starting Application cleanup process.');
-                yield $this->emitEngineShutDownEvent($application);
-                $this->logger->info('Completed Application cleanup process. Engine shutting down.');
                 $this->engineState = EngineState::Crashed();
+                $this->logger->info('Starting Application cleanup process from exception handler.');
+                yield $this->emitEngineShutDownEvent($application);
+                $this->logger->info(
+                    'Completed Application cleanup process from exception handler. Engine shutting down.'
+                );
             });
         });
 

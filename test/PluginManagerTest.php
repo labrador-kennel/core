@@ -35,7 +35,7 @@ use Cspray\Labrador\Test\Stub\PluginStub;
 use Cspray\Labrador\Test\Stub\RecursivelyDependentPluginStub;
 use Cspray\Labrador\Test\Stub\RequiresCircularDependentStub;
 use Cspray\Labrador\Test\Stub\ServicesRegisteredPlugin;
-use Cspray\Labrador\AsyncEvent\AmpEmitter as EventEmitter;
+use Cspray\Labrador\AsyncEvent\AmpEventEmitter;
 use Auryn\Injector;
 use Auryn\ConfigException;
 use Psr\Log\Test\TestLogger;
@@ -53,7 +53,7 @@ class PluginManagerTest extends AsyncTestCase {
 
     public function setUp() : void {
         parent::setUp();
-        $this->emitter = new EventEmitter();
+        $this->emitter = new AmpEventEmitter();
         $this->injector = new Injector();
         $this->logger = new TestLogger();
     }

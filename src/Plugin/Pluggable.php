@@ -77,7 +77,8 @@ interface Pluggable {
      * when loadPlugins is invoked.
      *
      * If a Plugin is attempted to be registered AFTER loadPlugins is invoked an IllegalStateException SHOULD be thrown
-     * as all registration must happen prior to loading to simplify the process.
+     * as all registration must happen prior to loading to simplify the process and deal with the fact that Plugins
+     * load asynchronously.
      *
      * If a Plugin is attempted to be registered that does not implement the Plugin interace an IllegalArgumentException
      * MUST be thrown as all registered types must implement the minimum interface.
@@ -100,6 +101,7 @@ interface Pluggable {
      *
      * @return Promise<void> Will resolve when all Plugins have completed the loading process
      * @throws CircularDependencyException
+     * @throws InvalidStateException
      */
     public function loadPlugins() : Promise;
 

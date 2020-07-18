@@ -2,7 +2,7 @@
 
 namespace Cspray\Labrador\Plugin;
 
-use Cspray\Labrador\AsyncEvent\Emitter;
+use Cspray\Labrador\AsyncEvent\EventEmitter;
 use Cspray\Labrador\Exception\DependencyInjectionException;
 use Cspray\Labrador\Exceptions;
 use Cspray\Labrador\Exception\Exception;
@@ -55,9 +55,9 @@ final class PluginManager implements Pluggable, LoggerAwareInterface {
      * be provided during the plugin loading process.
      *
      * @param Injector $injector
-     * @param Emitter $emitter
+     * @param EventEmitter $emitter
      */
-    public function __construct(Injector $injector, Emitter $emitter) {
+    public function __construct(Injector $injector, EventEmitter $emitter) {
         $this->injector = $injector;
         $this->emitter = $emitter;
     }

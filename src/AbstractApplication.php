@@ -20,9 +20,10 @@ use Throwable;
  * Although you may pass any Pluggable type to this instance you almost assuredly want to inject the PluginManager class
  * as it is the de facto implementation for loading Plugins correctly. If you use the provided DependencyGraph object,
  * which you definitely should, and your Configuration has a valid application class configured this task has been
- * taken care of for you and any instance you create with the Injector will have the appropriate Pluggable. If you
- * do not use our DependencyGraph OR do not have an application class appropriately Configured it is your responsibility
- * to create your application with the appropriate dependency:
+ * taken care of for you and any instance you create with the Injector will have the appropriate Pluggable.
+ *
+ * If you do not use our DependencyGraph OR do not have an application class appropriately Configured it is your
+ * responsibility to create your application with the appropriate dependency:
  *
  * $app = $injector->make(YourApplication::class, ['pluggable' => \Cspray\Labrador\Plugin\PluginManager::class]);
  *

@@ -3,7 +3,7 @@
 
 namespace Cspray\Labrador\Plugin;
 
-use Cspray\Labrador\AsyncEvent\Emitter;
+use Cspray\Labrador\AsyncEvent\EventEmitter;
 
 /**
  * A Plugin that is capable of interacting with the Application's Emitter to register event listeners when this Plugin
@@ -17,16 +17,16 @@ interface EventAwarePlugin extends Plugin {
     /**
      * Register the event listeners your Plugin responds to.
      *
-     * @param Emitter $emitter
+     * @param EventEmitter $emitter
      * @return void
      */
-    public function registerEventListeners(Emitter $emitter) : void;
+    public function registerEventListeners(EventEmitter $emitter) : void;
 
     /**
      * Remove any event listeners that were registered when registerEventListeners was invoked.
      *
-     * @param Emitter $emitter
+     * @param EventEmitter $emitter
      * @return void
      */
-    public function removeEventListeners(Emitter $emitter) : void;
+    public function removeEventListeners(EventEmitter $emitter) : void;
 }

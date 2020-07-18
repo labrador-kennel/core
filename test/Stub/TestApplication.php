@@ -1,43 +1,28 @@
 <?php declare(strict_types=1);
 
-namespace Cspray\Labrador;
+namespace Cspray\Labrador\Test\Stub;
 
-use function Amp\call;
 use Amp\Promise;
+use Cspray\Labrador\AbstractApplication;
 use Cspray\Labrador\Plugin\Pluggable;
 use Throwable;
+use function Amp\call;
 
-/**
- *
- * @package Cspray\Labrador
- * @license See LICENSE in source root
- */
-class CallbackApplication extends AbstractApplication {
+class TestApplication extends AbstractApplication {
 
-    private $handler;
+    private $closure;
     private $exceptionHandler;
 
     public function __construct(Pluggable $pluggable, callable $executeHandler, callable $exceptionHandler = null) {
         parent::__construct($pluggable);
-        $this->handler = $executeHandler;
+        $this->closure = $executeHandler;
         $this->exceptionHandler = $exceptionHandler;
     }
 
-    /**
-     * Executes the handler passed to the constructor of this object.
-     *
-     * @return Promise<void>
-     */
     protected function doStart() : Promise {
-        return call($this->handler);
+        return call($this->closure);
     }
 
-    /**
-     * Executes the exception handler, if one was provided, whenever an exception is thrown.
-     *
-     * @param Throwable $throwable
-     * @return void
-     */
     public function handleException(Throwable $throwable) : void {
         if (isset($this->exceptionHandler)) {
             ($this->exceptionHandler)($throwable);

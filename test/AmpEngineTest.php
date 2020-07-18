@@ -18,14 +18,14 @@ use Cspray\Labrador\EngineState;
 use Cspray\Labrador\Exception\InvalidStateException;
 use Cspray\Labrador\Exception\Exception;
 use Cspray\Labrador\Exceptions;
-use Cspray\Labrador\CallbackApplication;
 use Cspray\Labrador\Plugin\Pluggable;
 use Cspray\Labrador\Test\Stub\LoadPluginCalledApplication;
 use Cspray\Labrador\Test\Stub\NoopApplication;
-use Auryn\Injector;
-use Cspray\Labrador\AsyncEvent\AmpEmitter;
-use Cspray\Labrador\AsyncEvent\Emitter;
+use Cspray\Labrador\AsyncEvent\AmpEventEmitter;
+use Cspray\Labrador\AsyncEvent\EventEmitter;
 use Cspray\Labrador\AsyncEvent\Event;
+use Cspray\Labrador\Test\Stub\TestApplication;
+use PHPUnit\Framework\MockObject\MockObject;
 use PHPUnit\Framework\TestCase as UnitTestCase;
 use Psr\Log\Test\TestLogger;
 use RuntimeException;
@@ -33,13 +33,9 @@ use RuntimeException;
 class AmpEngineTest extends UnitTestCase {
 
     /**
-     * @var Emitter
+     * @var EventEmitter
      */
     private $emitter;
-    /**
-     * @var Injector
-     */
-    private $injector;
 
     /**
      * @var TestLogger
@@ -47,12 +43,11 @@ class AmpEngineTest extends UnitTestCase {
     private $logger;
 
     public function setUp() : void {
-        $this->injector = new Injector();
-        $this->emitter = new AmpEmitter();
+        $this->emitter = new AmpEventEmitter();
         $this->logger = new TestLogger();
     }
 
-    private function getEngine(Emitter $eventEmitter = null) : AmpEngine {
+    private function getEngine(EventEmitter $eventEmitter = null) : AmpEngine {
         $emitter = $eventEmitter ?: $this->emitter;
         $engine = new AmpEngine($emitter);
         $engine->setLogger($this->logger);
@@ -60,6 +55,7 @@ class AmpEngineTest extends UnitTestCase {
     }
 
     private function mockPluggable() : Pluggable {
+        /** @var MockObject|Pluggable $pluggable */
         $pluggable = $this->getMockBuilder(Pluggable::class)->getMock();
         $pluggable->expects($this->once())->method('loadPlugins')->willReturn(new Success());
         return $pluggable;
@@ -69,14 +65,15 @@ class AmpEngineTest extends UnitTestCase {
         return new NoopApplication($this->mockPluggable());
     }
 
-    private function callbackApp(callable $callback) : Application {
-        return new CallbackApplication($this->mockPluggable(), $callback);
+    private function stubApp(callable $callback) : Application {
+        return new TestApplication($this->mockPluggable(), $callback);
     }
 
     private function exceptionHandlerApp(callable $appCallback, callable $handler) : Application {
+        /** @var MockObject|Pluggable $pluggable */
         $pluggable = $this->getMockBuilder(Pluggable::class)->getMock();
         $pluggable->expects($this->once())->method('loadPlugins')->willReturn(new Success());
-        return new CallbackApplication($pluggable, $appCallback, $handler);
+        return new TestApplication($pluggable, $appCallback, $handler);
     }
 
     public function testEventsExecutedInOrder() {
@@ -131,7 +128,7 @@ class AmpEngineTest extends UnitTestCase {
             yield new Delayed(0);
         };
 
-        $app = $this->callbackApp($executeAppCb);
+        $app = $this->stubApp($executeAppCb);
 
         $engine = $this->getEngine();
         $engine->onEngineShutdown($cleanupCb);
@@ -190,7 +187,7 @@ class AmpEngineTest extends UnitTestCase {
         $data = new \stdClass();
         $data->data = null;
         $this->emitter->on(Engine::SHUT_DOWN_EVENT, function(Event $event) use($data) {
-            $data->data = $event->target();
+            $data->data = $event->getTarget();
         });
 
         $engine = $this->getEngine();
@@ -226,7 +223,7 @@ class AmpEngineTest extends UnitTestCase {
     public function testEngineStateDuringRunIsRunning() {
         $engine = $this->getEngine();
         $data = new \stdClass();
-        $app = $this->callbackApp(function() use($engine, $data) {
+        $app = $this->stubApp(function() use($engine, $data) {
             $data->state = $engine->getState();
         });
 
@@ -244,7 +241,7 @@ class AmpEngineTest extends UnitTestCase {
     }
 
     public function testEngineStateAfterExceptionIsCrashed() {
-        $app = $this->callbackApp(
+        $app = $this->stubApp(
             function() { throw new RuntimeException('foobar', 42);
             },
             function($err) {
@@ -333,7 +330,7 @@ class AmpEngineTest extends UnitTestCase {
         $this->assertSame($expectedRecords, $this->logger->records);
     }
 
-    public function testLogMessagesOnSuccessfulApplicationRunWithPlugins() {
+    public function testLogMessagesOnFailedApplicationRunWithPlugins() {
         $app = $this->exceptionHandlerApp(
             function() {
                 throw new RuntimeException('foobar', 42);
@@ -373,12 +370,12 @@ class AmpEngineTest extends UnitTestCase {
             ],
             [
                 'level' => 'info',
-                'message' => 'Starting Application cleanup process.',
+                'message' => 'Starting Application cleanup process from exception handler.',
                 'context' => []
             ],
             [
                 'level' => 'info',
-                'message' => 'Completed Application cleanup process. Engine shutting down.',
+                'message' => 'Completed Application cleanup process from exception handler. Engine shutting down.',
                 'context' => []
             ]
         ];

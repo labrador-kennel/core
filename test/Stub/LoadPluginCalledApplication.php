@@ -7,7 +7,7 @@ use Cspray\Labrador\CallbackApplication;
 use function Amp\call;
 use Amp\Promise;
 
-class LoadPluginCalledApplication extends CallbackApplication {
+class LoadPluginCalledApplication extends TestApplication {
 
     private $callOrder = [];
 
