@@ -1,7 +1,5 @@
----
-title: Quick Start 
-order: 1
----
+# Quick Start 
+
 Creating your Labrador application should be simple and straightforward; implement the `Application` interface and write 
 appropriate bootstrapping code for your use case. In the guide below we'll discuss how to get started quickly, so you 
 can focus on your application code. If you want more information on how to structure your code using Labrador 

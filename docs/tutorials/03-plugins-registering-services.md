@@ -1,7 +1,5 @@
----
-title: "Plugins: Registering Services"
-order: 3
----
+# Plugins: Registering Services
+
 We anticipate registering services on to the `Auryn\Injector` being one of the most common use cases for Plugins. Labrador 
 highly encourages libraries to be built that can work with _any_ Amp project. The `InjectorAwarePlugin` is simply some 
 minimal glue to put your functionality into Labrador's ecosystem.

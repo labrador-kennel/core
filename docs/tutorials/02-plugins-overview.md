@@ -1,7 +1,4 @@
----
-title: "Plugins: Overview"
-order: 2
----
+# Plugins: Overview
 
 Plugins are discrete, reusable pieces of functionality that can be easily utilized by any number of Labrador 
 Applications. There are a variety of built-in Plugin interfaces that, when implemented, allow you to easily hook into 

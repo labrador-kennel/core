@@ -1,7 +1,5 @@
----
-title: "Plugins: Handling Events"
-order: 4
----
+# Plugins: Handling Events
+
 Events are handled by a separate Labrador package, [async-event]. This library includes an `EventEmitter` interface and 
 implementations that allow attaching and detaching listeners that are invoked when corresponding events are emitted. The 
 event listeners run in context of [Amp's `Loop`][amp-loop], which allows your listeners to yield Promises and resolve 
