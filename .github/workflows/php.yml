@@ -1,4 +1,4 @@
-name: PHP Unit Testing
+name: 'PHP Unit Testing & Code Lint'
 
 on:
   push:
