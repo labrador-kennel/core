@@ -72,7 +72,11 @@ class AmpEngineTest extends UnitTestCase {
         return new TestApplication($this->mockPluggable($expectCalls), $callback);
     }
 
-    private function exceptionHandlerApp(callable $appCallback, callable $handler, InvocationOrder $expectCalls = null) : Application {
+    private function exceptionHandlerApp(
+        callable $appCallback,
+        callable $handler,
+        InvocationOrder $expectCalls = null
+    ) : Application {
         /** @var MockObject|Pluggable $pluggable */
         $expectCalls = $expectCalls ?? $this->once();
         $pluggable = $this->getMockBuilder(Pluggable::class)->getMock();
