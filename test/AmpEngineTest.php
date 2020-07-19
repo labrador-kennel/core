@@ -19,6 +19,7 @@ use Cspray\Labrador\Exception\InvalidStateException;
 use Cspray\Labrador\Exception\Exception;
 use Cspray\Labrador\Exceptions;
 use Cspray\Labrador\Plugin\Pluggable;
+use Cspray\Labrador\Plugin\Plugin;
 use Cspray\Labrador\Test\Stub\LoadPluginCalledApplication;
 use Cspray\Labrador\Test\Stub\NoopApplication;
 use Cspray\Labrador\AsyncEvent\AmpEventEmitter;
@@ -26,6 +27,7 @@ use Cspray\Labrador\AsyncEvent\EventEmitter;
 use Cspray\Labrador\AsyncEvent\Event;
 use Cspray\Labrador\Test\Stub\TestApplication;
 use PHPUnit\Framework\MockObject\MockObject;
+use PHPUnit\Framework\MockObject\Rule\InvocationOrder;
 use PHPUnit\Framework\TestCase as UnitTestCase;
 use Psr\Log\Test\TestLogger;
 use RuntimeException;
@@ -54,25 +56,31 @@ class AmpEngineTest extends UnitTestCase {
         return $engine;
     }
 
-    private function mockPluggable() : Pluggable {
+    private function mockPluggable(InvocationOrder $expectCalls = null) : Pluggable {
+        $expectCalls = $expectCalls ?? $this->once();
         /** @var MockObject|Pluggable $pluggable */
         $pluggable = $this->getMockBuilder(Pluggable::class)->getMock();
-        $pluggable->expects($this->once())->method('loadPlugins')->willReturn(new Success());
+        $pluggable->expects($expectCalls)->method('loadPlugins')->willReturn(new Success());
         return $pluggable;
     }
 
-    private function noopApp() : Application {
-        return new NoopApplication($this->mockPluggable());
+    private function noopApp(InvocationOrder $expectCalls = null) : Application {
+        return new NoopApplication($this->mockPluggable($expectCalls));
     }
 
-    private function stubApp(callable $callback) : Application {
-        return new TestApplication($this->mockPluggable(), $callback);
+    private function stubApp(callable $callback, InvocationOrder $expectCalls = null) : Application {
+        return new TestApplication($this->mockPluggable($expectCalls), $callback);
     }
 
-    private function exceptionHandlerApp(callable $appCallback, callable $handler) : Application {
+    private function exceptionHandlerApp(
+        callable $appCallback,
+        callable $handler,
+        InvocationOrder $expectCalls = null
+    ) : Application {
         /** @var MockObject|Pluggable $pluggable */
+        $expectCalls = $expectCalls ?? $this->once();
         $pluggable = $this->getMockBuilder(Pluggable::class)->getMock();
-        $pluggable->expects($this->once())->method('loadPlugins')->willReturn(new Success());
+        $pluggable->expects($expectCalls)->method('loadPlugins')->willReturn(new Success());
         return new TestApplication($pluggable, $appCallback, $handler);
     }
 
@@ -101,7 +109,7 @@ class AmpEngineTest extends UnitTestCase {
         $engine->onEngineBootup($bootUpCb);
         $engine->onEngineShutdown($cleanupCb);
 
-        $engine->run($this->noopApp());
+        $engine->run($this->noopApp($this->never()));
 
         $this->assertSame([1,2,3,4,5,6], $data->data);
     }
@@ -128,7 +136,7 @@ class AmpEngineTest extends UnitTestCase {
             yield new Delayed(0);
         };
 
-        $app = $this->stubApp($executeAppCb);
+        $app = $this->stubApp($executeAppCb, $this->never());
 
         $engine = $this->getEngine();
         $engine->onEngineShutdown($cleanupCb);
@@ -151,7 +159,7 @@ class AmpEngineTest extends UnitTestCase {
             $data->exception = $error;
         };
 
-        $app = $this->exceptionHandlerApp($throwExceptionCb, $handler);
+        $app = $this->exceptionHandlerApp($throwExceptionCb, $handler, $this->never());
 
         $engine->run($app);
 
@@ -191,7 +199,7 @@ class AmpEngineTest extends UnitTestCase {
         });
 
         $engine = $this->getEngine();
-        $engine->run($app = $this->noopApp());
+        $engine->run($app = $this->noopApp($this->never()));
 
         $this->assertSame($app, $data->data);
     }
@@ -205,13 +213,16 @@ class AmpEngineTest extends UnitTestCase {
             $data->data = $throwable;
         };
         $appCb = function() use($engine) {
-            $engine->run(new NoopApplication($this->getMockBuilder(Pluggable::class)->getMock()));
+            $engine->run($this->noopApp($this->never()));
             return new Success();
         };
-        $app = $this->exceptionHandlerApp($appCb, $handlerCb);
+        $app = $this->exceptionHandlerApp($appCb, $handlerCb, $this->never());
         $engine->run($app);
         $this->assertInstanceOf(InvalidStateException::class, $data->data);
-        $this->assertSame(Engine::class . '::run MUST NOT be called while already running.', $data->data->getMessage());
+        $this->assertSame(
+            Engine::class . '::run MUST NOT be called while already running.',
+            $data->data->getMessage()
+        );
         $this->assertSame(Exceptions::ENGINE_ERR_MULTIPLE_RUN_CALLS, $data->data->getCode());
     }
 
@@ -225,7 +236,7 @@ class AmpEngineTest extends UnitTestCase {
         $data = new \stdClass();
         $app = $this->stubApp(function() use($engine, $data) {
             $data->state = $engine->getState();
-        });
+        }, $this->never());
 
         $engine->run($app);
 
@@ -234,7 +245,7 @@ class AmpEngineTest extends UnitTestCase {
 
     public function testEngineStateAfterRunIsIdle() {
         $engine = $this->getEngine();
-        $app = $this->noopApp();
+        $app = $this->noopApp($this->never());
         $engine->run($app);
 
         $this->assertSame(EngineState::Idle(), $engine->getState());
@@ -242,10 +253,10 @@ class AmpEngineTest extends UnitTestCase {
 
     public function testEngineStateAfterExceptionIsCrashed() {
         $app = $this->stubApp(
-            function() { throw new RuntimeException('foobar', 42);
+            function() {
+                throw new RuntimeException('foobar', 42);
             },
-            function($err) {
-            }
+            $this->never()
         );
         $engine = $this->getEngine();
 
@@ -262,8 +273,8 @@ class AmpEngineTest extends UnitTestCase {
         });
 
         $engine = $this->getEngine();
-        $engine->run($this->noopApp());
-        $engine->run(new NoopApplication($this->getMockBuilder(Pluggable::class)->getMock()));
+        $engine->run($this->noopApp($this->never()));
+        $engine->run($this->noopApp($this->never()));
 
         $this->assertSame([1], $data->data);
     }
@@ -273,8 +284,9 @@ class AmpEngineTest extends UnitTestCase {
         $this->assertSame($this->emitter, $actual);
     }
 
-    public function testApplicationLoadPluginsCalled() {
+    public function testApplicationLoadPluginsCalledIfSomeAreRegistered() {
         $pluggable = $this->getMockBuilder(Pluggable::class)->getMock();
+        $pluggable->expects($this->once())->method('getRegisteredPlugins')->willReturn([Plugin::class]);
         $app = new LoadPluginCalledApplication($pluggable, function() {
         });
 
@@ -289,9 +301,66 @@ class AmpEngineTest extends UnitTestCase {
         );
     }
 
+    public function testApplicationLoadPluginsNotCalledIfNoneAreRegistered() {
+        $pluggable = $this->getMockBuilder(Pluggable::class)->getMock();
+        $pluggable->expects($this->once())->method('getRegisteredPlugins')->willReturn([]);
+        $app = new LoadPluginCalledApplication($pluggable, function() {
+        });
+
+        $this->getEngine()->run($app);
+
+        $expected = ['execute'];
+
+        $this->assertSame(
+            $expected,
+            $app->callOrder(),
+            'Expected the Application::loadPlugins to not be called if there are no registered plugins'
+        );
+    }
+
     public function testLogMessagesOnSuccessfulApplicationRunNoPlugins() {
-        $app = $this->noopApp();
+        $app = $this->noopApp($this->never());
         $engine = $this->getEngine();
+        $engine->run($app);
+
+        $expectedRecords = [
+            [
+                'level' => 'info',
+                'message' => 'Skipping Plugin loading because no registered plugins were found.',
+                'context' => []
+            ],
+            [
+                'level' => 'info',
+                'message' => 'Starting Application process.',
+                'context' => []
+            ],
+            [
+                'level' => 'info',
+                'message' => 'Completed Application process.',
+                'context' => []
+            ],
+            [
+                'level' => 'info',
+                'message' => 'Starting Application cleanup process.',
+                'context' => []
+            ],
+            [
+                'level' => 'info',
+                'message' => 'Completed Application cleanup process. Engine shutting down.',
+                'context' => []
+            ]
+        ];
+
+        $this->assertSame($expectedRecords, $this->logger->records);
+    }
+
+    public function testLogMessagesOnSuccessfulApplicationRunWithPlugins() {
+        $pluggable = $this->getMockBuilder(Pluggable::class)->getMock();
+        $pluggable->expects($this->once())->method('getRegisteredPlugins')->willReturn([Plugin::class]);
+        $pluggable->expects($this->once())->method('loadPlugins')->willReturn(new Success());
+        $app = new NoopApplication($pluggable);
+        $engine = $this->getEngine();
+
         $engine->run($app);
 
         $expectedRecords = [
@@ -323,59 +392,6 @@ class AmpEngineTest extends UnitTestCase {
             [
                 'level' => 'info',
                 'message' => 'Completed Application cleanup process. Engine shutting down.',
-                'context' => []
-            ]
-        ];
-
-        $this->assertSame($expectedRecords, $this->logger->records);
-    }
-
-    public function testLogMessagesOnFailedApplicationRunWithPlugins() {
-        $app = $this->exceptionHandlerApp(
-            function() {
-                throw new RuntimeException('foobar', 42);
-            },
-            function($err) {
-            }
-        );
-        $lineNum = __LINE__ - 5;
-        $engine = $this->getEngine();
-
-        try {
-            $engine->run($app);
-        } catch (RuntimeException $runtimeException) {
-            $this->assertSame('foobar', $runtimeException->getMessage());
-        }
-
-        $expectedRecords = [
-            [
-                'level' => 'info',
-                'message' => 'Starting Plugin loading process.',
-                'context' => []
-            ],
-            [
-                'level' => 'info',
-                'message' => 'Completed Plugin loading process.',
-                'context' => []
-            ],
-            [
-                'level' => 'info',
-                'message' => 'Starting Application process.',
-                'context' => []
-            ],
-            [
-                'level' => 'alert',
-                'message' => 'The Application threw an exception: ' . RuntimeException::class . ' "foobar"',
-                'context' => ['file' => __FILE__, 'line' => $lineNum]
-            ],
-            [
-                'level' => 'info',
-                'message' => 'Starting Application cleanup process from exception handler.',
-                'context' => []
-            ],
-            [
-                'level' => 'info',
-                'message' => 'Completed Application cleanup process from exception handler. Engine shutting down.',
                 'context' => []
             ]
         ];

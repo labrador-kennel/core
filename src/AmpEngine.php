@@ -101,13 +101,15 @@ final class AmpEngine implements Engine {
         Loop::run(function() use($application) {
             $this->engineState = EngineState::Running();
 
-            $this->emitter->once(self::START_UP_EVENT, function() use($application) {
-                $this->logger->info('Starting Plugin loading process.');
-                yield $application->loadPlugins();
-                $this->logger->info('Completed Plugin loading process.');
-            });
-
             if (!$this->engineBooted) {
+                $registeredPluginCount = count($application->getRegisteredPlugins());
+                if ($registeredPluginCount > 0) {
+                    $this->logger->info('Starting Plugin loading process.');
+                    yield $application->loadPlugins();
+                    $this->logger->info('Completed Plugin loading process.');
+                } else {
+                    $this->logger->info('Skipping Plugin loading because no registered plugins were found.');
+                }
                 yield $this->emitEngineStartUpEvent();
                 $this->engineBooted = true;
             }

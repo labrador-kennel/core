@@ -24,41 +24,33 @@ vast majority of use cases. If you extend the `AbstractApplication` class all th
 already be taken care of. In the normal use case you'll really only be responsible for registering the correct plugins 
 for your application.
 
-<div class="message is-warning">
-    <div class="message-header">
-        Implementing your own Pluggable
-    </div>
-    <div class="message-body">
-        It is critical that if you implement your own Pluggable interface that you handle a variety of use cases and 
-        potential problems. It is <strong>highly recommended</strong> that you use Labrador's <code>PluginManager</code>
-        to delegate the responsibilities of the Pluggable. For more information please see the reference material, 
-        <a href="{{site.baseurl}}/references/plugins-deep-dive">Deep Dive: Plugins &amp; Pluggables</a>.
-    </div>
-</div>
+> It is critical if you implement your own Pluggable interface that you handle a variety of use cases and 
+potential problems. It is <strong>highly recommended</strong> that you use Labrador's <code>PluginManager</code>
+to delegate the responsibilities of the Pluggable. For more information please see the reference material, 
+[Deep Dive: Plugins &amp; Pluggables](/docs/core/references/plugins-deep-dive).
 
 #### Registering your Plugin
 
 You register Plugins by providing the Pluggable the fully-qualified class name. This should happen during your bootstrapping 
 process and **MUST** happen before `Engine::run()` is called. Attempting to register plugins after the engine has started 
-will result in an exception. Continuing with the bootstrap file created during our [Quick Start], if you had a plugin 
+will result in an exception. Continuing with the bootstrap file created in [Getting Started], if you had a plugin 
 called `Acme\Foo\BarPlugin` we'd register it on your application like so.
 
 ```php
 <?php
 
-// ... all of the previous code from the quick start guide
-// $logger = Psr\Log\LoggerInterface implementation
+// ... all of the previous code from the Getting Started guide
 
 $injector = (new DependencyGraph($logger))->wireObjectGraph();
 
 // We want to use the $injector to make these objects to ensure appropriate dependencies are autowired
 $app = $injector->make(HelloWorldApplication::class);
+$engine = $injector->make(Engine::class);
 
 $app->registerPlugin(BarPlugin::class);
 
-$engine = $injector->make(Engine::class);
-
 $engine->run($app);
+?>
 ```
 
 Ultimately your application's `Auryn\Injector` will instantiate your Plugin. If you require a dependency that isn't 
@@ -70,12 +62,16 @@ check out [Creating your DependencyGraph].
 
 Plugins go through their loading process as one of the very first steps when you call `Engine::run`. Loading of Plugins 
 happens asynchronously and your Plugins have opportunities to run asynchronous code before your Application starts. The 
-complete loading process is too complicated to discuss in this guide. The most important thing to note is that Plugin 
-loading starts immediately when you call `Engine::run` and all Plugins MUST be registered before this happens.
+complete loading process is beyond the scope of this document. The most important thing to note is that Plugin 
+loading starts immediately when you call `Engine::run` and all Plugins MUST be registered before this happens. If you'd 
+like more information on the Plugin loading process please check out [Deep Dive: Plugins][deep-dive-plugins].
 
 ### Next Steps
 
-{% include core/plugin_next_steps.md hide='overview' %}
+Next we recommend check out [Plugins: Registering Services][plugins-register-services] to learn how to create Plugins that 
+can be used to easily share the same services.
 
-[Quick Start]: {{site.baseurl}}/tutorials/quick-start
-[Creating your DependencyGraph]: {{site.baseurl}}/how-tos/creating-your-dependency-graph
+[deep-dive-plugins]: /docs/core/references/plugins-deep-dive
+[Getting Started]: /docs/core/tutorials/quick-start
+[Creating your DependencyGraph]: /docs/core/how-tos/creating-your-dependency-graph
+[plugins-register-services]: /docs/core/tutorials/plugins-registering-services

@@ -1,7 +1,4 @@
 /vendor
 /build
-/docs/_site/
-/docs/.sass-cache
-/docs/.jekyll-cache
-/tmp/
+/tmp
 .phpunit.result.cache
