@@ -215,7 +215,10 @@ class AmpEngineTest extends UnitTestCase {
         $app = $this->exceptionHandlerApp($appCb, $handlerCb, $this->never());
         $engine->run($app);
         $this->assertInstanceOf(InvalidStateException::class, $data->data);
-        $this->assertSame(Engine::class . '::run MUST NOT be called while already running.', $data->data->getMessage());
+        $this->assertSame(
+            Engine::class . '::run MUST NOT be called while already running.',
+            $data->data->getMessage()
+        );
         $this->assertSame(Exceptions::ENGINE_ERR_MULTIPLE_RUN_CALLS, $data->data->getCode());
     }
 
