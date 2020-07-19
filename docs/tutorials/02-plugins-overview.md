@@ -72,6 +72,6 @@ Next we recommend check out [Plugins: Registering Services][plugins-register-ser
 can be used to easily share the same services.
 
 [deep-dive-plugins]: /docs/core/references/plugins-deep-dive
-[Getting Started]: /docs/core/tutorials/quick-start
+[Getting Started]: /docs/core/tutorials/getting-started
 [Creating your DependencyGraph]: /docs/core/how-tos/creating-your-dependency-graph
 [plugins-register-services]: /docs/core/tutorials/plugins-registering-services
