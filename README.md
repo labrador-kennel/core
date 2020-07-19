@@ -1,5 +1,6 @@
 # Labrador core
 
+[![PHP Unit Testing & Code Lint](https://github.com/labrador-kennel/core/workflows/PHP%20Unit%20Testing%20&%20Code%20Lint/badge.svg)](https://github.com/labrador-kennel/core/actions?query=workflow%3A%22PHP+Unit+Testing+%26+Code+Lint%22)
 [![GitHub release](https://img.shields.io/github/release/labrador-kennel/core.svg?style=flat-square)](https://github.com/cspray/labrador/releases/latest)
 [![GitHub license](https://img.shields.io/github/license/labrador-kennel/core.svg?style=flat-square)](http://opensource.org/licenses/MIT)
 
