@@ -78,6 +78,4 @@ the `PluginManager` implementation handle the Plugin loading process in the vast
 
 ### Next Steps
 
-Next up you should continue to learn more about [Creating your DependencyGraph][creating-your-dependencygraph].
-
-[creating-your-dependencygraph]: /docs/core/how-tos/creating-your-dependency-graph
+Next up you should continue to learn more about [Creating your DependencyGraph](/docs/core/how-tos/creating-your-dependency-graph).

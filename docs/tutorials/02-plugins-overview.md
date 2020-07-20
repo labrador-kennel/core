@@ -33,8 +33,8 @@ to delegate the responsibilities of the Pluggable. For more information please s
 
 You register Plugins by providing the Pluggable the fully-qualified class name. This should happen during your bootstrapping 
 process and **MUST** happen before `Engine::run()` is called. Attempting to register plugins after the engine has started 
-will result in an exception. Continuing with the bootstrap file created in [Getting Started], if you had a plugin 
-called `Acme\Foo\BarPlugin` we'd register it on your application like so.
+will result in an exception. Continuing with the bootstrap file created in [Getting Started](/docs/core/tutorials/getting-started), 
+if you had a plugin called `Acme\Foo\BarPlugin` we'd register it on your application like so.
 
 ```php
 <?php
@@ -55,7 +55,7 @@ $engine->run($app);
 Ultimately your application's `Auryn\Injector` will instantiate your Plugin. If you require a dependency that isn't 
 provided by another Plugin you should ensure that the appropriate object graph has been wired for the `$injector`. If 
 you're looking for more details on how to wire up your application's dependencies _that aren't provided by Plugins_ please
-check out [Creating your DependencyGraph].
+check out [Creating your DependencyGraph](/docs/core/how-tos/creating-your-dependency-graph).
 
 #### Plugin Loading
 
@@ -63,14 +63,9 @@ Plugins go through their loading process as one of the very first steps when you
 happens asynchronously and your Plugins have opportunities to run asynchronous code before your Application starts. The 
 complete loading process is beyond the scope of this document. The most important thing to note is that Plugin 
 loading starts immediately when you call `Engine::run` and all Plugins MUST be registered before this happens. If you'd 
-like more information on the Plugin loading process please check out [Deep Dive: Plugins][deep-dive-plugins].
+like more information on the Plugin loading process please check out [Deep Dive: Plugins](/docs/core/references/plugins-deep-dive).
 
 ### Next Steps
 
-Next we recommend check out [Plugins: Registering Services][plugins-register-services] to learn how to create Plugins that 
-can be used to easily share the same services.
-
-[deep-dive-plugins]: /docs/core/references/plugins-deep-dive
-[Getting Started]: /docs/core/tutorials/getting-started
-[Creating your DependencyGraph]: /docs/core/how-tos/creating-your-dependency-graph
-[plugins-register-services]: /docs/core/tutorials/plugins-registering-services
+Next we recommend check out [Plugins: Registering Services](/docs/core/tutorials/plugins-registering-services) to learn 
+how to create Plugins that can be used to easily share the same services.

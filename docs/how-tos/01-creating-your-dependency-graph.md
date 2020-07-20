@@ -43,7 +43,5 @@ used in your bootstrap code with your new instance.
 
 ### Next Steps
 
-Next up you can learn about [Implementing Custom Plugin Types][custom-plugin-types] or you can take a [Deep Dive: Plugins][plugins-deep-dive].
-
-[custom-plugin-types]: /docs/core/how-tos/implementing-custom-plugin-types
-[plugins-deep-dive]: /docs/core/references/plugins-deep-dive
+Next up you can learn about [Implementing Custom Plugin Types](/docs/core/how-tos/implementing-custom-plugin-types) or 
+you can take a [Deep Dive: Plugins](/docs/core/references/plugins-deep-dive).

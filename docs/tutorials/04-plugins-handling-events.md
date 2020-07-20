@@ -1,7 +1,7 @@
 # Plugins: Handling Events
 
 Labrador emits semantic, data-rich events throughout the processing of an application to ensure that you can respond to 
-meaningful occurrences while being decoupled from the code doing the actual processing. The [Labrador async-event][async-event] 
+meaningful occurrences while being decoupled from the code doing the actual processing. The [Labrador async-event](/docs/async-event)
 library provides the functionality that emits events and allows you to attach listeners that respond to those events. This 
 library allows for listeners to be processed in an async context and provides a wealth of functionality for working in 
 async applications.
@@ -54,9 +54,5 @@ have listeners removed the Plugin must be explicitly removed from the Pluggable 
 
 ### Next Steps
 
-If you simply need to do something when your Plugin completes the loading process check out the [Plugins: Booting Up][plugins-booting-up] 
+If you simply need to do something when your Plugin completes the loading process check out the [Plugins: Booting Up](/docs/core/tutorials/plugins-booting-up)
 documentation next.
-
-[async-event]: /docs/async-event
-[amp-loop]: https://amphp.org
-[plugins-booting-up]: /docs/core/tutorials/plugins-booting-up

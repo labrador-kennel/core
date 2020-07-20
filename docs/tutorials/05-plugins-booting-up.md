@@ -45,6 +45,4 @@ class BootLoggingPlugin implements BootablePlugin {
 ### Next Steps
 
 If you find yourself writing a Plugin that requires services another Plugin provides you may want to take a look at 
-[Plugins: Depending On Other Plugins][plugins-depending-plugins].
-
-[plugins-depending-plugins]: /docs/core/tutorials/plugins-depending-other-plugins
+[Plugins: Depending On Other Plugins](/docs/core/tutorials/plugins-depending-other-plugins).
