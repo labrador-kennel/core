@@ -61,7 +61,7 @@ abstract class AbstractApplication implements Application {
         }
 
         // We use the deferred object instead of simply returning the result of Amp\call because there are two ways for
-        // the start Promise to be resolved. Either implicitly when the Application stops running or explicitly by 
+        // the start Promise to be resolved. Either implicitly when the Application stops running or explicitly by
         // invoking the Application::stop method.
         $this->deferred = new Deferred();
 
