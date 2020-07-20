@@ -50,7 +50,6 @@ $engine = $injector->make(Engine::class);
 $app->registerPlugin(BarPlugin::class);
 
 $engine->run($app);
-?>
 ```
 
 Ultimately your application's `Auryn\Injector` will instantiate your Plugin. If you require a dependency that isn't 

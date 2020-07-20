@@ -52,7 +52,6 @@ $app = $injector->make(HelloWorldApplication::class);
 $engine = $injector->make(Engine::class);
 
 $engine->run($app);
-?>
 ```
 
 ### Important Concepts

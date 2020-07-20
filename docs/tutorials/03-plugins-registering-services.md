@@ -30,8 +30,6 @@ final class BarServicePlugin implements InjectorAwarePlugin {
     }
 
 }
-
-?>
 ```
 
 That's all there is to it! Obviously this is a simple example, your object graph may need much more advanced 
