@@ -75,7 +75,7 @@ long as the `$injector` from the `DependencyGraph` above create your object then
 #### Dependency Injection is important
 
 The `$injector` in the code above plays a highly critical role in the running of a Labrador application. We make use of 
-Dependency Injection with simple interfaces at code boundaries to make code easy to test and easy to replace. The [Auryn]
+Dependency Injection with simple interfaces at code boundaries to make code easy to test and easy to replace. The [Auryn](https://github.com/rdlowrey/auryn)
 injector helps make the pain of Dependency Injection go away. Some cool things the `$injector` is doing for us includes 
 taking care of the dependency that is required by the `AbstractApplication` interface and allowing us to create our `Engine` 
 instance using the `Engine` interface. Different libraries can define their own implementation to use for the `Engine`. The 
@@ -83,14 +83,10 @@ instance using the `Engine` interface. Different libraries can define their own 
 object creation. 
 
 If you have not done so yet check out Labrador's `DependencyGraph` source code. It gives a good baseline for the 
-functionality provided by Auryn. After that you should [definitely check out the Auryn documentation][Auryn] and learn 
-to embrace Inversion of Control.
+functionality provided by Auryn. After that you should [definitely check out the Auryn documentation](https://github.com/rdlowrey/auryn) 
+and learn to embrace Inversion of Control.
 
 ### Next Steps
 
 The real power of Labrador comes with its concept of "plugins". It is highly recommended you check out the 
-[Plugins: Overview][plugins-overview] next.
-
-[deep-dive-app]: /docs/core/references/application-deep-dive
-[plugins-overview]: /docs/core/tutorials/plugins-overview
-[Auryn]: https://github.com/rdlowrey/auryn
+[Plugins: Overview](/docs/core/tutorials/plugins-overview) next.

@@ -9,7 +9,7 @@ This guide talks in detail especially about the `Pluggable` interface. The actua
 interface SHOULD always be the `PluginManager` implementation provided out-of-the-box. If you need to implement the 
 `Pluggable` interface you should delegate those operations to a `PluginManager` instance.
 
-> The rest of this guide assumes that you have read _all_ the [Plugin related tutorials][plugin-tutorials]
+> The rest of this guide assumes that you have read _all_ the [Plugin related tutorials](/docs/core/tutorials)
 
 ### Register Plugins as class names
 
@@ -45,5 +45,3 @@ prevent a runaway application from occurring.
 It is also possible to remove a Plugin sometime after it has been loaded. There's nothing especially noteworthy about 
 removing a Plugin, it simply provides an opportunity to perform some cleanup procedure. Removing a Plugin is not intended 
 to be complicated and should not involve asynchronous code.
-
-[plugin-tutorials]: /docs/core/tutorials
