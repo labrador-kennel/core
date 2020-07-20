@@ -46,8 +46,6 @@ class EventLoggingPlugin implements EventAwarePlugin {
     }
 
 }
-
-?>
 ```
 
 The `EventAwarePlugin` allows you to both register _and_ remove listeners from the `EventEmitter`. Registering event 

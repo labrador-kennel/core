@@ -78,3 +78,4 @@ All Labrador packages adhere to the rules laid out in the [Labrador Governance r
 
 [Auryn]: https://github.com/rdlowrey/Auryn
 [async-event]: https://github.com/labrador-kennel/async-event
+[Composer]: https://getcomposer.org
