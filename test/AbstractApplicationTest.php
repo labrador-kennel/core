@@ -13,6 +13,7 @@ use Cspray\Labrador\ApplicationState;
 use Cspray\Labrador\Exception\InvalidStateException;
 use Cspray\Labrador\Plugin\Pluggable;
 use Cspray\Labrador\Test\Stub\PluginStub;
+use Psr\Log\Test\TestLogger;
 use function Amp\call;
 
 /**
@@ -23,13 +24,18 @@ use function Amp\call;
 class AbstractApplicationTest extends AsyncTestCase {
 
     private $pluggable;
+
     /** @var AbstractApplication */
     private $subject;
 
+    private $logger;
+
     public function setUp() : void {
         parent::setUp();
+        $this->logger = new TestLogger();
         $this->pluggable = $this->getMockBuilder(Pluggable::class)->getMock();
         $this->subject = $this->getMockForAbstractClass(AbstractApplication::class, [$this->pluggable]);
+        $this->subject->setLogger($this->logger);
     }
 
     public function testRegisterPlugingDelegatedToPluggable() {
@@ -186,5 +192,67 @@ class AbstractApplicationTest extends AsyncTestCase {
         );
 
         $this->subject->start();
+    }
+
+    public function testHandleExceptionLogsErrorNoPreviousException() {
+        $throwable = new \RuntimeException('Exception message', 99);
+        $this->subject->handleException($throwable);
+
+        $expectedRecords = [
+            [
+                'level' => 'critical',
+                'message' => 'Exception message',
+                'context' => [
+                    'class' => \RuntimeException::class,
+                    'file' => __FILE__,
+                    'line' => 198,
+                    'code' => 99,
+                    'stack_trace' => $throwable->getTrace(),
+                    'previous' => null
+                ]
+            ]
+        ];
+
+        $this->assertSame($expectedRecords, $this->logger->records);
+    }
+
+    public function testHandleExceptionLogsErrorWithPreviousException() {
+        $first = new \RuntimeException('First');
+        $second = new \RuntimeException('Second', 0, $first);
+        $throwable = new \RuntimeException('Exception message', 99, $second);
+        $this->subject->handleException($throwable);
+
+        $expectedRecords = [
+            [
+                'level' => 'critical',
+                'message' => 'Exception message',
+                'context' => [
+                    'class' => \RuntimeException::class,
+                    'file' => __FILE__,
+                    'line' => 222,
+                    'code' => 99,
+                    'stack_trace' => $throwable->getTrace(),
+                    'previous' => [
+                        'class' => \RuntimeException::class,
+                        'message' => 'Second',
+                        'code' => 0,
+                        'file' => __FILE__,
+                        'line' => 221,
+                        'stack_trace' => $second->getTrace(),
+                        'previous' => [
+                            'class' => \RuntimeException::class,
+                            'message' => 'First',
+                            'code' => 0,
+                            'file' => __FILE__,
+                            'line' => 220,
+                            'stack_trace' => $first->getTrace(),
+                            'previous' => null
+                        ]
+                    ]
+                ]
+            ]
+        ];
+
+        $this->assertSame($expectedRecords, $this->logger->records);
     }
 }

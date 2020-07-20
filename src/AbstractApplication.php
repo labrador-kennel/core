@@ -99,16 +99,39 @@ abstract class AbstractApplication implements Application {
     abstract protected function doStart() : Promise;
 
     /**
-     * This implementation does nothing by default, logging of the exception itself for Labrador's purposes are handled
-     * within the Engine and there's nothing more we can do.
-     *
-     * If your Application needs to have custom exception handling when an exception bubbles up to the event loop you
-     * should override this method.
+     * Ensures that the Exception and any previous Exceptions have appropriate information logged as a critical message.
      *
      * @param Throwable $throwable
      */
     public function handleException(Throwable $throwable) : void {
-        // noop
+        $this->logger->critical($throwable->getMessage(), [
+            'class' => get_class($throwable),
+            'file' => $throwable->getFile(),
+            'line' => $throwable->getLine(),
+            'code' => $throwable->getCode(),
+            'stack_trace' => $throwable->getTrace(),
+            'previous' => $this->marshalPreviousExceptions($throwable)
+        ]);
+    }
+
+    private function marshalPreviousExceptions(Throwable $original) : ?array {
+        $doMarshaling = function(Throwable $previous = null) use(&$doMarshaling) {
+            if (is_null($previous)) {
+                return null;
+            }
+
+            return [
+                'class' => get_class($previous)  ,
+                'message' => $previous->getMessage(),
+                'code' => $previous->getCode(),
+                'file' => $previous->getFile(),
+                'line' => $previous->getLine(),
+                'stack_trace' => $previous->getTrace(),
+                'previous' => $doMarshaling($previous->getPrevious())
+            ];
+        };
+
+        return $doMarshaling($original->getPrevious());
     }
 
     public function registerPluginLoadHandler(string $pluginType, callable $pluginHandler, ...$arguments) : void {
