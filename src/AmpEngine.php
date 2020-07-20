@@ -78,14 +78,6 @@ final class AmpEngine implements Engine {
         }
 
         Loop::setErrorHandler(function(Throwable $error) use($application) {
-            $this->logger->alert(
-                sprintf(
-                    'The Application threw an exception: %s "%s"',
-                    get_class($error),
-                    $error->getMessage()
-                ),
-                ['file' => $error->getFile(), 'line' => $error->getLine()]
-            );
             $application->handleException($error);
             Loop::defer(function() use($application) {
                 $this->engineState = EngineState::Crashed();
@@ -127,7 +119,7 @@ final class AmpEngine implements Engine {
 
     /**
      * @return Promise
-     * @throws Exception\InvalidArgumentException
+     * @throws Exception\InvalidTypeException
      */
     private function emitEngineStartUpEvent() : Promise {
         $event = $this->eventFactory->create(self::START_UP_EVENT, $this);
@@ -137,11 +129,10 @@ final class AmpEngine implements Engine {
     /**
      * @param Application $application
      * @return Promise
-     * @throws Exception\InvalidArgumentException
+     * @throws Exception\InvalidTypeException
      */
     private function emitEngineShutDownEvent(Application $application) : Promise {
         $event = $this->eventFactory->create(self::SHUT_DOWN_EVENT, $application);
-        $promise = $this->emitter->emit($event);
-        return $promise;
+        return $this->emitter->emit($event);
     }
 }

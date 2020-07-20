@@ -59,6 +59,10 @@ abstract class AbstractApplication implements Application {
             $msg = 'Application must be in a Stopped state to start but it\'s current state is %s';
             throw new InvalidStateException(sprintf($msg, $this->state->toString()));
         }
+
+        // We use the deferred object instead of simply returning the result of Amp\call because there are two ways for
+        // the start Promise to be resolved. Either implicitly when the Application stops running or explicitly by 
+        // invoking the Application::stop method.
         $this->deferred = new Deferred();
 
         $this->state = ApplicationState::Started();
