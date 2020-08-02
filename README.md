@@ -11,7 +11,7 @@ that are required as well as important foundational concepts.
 - **Event** Trigger semantic, data-rich events taking full advantage of Amp's async nature with [async-event].
 - **Plugin** A series of simple to implement interfaces that allow you to easily hook into Labrador execution and provide reusable modules!
 - **Application** An interface that you implement, or extend from `AbstractApplication`, to encapsulate your app's business logic.
-- **Engine** An interface that is responsible for running your Application on the Loop, logging, and tying everything together.
+- **Engine** An interface that is responsible for running your Application on the Loop and tying everything together.
 
 ## Installation
 

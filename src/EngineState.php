@@ -25,6 +25,14 @@ final class EngineState implements Enum {
         return $this->equals(self::Idle());
     }
 
+    public function isRunning() : bool {
+        return $this->equals(self::Running());
+    }
+
+    public function isCrashed() : bool {
+        return $this->equals(self::Crashed());
+    }
+
     /**
      * Return an array of enum values, that correspond to static method constructors, that are allowed for this Enum.
      *

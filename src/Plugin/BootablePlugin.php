@@ -5,11 +5,11 @@ namespace Cspray\Labrador\Plugin;
 use Amp\Promise;
 
 /**
- * A Plugin capable of executing some possibly asynchronous operation when the Pluggable this Plugin is attached to
- * calls Pluggable::loadPlugins.
+ * A Plugin capable of executing some possibly asynchronous operation when the Plugin loading process is started
  *
  * @package Cspray\Labrador\Plugin
  * @license See LICENSE in source root
+ * @see Pluggable::loadPlugins()
  */
 interface BootablePlugin extends Plugin {
 

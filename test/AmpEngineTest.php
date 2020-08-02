@@ -11,6 +11,7 @@ namespace Cspray\Labrador\Test;
 
 use Amp\Delayed;
 use Amp\Success;
+use Cspray\Labrador\AbstractApplication;
 use Cspray\Labrador\Application;
 use Cspray\Labrador\Engine;
 use Cspray\Labrador\AmpEngine;
@@ -65,11 +66,15 @@ class AmpEngineTest extends UnitTestCase {
     }
 
     private function noopApp(InvocationOrder $expectCalls = null) : Application {
-        return new NoopApplication($this->mockPluggable($expectCalls));
+        $app = new NoopApplication($this->mockPluggable($expectCalls));
+        $app->setLogger($this->logger);
+        return $app;
     }
 
     private function stubApp(callable $callback, InvocationOrder $expectCalls = null) : Application {
-        return new TestApplication($this->mockPluggable($expectCalls), $callback);
+        $app = new TestApplication($this->mockPluggable($expectCalls), $callback);
+        $app->setLogger($this->logger);
+        return $app;
     }
 
     private function exceptionHandlerApp(
@@ -299,6 +304,34 @@ class AmpEngineTest extends UnitTestCase {
             $app->callOrder(),
             'Expected the Application::loadPlugins to be called before Application::execute'
         );
+    }
+
+    public function testApplicationHandleExceptionThrowsException() {
+        $application = $this->getMockBuilder(Application::class)->getMock();
+        $application->expects($this->once())
+            ->method('start')
+            ->willThrowException($exception = new RuntimeException());
+        $application->expects($this->once())
+            ->method('handleException')
+            ->with($exception)
+            ->willThrowException(new RuntimeException('Throw from handleException'));
+
+        $this->expectException(RuntimeException::class);
+        $this->expectExceptionMessage('Throw from handleException');
+
+        $this->getEngine()->run($application);
+    }
+
+    public function testShutdownEventListenerThrowsException() {
+        $eventEmitter = new AmpEventEmitter();
+        $eventEmitter->on(Engine::SHUT_DOWN_EVENT, function() {
+            throw new RuntimeException('Thrown from shutdown event.');
+        });
+
+        $this->expectException(RuntimeException::class);
+        $this->expectExceptionMessage('Thrown from shutdown event.');
+
+        $this->getEngine($eventEmitter)->run($this->noopApp($this->never()));
     }
 
     public function testApplicationLoadPluginsNotCalledIfNoneAreRegistered() {
