@@ -78,15 +78,23 @@ final class AmpEngine implements Engine {
         }
 
         Loop::setErrorHandler(function(Throwable $error) use($application) {
-            $application->handleException($error);
-            Loop::defer(function() use($application) {
+            // This is here to ensure we guard against the possibility that some event listener in
+            // emitEngineShutDownEvent throws an exception which would cause the Loop error handler to be called
+            // again, which would cause the process powering our app to go into an infinite loop until maximum memory
+            // is used.
+            if (!$this->engineState->isCrashed()) {
                 $this->engineState = EngineState::Crashed();
-                $this->logger->info('Starting Application cleanup process from exception handler.');
-                yield $this->emitEngineShutDownEvent($application);
-                $this->logger->info(
-                    'Completed Application cleanup process from exception handler. Engine shutting down.'
-                );
-            });
+                $application->handleException($error);
+                Loop::defer(function() use($application) {
+                    $this->logger->info('Starting Application cleanup process from exception handler.');
+                    yield $this->emitEngineShutDownEvent($application);
+                    $this->logger->info(
+                        'Completed Application cleanup process from exception handler. Engine shutting down.'
+                    );
+                });
+            } else {
+                throw $error;
+            }
         });
 
 

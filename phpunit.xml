@@ -14,7 +14,6 @@
          stopOnFailure="false"
          stopOnIncomplete="false"
          stopOnSkipped="false"
-         testSuiteLoaderClass="PHPUnit\Runner\StandardTestSuiteLoader"
          verbose="true">
     <testsuites>
         <testsuite name="All Tests Suite">

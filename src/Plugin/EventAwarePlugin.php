@@ -6,8 +6,10 @@ namespace Cspray\Labrador\Plugin;
 use Cspray\Labrador\AsyncEvent\EventEmitter;
 
 /**
- * A Plugin that is capable of interacting with the Application's Emitter to register event listeners when this Plugin
- * is loaded and to remove those listeners when the Plugin is removed from the Pluggable.
+ * A Plugin that is capable of interacting with the Application's EventEmitter.
+ *
+ * Register event listeners during the Plugin loading process. Unregister event listeners if the Plugin is explicitly
+ * removed from the Pluggable.
  *
  * @package Cspray\Labrador\Plugin
  * @license See LICENSE in source root

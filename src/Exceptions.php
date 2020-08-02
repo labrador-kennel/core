@@ -24,7 +24,7 @@ use Throwable;
  * @package Cspray\Labrador
  * @license See LICENSE in source root
  */
-class Exceptions {
+final class Exceptions {
 
     /**
      * An error code that is triggered when an Engine is attempted to run while in an invalid EngineState.

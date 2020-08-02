@@ -1,5 +1,30 @@
 # Changelog
 
+All notable changes to this project will be documented in this file.
+
+The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/),
+and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
+
+## Unreleased
+
+## 3.0.0 - 2020-08-02
+
+#### Added
+
+- Added convenience methods on to `ApplicationState` and `EngineState` to make it easier to determine if either one is 
+in a specific state.
+
+#### Fixed
+
+- Fixed a problem in `AmpEngine` where an exception thrown in an event listener to the `Engine::SHUT_DOWN_EVENT` would 
+result in a memory leak and subsequent hard crash of the application as it went into an infinite loop invoking the Loop's 
+error handler over and over again.
+
+#### Changed
+
+- Simplified the contents of the in-repo documentation to facilitate easier in-repo use and to allow integration with 
+the new website repo powering labrador-kennel.io.
+
 ## 3.0.0-beta7 2019-11-03
 
 #### Added
