@@ -108,14 +108,18 @@ abstract class AbstractApplication implements Application {
      * @param Throwable $throwable
      */
     public function handleException(Throwable $throwable) : void {
-        $this->logger->critical($throwable->getMessage(), [
+        $this->logException($throwable);
+    }
+
+    protected function logException(Throwable $throwable, array $context = []) : void {
+        $this->logger->critical($throwable->getMessage(), array_merge([], $context, [
             'class' => get_class($throwable),
             'file' => $throwable->getFile(),
             'line' => $throwable->getLine(),
             'code' => $throwable->getCode(),
             'stack_trace' => $throwable->getTrace(),
             'previous' => $this->marshalPreviousExceptions($throwable)
-        ]);
+        ]));
     }
 
     private function marshalPreviousExceptions(Throwable $original) : ?array {
