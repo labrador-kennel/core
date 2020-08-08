@@ -17,6 +17,8 @@
   },
   "require": {
     "php": ">=7.2",
+    "ext-json": "*",
+    "adbario/php-dot-notation": "^2.2",
     "amphp/amp": "^2.4",
     "amphp/log": "^1.1",
     "cspray/labrador-async-event": "^2.2",

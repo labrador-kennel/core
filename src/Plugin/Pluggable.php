@@ -24,8 +24,7 @@ use Cspray\Labrador\Exception\NotFoundException;
  * registered.
  * 5. If the registered Plugin has any custom Plugin handlers each one should be invoked in the order it was registered.
  * Each handler can be asynchronous and is resolved before the next handler is invoked.
- * 6. If the registered Plugin is a BootablePlugin the callback from boot() should be invoked with the returned Promise
- * completely resolved.
+ * 6. If the registered Plugin is a BootablePlugin it should have its boot() method invoked.
  *
  * When removePlugin invoked:
  *
@@ -33,7 +32,7 @@ use Cspray\Labrador\Exception\NotFoundException;
  * 2. If the loaded Plugin has any remove handler associated to it invoke it. A remove handler MAY NOT be asynchronous.
  *
  * Injector Dependency Management
- * ---------------------------------------------------------------------------------------------------------------------
+ * =====================================================================================================================
  * The nature of a Pluggable, both in its need to instantiate Plugins using the Injector and to provide the Injector for
  * InjectorAwarePlugin types, requires that an Injector be passed in as a constructor dependency. This can cause issues
  * with your Injector having greater potential of being turned into a service locator which violates one of the core
@@ -52,21 +51,21 @@ use Cspray\Labrador\Exception\NotFoundException;
 interface Pluggable {
 
     /**
-     * Register a handler for a custom Plugin type to be invoked when loadPlugins is invoked.
+     * Register a handler to be invoked during the plugin loading process for any Plugin that is an instance of
+     * $pluginType.
      *
-     * @param string $pluginType The fully qualified class name for the Plugin that should have the handler invoked
+     * @param string $pluginType The fully qualified type for the Plugin that should have the handler invoked
      * @param callable $pluginHandler function(YourPluginType $plugin, ...$arguments) : Promise|Generator|void {}
      * @param mixed ...$arguments Any arguments that you may pass to the handler, passed AFTER the Plugin
      */
     public function registerPluginLoadHandler(string $pluginType, callable $pluginHandler, ...$arguments) : void;
 
     /**
-     * Register a handler for a custom Plugin type to be invoked when removePlugin is called with a type that matches
-     * the $pluginType.
+     * Register a handler to be invoked when a Plugin that is an instance of $pluginType is removed from its Pluggable.
      *
      * If plugins have not yet been loaded when the target Plugin is removed this callback will not be invoked.
      *
-     * @param string $pluginType The fully qualified class name for the Plugin that should have the handler invoked
+     * @param string $pluginType The fully qualified type for the Plugin that should have the handler invoked
      * @param callable $pluginHandler function(YourPluginType plugin, ...$arguments) : Promise|Generator|void {}
      * @param mixed ...$arguments Any arguments that you may pass to the handler, passed AFTER the Plugin
      */
@@ -80,8 +79,8 @@ interface Pluggable {
      * as all registration must happen prior to loading to simplify the process and deal with the fact that Plugins
      * load asynchronously.
      *
-     * If a Plugin is attempted to be registered that does not implement the Plugin interace an IllegalArgumentException
-     * MUST be thrown as all registered types must implement the minimum interface.
+     * If a Plugin is registered that does not implement the Plugin interface an IllegalArgumentException MUST be thrown
+     * as all registered types must implement the minimum interface.
      *
      * @param string $plugin The fully qualified class name of the Plugin to register
      * @return void

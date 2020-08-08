@@ -8,13 +8,14 @@ use Cspray\Labrador\Exception\Exception;
 use Cspray\Labrador\Exception\InvalidArgumentException;
 use Cspray\Labrador\Exception\InvalidStateException;
 
+use Cspray\Labrador\Exception\InvalidTypeException;
 use Cspray\Labrador\Exception\NotFoundException;
 use Cspray\Labrador\Plugin\Pluggable;
 use Cspray\Labrador\Plugin\Plugin;
 use Throwable;
 
 /**
- * A class that is responsible for creating exceptions with known messages and errors code when exceptional occurrences
+ * A class that is responsible for creating exceptions with known messages and error codes when exceptional occurrences
  * happen within Labrador.
  *
  * The msgArg annotations on the error codes are the argument types, in order, that are expected when creating an
@@ -94,31 +95,12 @@ final class Exceptions {
     const PLUGIN_ERR_DEPENDENCY_NOT_PLUGIN_TYPE = 1106;
 
     /**
-     * An error code when a Labrador JSON configuration file is provided but it does not adhere to the json-schema for
-     * configurations.
-     *
-     * @var int Exception code when this error occurs.
-     * @msgArg void
-     */
-    const CONFIG_ERR_JSON_INVALID_SCHEMA = 1200;
-
-    /**
-     * An error code when a Labrador XML configuration file is provided but it does not adhere to XML schema for
-     * configurations.
+     * An error code when a Labrador configuration file is provided but is not a supported file type.
      *
      * @var int Exception code when this error occurs
-     * @msgArg void
+     * @msgArg $path The settings path that is not supported by a SettingsStorageHandler
      */
-    const CONFIG_ERR_XML_INVALID_SCHEMA = 1201;
-
-    /**
-     * An error code when a Labrador PHP configuration file is provided but it does not return either an array or a
-     * Configuration instance.
-     *
-     * @var int Exception code when this error occurs
-     * @msgArg void
-     */
-    const CONFIG_ERR_PHP_INVALID_RETURN_TYPE = 1202;
+    const SETTINGS_ERR_PATH_UNSUPPORTED = 1200;
 
     /**
      * An error code when a Labrador configuration file could not be found at the given location.
@@ -126,21 +108,39 @@ final class Exceptions {
      * @var int Exception code when this error occurs
      * @msgArg void
      */
-    const CONFIG_ERR_FILE_NOT_EXIST = 1203;
+    const SETTINGS_ERR_PATH_NOT_FOUND = 1201;
 
     /**
-     * An error code when a Labrador configuration file is provided but is not a supported file type.
+     * An error code when a Labrador PHP configuration file is provided but it does not return either an array or a
+     * Configuration instance.
      *
      * @var int Exception code when this error occurs
-     * @msgArg void
+     * @msgArg $path The path that returned the invalid type
+     * @msgArg $type The type of the value that was returned
      */
-    const CONFIG_ERR_FILE_UNSUPPORTED_EXTENSION = 1204;
+    const SETTINGS_ERR_PHP_INVALID_RETURN_TYPE = 1202;
+
+    /**
+     * An error code when a Labrador JSON settings file is provided but it does not parse into an appropriate PHP data
+     * structure.
+     *
+     * @var int Exception code when this error occurs
+     * @msgArg $path The path that returned the invalid type
+     *
+     */
+    const SETTINGS_ERR_JSON_INVALID_RETURN_TYPE = 1203;
+
+    const SETTINGS_ERR_ENV_VAR_OVERRIDE_NOT_FOUND = 1204;
+
+    const SETTINGS_ERR_KEY_NOT_FOUND = 1205;
+
+    const APP_ERR_MULTIPLE_START_CALLS = 1300;
 
     /**
      * An error code when an error occurs with creating the Auryn Injector for the library's DependencyGraph.
      *
-     *@var int Exception code when this error occurs
-     *@msgArg InjectorException
+     * @var int Exception code when this error occurs
+     * @msgArg InjectorException
      */
     const DEPENDENCY_GRAPH_INJECTION_ERR = 2000;
 
@@ -255,41 +255,54 @@ final class Exceptions {
             }
         ];
 
-        $map[self::CONFIG_ERR_JSON_INVALID_SCHEMA] = [
-            $invalidState,
-            function() {
-                return 'The configuration provided does not validate against the required JSON schema.';
-            }
-        ];
-
-        $map[self::CONFIG_ERR_XML_INVALID_SCHEMA] = [
-            $invalidState,
-            function() {
-                return 'The configuration provided does not validate against the required XML schema.';
-            }
-        ];
-
-        $map[self::CONFIG_ERR_PHP_INVALID_RETURN_TYPE] = [
-            $invalidState,
-            function() {
+        $map[self::SETTINGS_ERR_PHP_INVALID_RETURN_TYPE] = [
+            InvalidTypeException::class,
+            function(string $path, string $type) {
                 return sprintf(
-                    'The configuration provided does not return a valid PHP array or %s instance',
-                    Configuration::class
+                    'The type returned from a PHP settings file MUST be an array but "%s" returned a "%s".',
+                    $path,
+                    $type
                 );
             }
         ];
 
-        $map[self::CONFIG_ERR_FILE_NOT_EXIST] = [
-            $invalidArg,
-            function() {
-                return 'The configuration provided is not a valid file path that can be read from.';
+        $map[self::SETTINGS_ERR_JSON_INVALID_RETURN_TYPE] = [
+            InvalidTypeException::class,
+            function(string $path, string $type) {
+                return sprintf(
+                    'The type returned from a JSON settings file MUST be a JSON object but "%s" was parsed into a "%s".',
+                    $path,
+                    $type,
+                );
             }
         ];
 
-        $map[self::CONFIG_ERR_FILE_UNSUPPORTED_EXTENSION] = [
+        $map[self::SETTINGS_ERR_PATH_NOT_FOUND] = [
             $invalidArg,
-            function() {
-                return 'The file extension for the provided configuration is not supported.';
+            function(string $path) {
+                return sprintf('The settings path "%s" could not be found.', $path);
+            }
+        ];
+
+        $map[self::SETTINGS_ERR_PATH_UNSUPPORTED] = [
+            $invalidArg,
+            function(string $path) {
+                $message = 'Unable to load settings for path "%s". This path is unsupported by any configured SettingsStorageHandler.';
+                return sprintf($message, $path);
+            }
+        ];
+
+        $map[self::SETTINGS_ERR_ENV_VAR_OVERRIDE_NOT_FOUND] = [
+            NotFoundException::class,
+            function(string $envVar) {
+                return sprintf('Expected environment variable "%s" to have a value but it was null.', $envVar);
+            }
+        ];
+
+        $map[self::SETTINGS_ERR_KEY_NOT_FOUND] = [
+            NotFoundException::class,
+            function(string $key) {
+                return sprintf('The setting "%s" could not be found.', $key);
             }
         ];
 
@@ -297,6 +310,13 @@ final class Exceptions {
             DependencyInjectionException::class,
             function() {
                 return 'An error occurred creating the appropriate Injector for the DependencyGraph';
+            }
+        ];
+
+        $map[self::APP_ERR_MULTIPLE_START_CALLS] = [
+            InvalidStateException::class,
+            function() {
+                return sprintf('%s::start MUST NOT be called while the Application is in a started or crashed state.', Application::class);
             }
         ];
 

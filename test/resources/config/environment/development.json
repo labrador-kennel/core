@@ -1,0 +1,10 @@
+{
+  "foo": {
+    "qux": {
+      "fooqux": -3
+    }
+  },
+  "dev-setting": {
+    "json": "file"
+  }
+}

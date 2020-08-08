@@ -6,15 +6,14 @@ use Cspray\Labrador\AsyncEvent\EventEmitter;
 use Psr\Log\LoggerAwareInterface;
 
 /**
- * An interface that effectively encapsulates the running of an Application on an event loop.
+ * An interface that effectively encapsulates the running of an Application on a Loop.
  *
  * Engine implementations are ideally responsible for 3 things:
  *
  * 1. Ensure that appropriate events are triggered when an engine boots up before the Application starts and another
  * event after the Application has finished executing.
- * 2. Load the Application's Plugins then invoke Application::execute.
- * 3. Ensure that if an Exception is thrown during any of the above the Application's exception handler has a chance to
- * respond to it.
+ * 2. Load the Application's Plugins then invoke Application::start().
+ * 3. Ensure that the Application has a chance to handle uncaught exceptions
  *
  * @package Cspray\Labrador
  * @license See LICENSE in source root

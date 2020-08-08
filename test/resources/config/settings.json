@@ -1,0 +1,16 @@
+{
+  "foo": {
+    "bar": "baz",
+    "baz": "qux",
+    "qux": {
+      "foobar": 1,
+      "foobaz": 2,
+      "fooqux": 3
+    }
+  },
+  "bar": {
+    "state": "VT",
+    "flower": "rose",
+    "commute": "car"
+  }
+}
