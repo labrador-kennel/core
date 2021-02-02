@@ -41,7 +41,7 @@ need  from it. Check out the Auryn documentation for more details.
 The `InjectorAwarePlugin` is great if your functionality is very modular and can be used by different types of Labrador
 applications. This plugin type is **not** suitable for the dependencies your `Application` requires directly. It also 
 isn't well suited to dependencies that are overly coupled to your `Application` and wouldn't work easily in other Labrador 
-applications. In these type of use cases you should take a look at [Creating Your DependencyGraph](/docs/core/how-tos/creating-your-dependency-graph).
+applications. In these type of use cases you should handle these dependencies in your `ApplicationObjectGraph`. 
 
 ### Next Steps
 

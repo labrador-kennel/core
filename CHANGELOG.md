@@ -5,6 +5,27 @@ All notable changes to this project will be documented in this file.
 The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/),
 and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
+## 3.2.0 - 2020-??-??
+
+#### Added
+
+- An `ApplicationEnvironment` enum that determines the environment of the host machine running your Labrador app.
+- An `Environment` interface and implementations that encapsulates access to the `ApplicationEnvironment` and 
+environment variables that exist on the host machine.
+- A `Settings` interface and implementation that allows for providing configuration details for both Labrador and 
+your app.
+- A `SettingsLoader` and `SettingsStorageHandler` interface and implementations that allow fine-grained control on how 
+the `Settings` for your application are generated. Comes out of the box with support for both PHP and JSON settings on 
+the local filesystem. You should read over /docs/tutorials/02-application-settings.md
+- An `ApplicationObjectGraph` interface that will facilitate more robust bootstrapping code in the future. An instance, 
+the `CoreApplicationObjectGraph`, takes over the responsibilities of the `DependencyGraph` while also providing in the 
+injector an `Environment` instance and, an optional, `Settings` instance.
+
+#### Deprecated
+
+- The `DependecyGraph` is deprecated and will be removed in the next major release. Users should transition to use the 
+`CoreApplicationObjectGraph` instead.
+
 ## 3.1.0 - 2020-08-02
 
 #### Added

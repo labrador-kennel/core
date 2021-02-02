@@ -7,16 +7,16 @@ final class StandardEnvironment implements Environment {
     private $applicationEnvironment;
     private $envVarOverrides;
 
-    public function __construct(ApplicationEnvironment $applicationEnvironment, array $envVarOverrides = []) {
+    public function __construct(EnvironmentType $applicationEnvironment, array $envVarOverrides = []) {
         $this->applicationEnvironment = $applicationEnvironment;
         $this->envVarOverrides = $envVarOverrides;
     }
 
-    public function getApplicationEnvironment() : ApplicationEnvironment {
+    public function getType() : EnvironmentType {
         return $this->applicationEnvironment;
     }
 
-    public function getEnvironmentVariable(string $varName) {
+    public function getVar(string $varName) {
         return ($this->envVarOverrides[$varName] ?? getenv($varName)) ?: null;
     }
 }

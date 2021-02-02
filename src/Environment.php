@@ -11,9 +11,9 @@ namespace Cspray\Labrador;
 interface Environment {
 
     /**
-     * @return ApplicationEnvironment
+     * @return EnvironmentType
      */
-    public function getApplicationEnvironment() : ApplicationEnvironment;
+    public function getType() : EnvironmentType;
 
     /**
      *
@@ -21,5 +21,5 @@ interface Environment {
      * @param string $varName
      * @return string|int|bool|null
      */
-    public function getEnvironmentVariable(string $varName);
+    public function getVar(string $varName);
 }

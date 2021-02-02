@@ -11,9 +11,11 @@ use Cspray\Yape\EnumTrait;
  * @package Cspray\Labrador
  * @see Environment
  */
-final class ApplicationEnvironment implements Enum {
+final class EnvironmentType implements Enum {
 
-    use EnumTrait;
+    use EnumTrait {
+        valueOf as strictValueOf;
+    }
 
     public static function Development() : self {
         return self::getSingleton(__FUNCTION__);
@@ -33,6 +35,11 @@ final class ApplicationEnvironment implements Enum {
 
     public function toString() : string {
         return strtolower($this->enumValue);
+    }
+
+    public static function valueOf(string $value) : self {
+        $normalizedValue = ucfirst(strtolower($value));
+        return self::strictValueOf($normalizedValue);
     }
 
     // It is imperative that if you add a new value post code generation you add the method name here!

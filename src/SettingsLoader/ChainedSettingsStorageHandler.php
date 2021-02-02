@@ -6,7 +6,7 @@ use Cspray\Labrador\Exception\InvalidArgumentException;
 use Cspray\Labrador\Exceptions;
 
 /**
- * A SettingsStorageHandler that facilitates loading settings information from a variety of file types.
+ * A SettingsStorageHandler that facilitates loading settings information from a variety of storage locations.
  *
  * @package Cspray\Labrador\SettingsLoader
  * @license See LICENSE in source root

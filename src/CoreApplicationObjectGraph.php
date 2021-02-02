@@ -4,44 +4,44 @@ namespace Cspray\Labrador;
 
 use Auryn\Injector;
 use Auryn\InjectorException;
-use Cspray\Labrador\AsyncEvent\EventEmitter;
 use Cspray\Labrador\AsyncEvent\AmpEventEmitter;
+use Cspray\Labrador\AsyncEvent\EventEmitter;
 use Cspray\Labrador\Exception\DependencyInjectionException;
 use Cspray\Labrador\Plugin\Pluggable;
 use Cspray\Labrador\Plugin\PluginManager;
+use Cspray\Labrador\SettingsLoader\SettingsLoader;
 use Psr\Log\LoggerAwareInterface;
 use Psr\Log\LoggerInterface;
 
 /**
- * An object that wires together an object graph to ensure that Labrador works out-of-the-box.
- *
- * While you could replicate this within your own DependencyGraph object it is recommended that to define Labrador
- * dependencies on your Injector you use this implementation. You can then further define dependencies on the Injector
- * returned to customize or add dependencies your Application might need that is not suitable for a Plugin.
- *
  * @package Cspray\Labrador
- * @license See LICENSE in source root
- * @deprecated
- * @see CoreApplicationObjectGraph
  */
-final class DependencyGraph {
+abstract class CoreApplicationObjectGraph implements ApplicationObjectGraph {
 
     private $logger;
 
-    public function __construct(LoggerInterface $logger) {
+    private $environment;
+
+    private $settingsLoader;
+
+    public function __construct(Environment $environment, LoggerInterface $logger, SettingsLoader $settingsLoader = null) {
+        $this->environment = $environment;
         $this->logger = $logger;
+        $this->settingsLoader = $settingsLoader;
     }
 
-    /**
-     * Returns an Injector that will allow the creation of the dependencies that Labrador needs out-of-the-box.
-     *
-     * @param Injector|null $injector
-     * @return Injector
-     * @throws DependencyInjectionException
-     */
-    public function wireObjectGraph(Injector $injector = null) : Injector {
+    public function wireObjectGraph() : Injector {
         try {
-            $injector = $injector ?? new Injector();
+            $injector = new Injector();
+
+            if (isset($this->settingsLoader)) {
+                $settings = $this->settingsLoader->loadSettings($this->environment);
+                $injector->share($settings);
+                $injector->alias(Settings::class, get_class($settings));
+            }
+
+            $injector->share($this->environment);
+            $injector->alias(Environment::class, get_class($this->environment));
 
             $injector->share(EventEmitter::class);
             $injector->alias(EventEmitter::class, AmpEventEmitter::class);

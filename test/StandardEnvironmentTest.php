@@ -2,33 +2,33 @@
 
 namespace Cspray\Labrador\Test;
 
-use Cspray\Labrador\ApplicationEnvironment;
+use Cspray\Labrador\EnvironmentType;
 use Cspray\Labrador\StandardEnvironment;
 use PHPUnit\Framework\TestCase;
 
 class StandardEnvironmentTest extends TestCase {
 
     public function testReturnsPassedApplicationEnvironment() {
-        $subject = new StandardEnvironment(ApplicationEnvironment::Development());
+        $subject = new StandardEnvironment(EnvironmentType::Development());
 
-        $this->assertSame(ApplicationEnvironment::Development(), $subject->getApplicationEnvironment());
+        $this->assertSame(EnvironmentType::Development(), $subject->getType());
     }
 
     public function testReturnsValueFromGetEnvIfNoOverride() {
-        $subject = new StandardEnvironment(ApplicationEnvironment::Development());
+        $subject = new StandardEnvironment(EnvironmentType::Development());
 
-        $this->assertSame(get_current_user(), $subject->getEnvironmentVariable('USER'));
+        $this->assertSame(get_current_user(), $subject->getVar('USER'));
     }
 
     public function testReturnsValueFromOverrideIfPresent() {
-        $subject = new StandardEnvironment(ApplicationEnvironment::Development(), ['USER' => 'test-user']);
+        $subject = new StandardEnvironment(EnvironmentType::Development(), ['USER' => 'test-user']);
 
-        $this->assertSame('test-user', $subject->getEnvironmentVariable('USER'));
+        $this->assertSame('test-user', $subject->getVar('USER'));
     }
 
     public function testReturnsNullIfNoValue() {
-        $subject = new StandardEnvironment(ApplicationEnvironment::Development());
+        $subject = new StandardEnvironment(EnvironmentType::Development());
 
-        $this->assertNull($subject->getEnvironmentVariable('FOO_BAR'));
+        $this->assertNull($subject->getVar('FOO_BAR'));
     }
 }

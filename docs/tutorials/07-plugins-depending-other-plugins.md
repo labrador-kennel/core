@@ -78,4 +78,4 @@ the `PluginManager` implementation handle the Plugin loading process in the vast
 
 ### Next Steps
 
-Next up you should continue to learn more about [Creating your DependencyGraph](/docs/core/how-tos/creating-your-dependency-graph).
+Next up, check out [the available How To articles](/docs/core/how-tos) to learn more about completing specific tasks with Labrador.

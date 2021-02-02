@@ -6,25 +6,21 @@ use Amp\Deferred;
 use Amp\Loop;
 use Amp\Promise;
 use Amp\Success;
-use Cspray\Labrador\Exception\InvalidStateException;
 use Cspray\Labrador\Plugin\Pluggable;
 use Cspray\Labrador\Plugin\Plugin;
 use Psr\Log\LoggerAwareTrait;
 use Throwable;
 
 /**
- * An abstract Application that handles the vast majority of boilerplate necessary to implement the Application
- * interface leaving only the primary business logic to your implementations.
+ * An abstract Application that handles the vast majority of boilerplate necessary for the Application interface leaving
+ * only the primary business logic to your implementations.
  *
  * This method delegates all of the Pluggable responsibilities to an instance that must be injected at construction.
  * Although you may pass any Pluggable type to this instance you almost assuredly want to inject the PluginManager class
- * as it is the de facto implementation for loading Plugins correctly. If you use the provided DependencyGraph object,
- * which you definitely should, then any Pluggable type hint in constructors will be resolved to the PluginManager.
- *
- * If you do not use our DependencyGraph it is your responsibility to create your application with the appropriate
- * dependency:
- *
- * $app = $yourInjector->make(YourApplication::class, ['pluggable' => \Cspray\Labrador\Plugin\PluginManager::class]);
+ * as it is the de facto implementation for loading Plugins correctly. If you ensure that your ApplicationObjectGraph
+ * properly extends from `CoreApplicationObjectGraph` this will be taken care of for you out of the box. If you do not
+ * use the `CoreApplicationObjectGraph` it is your responsibility for providing the appropriate Pluggable when
+ * constructing children of this object.
  *
  * @package Cspray\Labrador
  * @license See LICENSE in source root

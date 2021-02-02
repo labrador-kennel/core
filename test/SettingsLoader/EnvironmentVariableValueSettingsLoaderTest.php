@@ -2,7 +2,7 @@
 
 namespace Cspray\Labrador\Test\SettingsLoader;
 
-use Cspray\Labrador\ApplicationEnvironment;
+use Cspray\Labrador\EnvironmentType;
 use Cspray\Labrador\DotAccessSettings;
 use Cspray\Labrador\Exception\InvalidArgumentException;
 use Cspray\Labrador\Exception\NotFoundException;
@@ -17,7 +17,7 @@ class EnvironmentVariableValueSettingsLoaderTest extends TestCase {
 
     public function testDoesNotReplaceValuesThatAreNotEnvCalls() {
         $settings = new DotAccessSettings(['foo' => 'bar']);
-        $environment = new StandardEnvironment(ApplicationEnvironment::Development());
+        $environment = new StandardEnvironment(EnvironmentType::Development());
         /** @var SettingsLoader|MockObject $settingsLoader */
         $settingsLoader = $this->getMockBuilder(SettingsLoader::class)->getMock();
         $settingsLoader->expects($this->once())
@@ -33,7 +33,7 @@ class EnvironmentVariableValueSettingsLoaderTest extends TestCase {
 
     public function testReplacingEnvironmentVariableValues() {
         $settings = new DotAccessSettings(['foo' => '!env(FOO_BAR)']);
-        $environment = new StandardEnvironment(ApplicationEnvironment::Development(), ['FOO_BAR' => 'baz']);
+        $environment = new StandardEnvironment(EnvironmentType::Development(), ['FOO_BAR' => 'baz']);
         /** @var SettingsLoader|MockObject $settingsLoader */
         $settingsLoader = $this->getMockBuilder(SettingsLoader::class)->getMock();
         $settingsLoader->expects($this->once())
@@ -49,7 +49,7 @@ class EnvironmentVariableValueSettingsLoaderTest extends TestCase {
 
     public function testReplaceRecursiveSettings() {
         $settings = new DotAccessSettings(['foo' => ['foo_bar' => '!env(FOO_BAR)']]);
-        $environment = new StandardEnvironment(ApplicationEnvironment::Development(), ['FOO_BAR' => 'yea']);
+        $environment = new StandardEnvironment(EnvironmentType::Development(), ['FOO_BAR' => 'yea']);
         /** @var SettingsLoader|MockObject $settingsLoader */
         $settingsLoader = $this->getMockBuilder(SettingsLoader::class)->getMock();
         $settingsLoader->expects($this->once())
@@ -65,7 +65,7 @@ class EnvironmentVariableValueSettingsLoaderTest extends TestCase {
 
     public function testReplaceNullValueThrowsException() {
         $settings = new DotAccessSettings(['foo' => ['foo_bar' => '!env(FOO_BAR)']]);
-        $environment = new StandardEnvironment(ApplicationEnvironment::Development());
+        $environment = new StandardEnvironment(EnvironmentType::Development());
         /** @var SettingsLoader|MockObject $settingsLoader */
         $settingsLoader = $this->getMockBuilder(SettingsLoader::class)->getMock();
         $settingsLoader->expects($this->once())

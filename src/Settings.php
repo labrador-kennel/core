@@ -16,7 +16,7 @@ use IteratorAggregate;
  * files... though all of the Settings functionality is interface driven and new implementations could easily be created
  * to handle different file types or different storage locations.
  *
- * Ultimately, however you store the actual settings information inside the application we treat them as a
+ * Ultimately, however you store the actual settings information in your Application code we treat them as a
  * multi-dimensional array of scalar values and will document all settings as if they are PHP arrays. It is your
  * responsibility to ensure that your custom implementations convert your settings information into the appropriate
  * data structure.
@@ -64,10 +64,11 @@ use IteratorAggregate;
  * Throw Exceptions on Settings Not Found
  * =====================================================================================================================
  * Sometimes if you attempt to access a value in an array for a key that does not exist it is expected and it is ok to
- * just return a null value. We do not consider Settings access to be one of those cases. We expected access to Settings
+ * just return a null value. We do not consider Settings access to be one of those cases. We expect access to Settings
  * data to involve critical aspects of your Application and what is available should be explicitly known to all of the
- * developers on the application. If you attempt to access a setting that is not present we fail fast to try to prevent
- * your Application from starting in an invalid state.
+ * developers of the application. If you attempt to access a setting that is not present we fail fast to try to prevent
+ * your Application from starting in an invalid state. If you do not want to deal with this exception or your setting
+ * truly is optional then make sure to check for the existence of the key using Settings::has
  *
  * @package Cspray\Labrador
  */
