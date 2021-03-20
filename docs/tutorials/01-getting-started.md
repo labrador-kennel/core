@@ -57,7 +57,13 @@ Next, we need to create the `Application` that will make use of our `WorldFactor
 for our app. We're going to extend from `AbstractApplication` as it handles a lot of boilerplate that may be required 
 otherwise. For now, if you extend the `AbstractApplication` know that you'll only be required to provide the actual 
 business logic for your app as well as 1 dependency, a `Pluggable` instance. If you'd like to learn about the `AbstactApplication` 
-in more detail you can check out the [Reference: Understanding AbstractApplication](/docs/core/references/understanding-abstract-application)
+in more detail you can check out the ["Reference: Understanding AbstractApplication"](/docs/core/references/understanding-abstract-application)
+article.
+
+You'll also notice that your app has access to a PSR-3 compliant `LoggerInterface` implementation in the `$logger` property. You 
+might be wondering where this object comes from since we don't have a `LoggerInterface` defined in the constructor. This 
+is handled by the `Application` extending the PSR-3 `LoggerAwareInterface` and using the `Injector` to instantiate our 
+app object. 
 
 ```php
 <?php
@@ -90,6 +96,11 @@ class HelloWorldApp extends AbstractApplication {
 }
 ```
 
+Next, we'll create an `ApplicationObjectGraph` that registers our dependency and ensures that anyplace we're expecting 
+an `Application` instance we get our `HelloWorldApp` implementation. This covers only the absolute basics of using Auryn's 
+`Injector`. It is highly recommended that you review [the Auryn documentation](https://github.com/rdlowrey/auryn) if you 
+aren't familiar with the library.
+
 ```php
 <?php
 
@@ -117,6 +128,16 @@ class HelloWorldObjectGraph extends CoreApplicationObjectGraph implements Applic
 }
 ```
 
+Finally, we wire everything together in the app's bootstrapping. For the most part everything that you see below is just 
+putting together everything that we created above. The one piece that should be pointed out are the two environment objects;
+an `EnvironmentType` enum and an `Environment` implementation. These allow you to easily know whether you're operating in 
+production or development (or staging or testing) and to retrieve environment variables. 
+
+The `Environment` is discussed more in the ["Tutorial: Configuring your app with Settings"](/docs/core/tutorials/settings-configuring-your-app) 
+article. Outside a use case with loading configuration the `Environment` instance is not used within internal Labrador 
+code. These objects are intended primarily to act as standardized, typed methods for inspecting the environment your 
+app is running within your own code.
+
 ```php
 <?php
 
@@ -134,7 +155,6 @@ use Cspray\Labrador\SettingsLoader\SettingsLoaderFactory;
 use Amp\Log\StreamHandler;
 use Monolog\Logger;
 use function Amp\ByteStream\getStdout;
-
 
 // The EnvironmentType you set may determine Settings loaded or other pieces of your app based on the 
 // Plugins and bootstrap you use. This should be one of the values: 'production', 'staging', 'development', 'test'
@@ -155,8 +175,13 @@ $engine = $injector->make(Engine::class);
 $engine->run($app);
 ```
 
+If you execute this code multiple times you should see an info line in your terminal that will say "Hello World!" or 
+maybe "Hello Mars!". At this point you have everything you need to start writing a more useful asynchronous application 
+with [amphp](https://amphp.org)!
 
 ## Next Steps
 
-The real power of Labrador comes with its concept of "plugins". It is highly recommended you check out the 
-[Plugins: Overview](/docs/core/tutorials/plugins-overview) next.
+Next you'll probably want to have some way of providing a configuration for your Application. For that you should check 
+out the ["Tutorial: Configuring your app with Settings"](/docs/core/tutorials/settings-configuring-your-app) article. If 
+you're interested in creating reusable code that can be shared across many different applications you should check out
+["Tutorials: Sharing functionality with Plugins"](/docs/core/tutorials/plugins-sharing-functionality) article.
