@@ -3,7 +3,6 @@
 namespace Cspray\Labrador;
 
 use Adbar\Dot;
-use Cspray\Labrador\Exception\InvalidArgumentException;
 
 final class DotAccessSettings implements Settings {
 

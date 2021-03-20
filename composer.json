@@ -21,16 +21,15 @@
     "adbario/php-dot-notation": "^2.2",
     "amphp/amp": "^2.4",
     "amphp/log": "^1.1",
-    "cspray/labrador-async-event": "^2.2",
-    "cspray/labrador-exceptions": "^1.1",
-    "cspray/yape": "^3.0",
+    "cspray/labrador-async-event": "^2.3",
+    "cspray/labrador-exceptions": "^1.2",
+    "cspray/yape": "^3.1",
     "monolog/monolog": "^2.0",
     "rdlowrey/auryn": "^1.4"
   },
   "require-dev": {
     "amphp/phpunit-util": "^1.2",
     "cspray/labrador-coding-standard": "^0.2",
-    "cspray/yape-cli": "^1.0",
     "phpunit/phpunit": "~9.1"
   },
   "autoload": {

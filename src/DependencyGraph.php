@@ -21,7 +21,7 @@ use Psr\Log\LoggerInterface;
  *
  * @package Cspray\Labrador
  * @license See LICENSE in source root
- * @deprecated
+ * @deprecated Planned for removal in 4.0
  * @see CoreApplicationObjectGraph
  */
 final class DependencyGraph {
