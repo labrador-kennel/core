@@ -1,7 +1,8 @@
 <?php declare(strict_types=1);
 
-namespace Cspray\Labrador\SettingsLoader;
+namespace Cspray\Labrador\SettingsStorageHandler;
 
+use Cspray\Labrador\SettingsStorageHandler;
 use Cspray\Labrador\Exception\InvalidArgumentException;
 use Cspray\Labrador\Exceptions;
 

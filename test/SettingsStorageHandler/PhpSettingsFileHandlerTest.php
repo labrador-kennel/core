@@ -1,11 +1,11 @@
 <?php declare(strict_types=1);
 
-namespace Cspray\Labrador\Test\SettingsLoader;
+namespace Cspray\Labrador\Test\SettingsStorageHandler;
 
 use Cspray\Labrador\Exception\InvalidArgumentException;
 use Cspray\Labrador\Exception\InvalidTypeException;
 use Cspray\Labrador\Exceptions;
-use Cspray\Labrador\SettingsLoader\PhpFileSystemSettingsStorageHandler;
+use Cspray\Labrador\SettingsStorageHandler\PhpFileSystemSettingsStorageHandler;
 use PHPUnit\Framework\TestCase;
 
 class PhpSettingsFileHandlerTest extends TestCase {

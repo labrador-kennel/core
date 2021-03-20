@@ -9,7 +9,6 @@ use Cspray\Labrador\AsyncEvent\EventEmitter;
 use Cspray\Labrador\Exception\DependencyInjectionException;
 use Cspray\Labrador\Plugin\Pluggable;
 use Cspray\Labrador\Plugin\PluginManager;
-use Cspray\Labrador\SettingsLoader\SettingsLoader;
 use Psr\Log\LoggerAwareInterface;
 use Psr\Log\LoggerInterface;
 

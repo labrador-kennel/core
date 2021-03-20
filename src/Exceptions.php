@@ -24,6 +24,7 @@ use Throwable;
  *
  * @package Cspray\Labrador
  * @license See LICENSE in source root
+ * @internal
  */
 final class Exceptions {
 
@@ -158,7 +159,7 @@ final class Exceptions {
      * @param int $errorCode
      * @param Throwable|null $nestedException
      * @param mixed ...$msgArgs
-     * @return Exception A Labrador Exception
+     * @return Exception|NotFoundException A Labrador Exception
      */
     public static function createException(int $errorCode, Throwable $nestedException = null, ...$msgArgs) : Exception {
         if (!isset(self::$codeMsgMap)) {

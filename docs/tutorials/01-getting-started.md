@@ -63,7 +63,9 @@ article.
 You'll also notice that your app has access to a PSR-3 compliant `LoggerInterface` implementation in the `$logger` property. You 
 might be wondering where this object comes from since we don't have a `LoggerInterface` defined in the constructor. This 
 is handled by the `Application` extending the PSR-3 `LoggerAwareInterface` and using the `Injector` to instantiate our 
-app object. 
+app object. You can take advantage of this within your own codebase by implementing the `LoggerAwareInterface` and ensuring 
+your object graph is wired correctly. Then all of your services and other code that need to log information will have 
+access to your configured `Logger`!
 
 ```php
 <?php

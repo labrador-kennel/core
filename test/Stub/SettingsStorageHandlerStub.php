@@ -2,8 +2,7 @@
 
 namespace Cspray\Labrador\Test\Stub;
 
-use Cspray\Labrador\SettingsLoader\AbstractFileSystemSettingsStorageHandler;
-use Cspray\Labrador\SettingsLoader\SettingsStorageHandler;
+use Cspray\Labrador\SettingsStorageHandler;
 
 class SettingsStorageHandlerStub implements SettingsStorageHandler {
 

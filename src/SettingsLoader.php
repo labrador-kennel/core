@@ -1,9 +1,6 @@
 <?php declare(strict_types=1);
 
-namespace Cspray\Labrador\SettingsLoader;
-
-use Cspray\Labrador\Environment;
-use Cspray\Labrador\Settings;
+namespace Cspray\Labrador;
 
 /**
  * Generate a Settings object specific to an Environment.

@@ -6,10 +6,10 @@ use Cspray\Labrador\EnvironmentType;
 use Cspray\Labrador\Environment;
 use Cspray\Labrador\Exception\InvalidArgumentException;
 use Cspray\Labrador\Exceptions;
-use Cspray\Labrador\SettingsLoader\ChainedSettingsStorageHandler;
 use Cspray\Labrador\SettingsLoader\DefaultsWithEnvironmentOverrideSettingsLoader;
-use Cspray\Labrador\SettingsLoader\JsonFileSystemSettingsStorageHandler;
-use Cspray\Labrador\SettingsLoader\PhpFileSystemSettingsStorageHandler;
+use Cspray\Labrador\SettingsStorageHandler\ChainedSettingsStorageHandler;
+use Cspray\Labrador\SettingsStorageHandler\JsonFileSystemSettingsStorageHandler;
+use Cspray\Labrador\SettingsStorageHandler\PhpFileSystemSettingsStorageHandler;
 use PHPUnit\Framework\MockObject\MockObject;
 use PHPUnit\Framework\TestCase;
 

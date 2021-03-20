@@ -4,11 +4,10 @@ namespace Cspray\Labrador\Test\SettingsLoader;
 
 use Cspray\Labrador\EnvironmentType;
 use Cspray\Labrador\DotAccessSettings;
-use Cspray\Labrador\Exception\InvalidArgumentException;
 use Cspray\Labrador\Exception\NotFoundException;
 use Cspray\Labrador\Exceptions;
 use Cspray\Labrador\SettingsLoader\EnvironmentVariableValueSettingsLoader;
-use Cspray\Labrador\SettingsLoader\SettingsLoader;
+use Cspray\Labrador\SettingsLoader;
 use Cspray\Labrador\StandardEnvironment;
 use PHPUnit\Framework\MockObject\MockObject;
 use PHPUnit\Framework\TestCase;

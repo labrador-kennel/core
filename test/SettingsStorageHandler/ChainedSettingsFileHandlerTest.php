@@ -1,10 +1,10 @@
 <?php declare(strict_types=1);
 
-namespace Cspray\Labrador\Test\SettingsLoader;
+namespace Cspray\Labrador\Test\SettingsStorageHandler;
 
 use Cspray\Labrador\Exception\InvalidArgumentException;
 use Cspray\Labrador\Exceptions;
-use Cspray\Labrador\SettingsLoader\ChainedSettingsStorageHandler;
+use Cspray\Labrador\SettingsStorageHandler\ChainedSettingsStorageHandler;
 use Cspray\Labrador\Test\Stub\SettingsStorageHandlerStub;
 use PHPUnit\Framework\TestCase;
 

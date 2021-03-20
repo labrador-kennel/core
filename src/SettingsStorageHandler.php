@@ -1,6 +1,6 @@
 <?php declare(strict_types=1);
 
-namespace Cspray\Labrador\SettingsLoader;
+namespace Cspray\Labrador;
 
 /**
  * Utilized by SettingsLoader implementations to delegate the actual responsibility of performing the I/O operations
