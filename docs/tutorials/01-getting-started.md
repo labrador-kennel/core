@@ -5,12 +5,27 @@ code running. Specifically you'll need to implement an `ApplicationObjectGraph` 
 `ApplicationObjectGraph` represents the code necessary to define your dependencies on an [Auryn](https://github.com/rdlowrey/auryn) 
 `Injector` (a 3rd party container). The `Application` is, well, your app!
 
-## Feature complete bootstrapping
+## Creating a Labrador powered app
 
-Providing the appropriate bootstrap that will get the Labrador `Engine` running is all that will need to be provided to 
-get up and running. In our example bootstrap we're going to be creating a `HelloWorldApp` for the `Acme` company. The 
-`HelloWorldApp` will include a dependency, so we can show how to properly interact with the `Injector`. All of the code 
-below assumes that the appropriate autoloading is being handled by a PSR-4 style autoloader.
+We'll create an example app powered by Labrador and the first thing we'll do is create the `Application` and 
+`ApplicationObjectGraph`. The simple and traditional "Hello World!" will be used as our example. We will create an 
+`Application` instance that will log to info our expected text. We'll also create a dependency that will determine what 
+celestial body we're saying hello to. This example is meant to show a few key things that are important aspects of all
+Labrador apps:
+
+1. Extending from the `AbstractApplication` is the recommended way of creating `Application` implementations.
+2. Properly constructing your `Application` with the `Injector` will intrinsically provide you with a PSR-compliant `Logger`.
+3. `Application` dependencies _should_ be defined in the constructor.
+4. Introducing you to the concept of a `Pluggable`. We won't go into details but important to realize that an `Application`
+_is_ a `Pluggable` and we delegate those responsibilities to a different implementation.
+   
+### The Application and its Dependency
+
+First up is the dependency the `Application` needs to determine what we're saying hello to. Our dependency will have a 
+single method that returns a `Promise` that will resolve with a string identifying the name of our world. We built the 
+method with **forward compatibility** in mind; some day our world creation might be resource intensive and will be able 
+to easily swap to asynchronous world generation. It also further reinforces the fact that Labrador is meant to power 
+asynchronous apps.
 
 ```php
 <?php
@@ -25,8 +40,7 @@ use function Amp\call;
 class WorldFactory {
 
     /**
-     * Although our WorldFactory is simple we have to anticipate that creating a world might take a while and should be 
-     * asynchronous
+     * @return Promise<string>
      */
     public function createWorld() : Promise {
         return call(function() {
@@ -38,6 +52,12 @@ class WorldFactory {
 }
 ?>
 ```
+
+Next, we need to create the `Application` that will make use of our `WorldFactory` and execute the primary business logic 
+for our app. We're going to extend from `AbstractApplication` as it handles a lot of boilerplate that may be required 
+otherwise. For now, if you extend the `AbstractApplication` know that you'll only be required to provide the actual 
+business logic for your app as well as 1 dependency, a `Pluggable` instance. If you'd like to learn about the `AbstactApplication` 
+in more detail you can check out the [Reference: Understanding AbstractApplication](/docs/core/references/understanding-abstract-application)
 
 ```php
 <?php
