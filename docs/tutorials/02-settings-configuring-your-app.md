@@ -17,6 +17,14 @@ to use and act as the interface your code would call to retrieve the `Settings` 
     <p>Synchronous warning! Please read!</p>
   </div>
   <div class="message-body">
-    THIS CODE IS SYNC YO
+    <p>Settings are one of the pieces of Labrador that out-of-the-box is <strong>NOT asynchronous</strong>! We anticipate 
+    that there might be a situation where Settings are needed to be known before an Event Loop has started running. 
+    Additionally, we like to use a "fail fast" approach to critical components. If your <code>Settings</code> cannot be 
+    loaded it likely represents a problem further along in your app execution where it'll be more problematic. So, you'll 
+    find that <code>SettingsLoader</code> has a synchronous API and makes use of synchronous code.</p>
+
+    <p><strong>It is imperative that you do not call the `SettingsLoader` API from within the Event Loop!</strong> If you
+    need a `SettingsLoader` that requires async operations you should implement your own interface and adjust the bootstrapping 
+    code accordingly.</p>
   </div>
 </div>
