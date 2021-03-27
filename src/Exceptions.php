@@ -131,10 +131,50 @@ final class Exceptions {
      */
     const SETTINGS_ERR_JSON_INVALID_RETURN_TYPE = 1203;
 
+    /**
+     * An error code when a settings file has specified an environment variable for a value but that environment
+     * variable was not found.
+     *
+     * @var int Exception code when this error occurs
+     * @msgArg $envVar The name of the environment variable that could not be found
+     */
     const SETTINGS_ERR_ENV_VAR_OVERRIDE_NOT_FOUND = 1204;
 
+    /**
+     * An error code when you attempt to get a key from a Settings file that does not exist.
+     *
+     * @var int Exception code when this error occurs
+     * @msgArg $key The settings key that could not be found
+     */
     const SETTINGS_ERR_KEY_NOT_FOUND = 1205;
 
+    /**
+     * An error code when you attempt to load settings but multiple environment override files are found.
+     *
+     * @var int Exception code when this error occurs
+     * @msgArg $environment The name of the environment with multiple settings files
+     */
+    const SETTINGS_ERR_MULTIPLE_ENVIRONMENT_CONFIGS = 1206;
+
+    /**
+     * An error code when you attempt to create a SettingsLoader with the SettingsLoaderFactory but the configuration
+     * directory specified does not exist.
+     *
+     * @var int Exception code when this error occurs
+     * @msgArg $configDir The directory that could not be found
+     */
+    const SETTINGS_ERR_CONFIG_DIRECTORY_NOT_FOUND = 1207;
+
+    /**
+     *
+     */
+    const SETTINGS_ERR_CONFIG_DIRECTORY_IS_FILE = 1208;
+
+    /**
+     * An error code when you attempt to call Application::start while the Application is in a started state.
+     *
+     * @var int Exception code when this error occurs
+     */
     const APP_ERR_MULTIPLE_START_CALLS = 1300;
 
     /**
@@ -304,6 +344,36 @@ final class Exceptions {
             NotFoundException::class,
             function(string $key) {
                 return sprintf('The setting "%s" could not be found.', $key);
+            }
+        ];
+
+        $map[self::SETTINGS_ERR_MULTIPLE_ENVIRONMENT_CONFIGS] = [
+            InvalidStateException::class,
+            function(string $environment) {
+                return sprintf(
+                    'Multiple settings files were found for the "%s" environment. Please reduce the number of environment settings file for each environment to a maximum of 1.',
+                    $environment
+                );
+            }
+        ];
+
+        $map[self::SETTINGS_ERR_CONFIG_DIRECTORY_NOT_FOUND] = [
+            NotFoundException::class,
+            function(string $configDir) {
+                return sprintf(
+                    'Attempted to create a default filesystem SettingsLoader but the config directory "%s" could not be found.',
+                    $configDir
+                );
+            }
+        ];
+
+        $map[self::SETTINGS_ERR_CONFIG_DIRECTORY_IS_FILE] = [
+            InvalidArgumentException::class,
+            function(string $configDir) {
+                return sprintf(
+                    'Attempted to create a default filesystem SettingsLoader but the config directory "%s" is a file.',
+                    $configDir
+                );
             }
         ];
 

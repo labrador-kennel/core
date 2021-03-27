@@ -1,29 +1,21 @@
 <?xml version="1.0" encoding="UTF-8"?>
 <phpunit xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
-         backupGlobals="true"
-         backupStaticAttributes="false"
          bootstrap="vendor/autoload.php"
-         colors="false"
-         convertErrorsToExceptions="true"
-         convertNoticesToExceptions="true"
-         convertWarningsToExceptions="true"
-         forceCoversAnnotation="false"
-         printerClass="PHPUnit\TextUI\DefaultResultPrinter"
-         processIsolation="false"
-         stopOnError="false"
-         stopOnFailure="false"
-         stopOnIncomplete="false"
-         stopOnSkipped="false"
          verbose="true"
          xsi:noNamespaceSchemaLocation="https://schema.phpunit.de/9.3/phpunit.xsd">
-  <coverage processUncoveredFiles="true">
+  <coverage cacheDirectory="./tmp/coverage-cache"
+            processUncoveredFiles="true"
+            ignoreDeprecatedCodeUnits="true"
+            disableCodeCoverageIgnore="true"
+
+  >
     <include>
-      <directory suffix=".php">./src</directory>
+      <directory suffix=".php">src</directory>
     </include>
   </coverage>
   <testsuites>
     <testsuite name="All Tests Suite">
-      <directory suffix="Test.php">./test</directory>
+      <directory>./test</directory>
       <directory suffix=".phpt">./test</directory>
     </testsuite>
   </testsuites>

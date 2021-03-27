@@ -8,8 +8,7 @@ use Auryn\Injector;
  * Define the critical dependencies that are required by your Application to be instantiated and started properly.
  *
  * While the ApplicationObjectGraph and InjectorAwarePlugin share very similar responsibilities they are distinctly
- * different in how they are expected to be used and what they are meant to specifically accomplish. Please read over
- * /docs/references/object-graph-vs-injector-plugin for more information on this important distinction.
+ * different in how they are expected to be used and what they are meant to specifically accomplish.
  *
  * @package Cspray\Labrador
  */

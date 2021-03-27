@@ -13,10 +13,11 @@
   ],
   "scripts": {
     "code-lint": "vendor/bin/labrador-cs src/ test/",
-    "test": "vendor/bin/phpunit"
+    "test": "vendor/bin/phpunit",
+    "test-coverage": "XDEBUG_MODE=coverage vendor/bin/phpunit --coverage-html ./build/coverage"
   },
   "require": {
-    "php": ">=7.2",
+    "php": "^7.2|^8.0",
     "ext-json": "*",
     "adbario/php-dot-notation": "^2.2",
     "amphp/amp": "^2.4",

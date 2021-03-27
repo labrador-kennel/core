@@ -5,6 +5,7 @@ namespace Cspray\Labrador\Test\SettingsLoader;
 use Cspray\Labrador\EnvironmentType;
 use Cspray\Labrador\Environment;
 use Cspray\Labrador\Exception\InvalidArgumentException;
+use Cspray\Labrador\Exception\InvalidStateException;
 use Cspray\Labrador\Exceptions;
 use Cspray\Labrador\SettingsLoader\DefaultsWithEnvironmentOverrideSettingsLoader;
 use Cspray\Labrador\SettingsStorageHandler\ChainedSettingsStorageHandler;
@@ -32,14 +33,14 @@ class DefaultsWithEnvironmentOverrideSettingsLoaderTest extends TestCase {
         $environment = $this->getMockBuilder(Environment::class)->getMock();
         $environment->expects($this->once())
             ->method('getType')
-            ->willReturn(EnvironmentType::Production());
+            ->willReturn(EnvironmentType::Staging());
         $settings = $this->subject->loadSettings($environment);
 
         $this->assertSame('baz', $settings->get('foo.bar'));
         $this->assertSame('qux', $settings->get('foo.baz'));
         $this->assertSame(1, $settings->get('foo.qux.foobar'));
         $this->assertSame(2, $settings->get('foo.qux.foobaz'));
-        $this->assertSame(3, $settings->get('foo.qux.fooqux'));
+        $this->assertSame('!env(USER)', $settings->get('foo.qux.fooqux'));
         $this->assertSame(['state' => 'VT', 'flower' => 'rose', 'commute' => 'car'], $settings->get('bar'));
     }
 
@@ -48,18 +49,29 @@ class DefaultsWithEnvironmentOverrideSettingsLoaderTest extends TestCase {
         $environment = $this->getMockBuilder(Environment::class)->getMock();
         $environment->expects($this->once())
             ->method('getType')
-            ->willReturn(EnvironmentType::Development());
+            ->willReturn(EnvironmentType::Test());
         $settings = $this->subject->loadSettings($environment);
-
 
         $this->assertSame('baz', $settings->get('foo.bar'));
         $this->assertSame('qux', $settings->get('foo.baz'));
         $this->assertSame(1000, $settings->get('foo.qux.foobar'));
         $this->assertSame(2, $settings->get('foo.qux.foobaz'));
-        $this->assertSame(-3, $settings->get('foo.qux.fooqux'));
+        $this->assertSame('!env(USER)', $settings->get('foo.qux.fooqux'));
         $this->assertSame(['state' => 'VT', 'flower' => 'rose', 'commute' => 'car'], $settings->get('bar'));
         $this->assertSame('file', $settings->get('dev-setting.php'));
-        $this->assertSame('file', $settings->get('dev-setting.json'));
+    }
+
+    public function testEnvironmentHasMultipleFilesThrowsException() {
+        /** @var Environment|MockObject $environment */
+        $environment = $this->getMockBuilder(Environment::class)->getMock();
+        $environment->expects($this->once())
+            ->method('getType')
+            ->willReturn(EnvironmentType::Development());
+
+        $this->expectException(InvalidStateException::class);
+        $this->expectExceptionMessage('Multiple settings files were found for the "development" environment. Please reduce the number of environment settings file for each environment to a maximum of 1.');
+
+        $this->subject->loadSettings($environment);
     }
 
     public function testDefaultSettingsFileNotHandleableThrowsException() {

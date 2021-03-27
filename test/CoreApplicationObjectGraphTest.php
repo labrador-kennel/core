@@ -120,7 +120,7 @@ class CoreApplicationObjectGraphTest extends AsyncTestCase {
      */
     private function getInjector(SettingsLoader $settingsLoader = null) : Injector {
         $this->logger = new NullLogger();
-        $environment = new StandardEnvironment(EnvironmentType::Development());
+        $environment = new StandardEnvironment(EnvironmentType::Test());
         return $this->getMockForAbstractClass(
             CoreApplicationObjectGraph::class, [$environment, $this->logger, $settingsLoader]
         )->wireObjectGraph();

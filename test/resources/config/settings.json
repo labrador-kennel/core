@@ -5,7 +5,7 @@
     "qux": {
       "foobar": 1,
       "foobaz": 2,
-      "fooqux": 3
+      "fooqux": "!env(USER)"
     }
   },
   "bar": {

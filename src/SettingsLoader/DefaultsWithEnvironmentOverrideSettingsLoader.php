@@ -5,6 +5,7 @@ namespace Cspray\Labrador\SettingsLoader;
 use Adbar\Dot;
 use Cspray\Labrador\DotAccessSettings;
 use Cspray\Labrador\Environment;
+use Cspray\Labrador\Exceptions;
 use Cspray\Labrador\Settings;
 use Cspray\Labrador\SettingsLoader;
 use Cspray\Labrador\SettingsStorageHandler;
@@ -21,29 +22,28 @@ final class DefaultsWithEnvironmentOverrideSettingsLoader implements SettingsLoa
     private $storageHandler;
     private $settingsFile;
     private $envDir;
-    private $supportedFileTypes = [];
 
     public function __construct(
         SettingsStorageHandler $storageHandler,
         string $settingsFile,
-        string $envDir,
-        array $supportedFileTypes = ['php', 'json']
+        string $envDir
     ) {
         $this->storageHandler = $storageHandler;
         $this->settingsFile = $settingsFile;
         $this->envDir = $envDir;
-        $this->supportedFileTypes = $supportedFileTypes;
     }
 
     public function loadSettings(Environment $environment) : Settings {
         $settings = new Dot($this->storageHandler->loadSettings($this->settingsFile));
         $envType = $environment->getType()->toString();
-        foreach ($this->supportedFileTypes as $fileType) {
-            $envPath = sprintf('%s/%s.%s', $this->envDir, $envType, $fileType);
-            if (is_file($envPath)) {
-                $envSettings = $this->storageHandler->loadSettings($envPath);
-                $settings->mergeRecursiveDistinct($envSettings);
-            }
+        $envPath = sprintf('%s/%s.*', $this->envDir, $envType);
+        $envFiles = glob($envPath);
+
+        if (count($envFiles) > 1) {
+            throw Exceptions::createException(Exceptions::SETTINGS_ERR_MULTIPLE_ENVIRONMENT_CONFIGS, null, $envType);
+        } else if (count($envFiles) === 1) {
+            $envSettings = $this->storageHandler->loadSettings($envFiles[0]);
+            $settings->mergeRecursiveDistinct($envSettings);
         }
 
         return new DotAccessSettings($settings->all());
