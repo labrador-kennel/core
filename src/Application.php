@@ -23,12 +23,9 @@ interface Application extends Pluggable, LoggerAwareInterface {
      * Application::stop is called. For some types of long-running Applications it is expected that this Promise will
      * not resolve unless Application::stop is explicitly invoked.
      *
-     * If start() is called successive times without allowing the Promises to resolve as the method is invoked an
-     * InvalidStateException MUST be thrown. It is not expected nor will it be supported that an Application may start
-     * after it has been started and before it has been stopped.
-     *
-     * This method should avoid throwing an exception and instead fail the Promise with the Exception that caused the
-     * application to crash.
+     * If start() is called successive times without allowing Promises to resolve completely an InvalidStateException
+     * MUST be thrown. It is not supported to attempt to start an already started or crashed Application. Whether or not
+     * the Application is in a valid state can be determined with getApplicationState().
      *
      * @return Promise<void>
      */
@@ -53,8 +50,7 @@ interface Application extends Pluggable, LoggerAwareInterface {
     public function getState() : ApplicationState;
 
     /**
-     * Handle an exception being thrown in your application; if you can gracefully handle the exception the app will
-     * continue to run otherwise rethrow the exception to cause the application to shutdown.
+     * Handle an uncaught exception being thrown in your application.
      *
      * @param Throwable $throwable
      * @return void

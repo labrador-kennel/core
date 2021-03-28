@@ -1,0 +1,16 @@
+{
+  "foo": {
+    "bar": "baz",
+    "baz": "qux",
+    "qux": {
+      "foobar": 1,
+      "foobaz": 2,
+      "fooqux": "!env(USER)"
+    }
+  },
+  "bar": {
+    "state": "VT",
+    "flower": "rose",
+    "commute": "car"
+  }
+}

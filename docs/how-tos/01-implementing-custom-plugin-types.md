@@ -38,8 +38,9 @@ bootstrapping code.
 
 namespace Acme;
 
-use Cspray\Labrador\DependencyGraph;
 use Cspray\Labrador\Engine;
+use Cspray\Labrador\StandardEnvironment;
+use Cspray\Labrador\EnvironmentType;
 use Amp\Log\StreamHandler;
 use Monolog\Logger;
 use function Amp\ByteStream\getStdout;
@@ -47,7 +48,8 @@ use function Amp\ByteStream\getStdout;
 $logger = new Logger('labrador.code-example');
 $logger->pushHandler(new StreamHandler(getStdout()));
 
-$injector = (new DependencyGraph($logger))->wireObjectGraph();
+$environment = new StandardEnvironment(EnvironmentType::Development());
+$injector = (new MyApplicationObjectGraph($environment, $logger))->wireObjectGraph();
 
 $app = $injector->make(MyApplication::class);
 $config = $injector->make(Configuration::class);

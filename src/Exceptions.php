@@ -8,13 +8,14 @@ use Cspray\Labrador\Exception\Exception;
 use Cspray\Labrador\Exception\InvalidArgumentException;
 use Cspray\Labrador\Exception\InvalidStateException;
 
+use Cspray\Labrador\Exception\InvalidTypeException;
 use Cspray\Labrador\Exception\NotFoundException;
 use Cspray\Labrador\Plugin\Pluggable;
 use Cspray\Labrador\Plugin\Plugin;
 use Throwable;
 
 /**
- * A class that is responsible for creating exceptions with known messages and errors code when exceptional occurrences
+ * A class that is responsible for creating exceptions with known messages and error codes when exceptional occurrences
  * happen within Labrador.
  *
  * The msgArg annotations on the error codes are the argument types, in order, that are expected when creating an
@@ -23,6 +24,7 @@ use Throwable;
  *
  * @package Cspray\Labrador
  * @license See LICENSE in source root
+ * @internal
  */
 final class Exceptions {
 
@@ -94,31 +96,12 @@ final class Exceptions {
     const PLUGIN_ERR_DEPENDENCY_NOT_PLUGIN_TYPE = 1106;
 
     /**
-     * An error code when a Labrador JSON configuration file is provided but it does not adhere to the json-schema for
-     * configurations.
-     *
-     * @var int Exception code when this error occurs.
-     * @msgArg void
-     */
-    const CONFIG_ERR_JSON_INVALID_SCHEMA = 1200;
-
-    /**
-     * An error code when a Labrador XML configuration file is provided but it does not adhere to XML schema for
-     * configurations.
+     * An error code when a Labrador configuration file is provided but is not a supported file type.
      *
      * @var int Exception code when this error occurs
-     * @msgArg void
+     * @msgArg $path The settings path that is not supported by a SettingsStorageHandler
      */
-    const CONFIG_ERR_XML_INVALID_SCHEMA = 1201;
-
-    /**
-     * An error code when a Labrador PHP configuration file is provided but it does not return either an array or a
-     * Configuration instance.
-     *
-     * @var int Exception code when this error occurs
-     * @msgArg void
-     */
-    const CONFIG_ERR_PHP_INVALID_RETURN_TYPE = 1202;
+    const SETTINGS_ERR_PATH_UNSUPPORTED = 1200;
 
     /**
      * An error code when a Labrador configuration file could not be found at the given location.
@@ -126,21 +109,79 @@ final class Exceptions {
      * @var int Exception code when this error occurs
      * @msgArg void
      */
-    const CONFIG_ERR_FILE_NOT_EXIST = 1203;
+    const SETTINGS_ERR_PATH_NOT_FOUND = 1201;
 
     /**
-     * An error code when a Labrador configuration file is provided but is not a supported file type.
+     * An error code when a Labrador PHP configuration file is provided but it does not return either an array or a
+     * Configuration instance.
      *
      * @var int Exception code when this error occurs
-     * @msgArg void
+     * @msgArg $path The path that returned the invalid type
+     * @msgArg $type The type of the value that was returned
      */
-    const CONFIG_ERR_FILE_UNSUPPORTED_EXTENSION = 1204;
+    const SETTINGS_ERR_PHP_INVALID_RETURN_TYPE = 1202;
+
+    /**
+     * An error code when a Labrador JSON settings file is provided but it does not parse into an appropriate PHP data
+     * structure.
+     *
+     * @var int Exception code when this error occurs
+     * @msgArg $path The path that returned the invalid type
+     *
+     */
+    const SETTINGS_ERR_JSON_INVALID_RETURN_TYPE = 1203;
+
+    /**
+     * An error code when a settings file has specified an environment variable for a value but that environment
+     * variable was not found.
+     *
+     * @var int Exception code when this error occurs
+     * @msgArg $envVar The name of the environment variable that could not be found
+     */
+    const SETTINGS_ERR_ENV_VAR_OVERRIDE_NOT_FOUND = 1204;
+
+    /**
+     * An error code when you attempt to get a key from a Settings file that does not exist.
+     *
+     * @var int Exception code when this error occurs
+     * @msgArg $key The settings key that could not be found
+     */
+    const SETTINGS_ERR_KEY_NOT_FOUND = 1205;
+
+    /**
+     * An error code when you attempt to load settings but multiple environment override files are found.
+     *
+     * @var int Exception code when this error occurs
+     * @msgArg $environment The name of the environment with multiple settings files
+     */
+    const SETTINGS_ERR_MULTIPLE_ENVIRONMENT_CONFIGS = 1206;
+
+    /**
+     * An error code when you attempt to create a SettingsLoader with the SettingsLoaderFactory but the configuration
+     * directory specified does not exist.
+     *
+     * @var int Exception code when this error occurs
+     * @msgArg $configDir The directory that could not be found
+     */
+    const SETTINGS_ERR_CONFIG_DIRECTORY_NOT_FOUND = 1207;
+
+    /**
+     *
+     */
+    const SETTINGS_ERR_CONFIG_DIRECTORY_IS_FILE = 1208;
+
+    /**
+     * An error code when you attempt to call Application::start while the Application is in a started state.
+     *
+     * @var int Exception code when this error occurs
+     */
+    const APP_ERR_MULTIPLE_START_CALLS = 1300;
 
     /**
      * An error code when an error occurs with creating the Auryn Injector for the library's DependencyGraph.
      *
-     *@var int Exception code when this error occurs
-     *@msgArg InjectorException
+     * @var int Exception code when this error occurs
+     * @msgArg InjectorException
      */
     const DEPENDENCY_GRAPH_INJECTION_ERR = 2000;
 
@@ -158,7 +199,7 @@ final class Exceptions {
      * @param int $errorCode
      * @param Throwable|null $nestedException
      * @param mixed ...$msgArgs
-     * @return Exception A Labrador Exception
+     * @return Exception|NotFoundException A Labrador Exception
      */
     public static function createException(int $errorCode, Throwable $nestedException = null, ...$msgArgs) : Exception {
         if (!isset(self::$codeMsgMap)) {
@@ -255,41 +296,89 @@ final class Exceptions {
             }
         ];
 
-        $map[self::CONFIG_ERR_JSON_INVALID_SCHEMA] = [
-            $invalidState,
-            function() {
-                return 'The configuration provided does not validate against the required JSON schema.';
-            }
-        ];
-
-        $map[self::CONFIG_ERR_XML_INVALID_SCHEMA] = [
-            $invalidState,
-            function() {
-                return 'The configuration provided does not validate against the required XML schema.';
-            }
-        ];
-
-        $map[self::CONFIG_ERR_PHP_INVALID_RETURN_TYPE] = [
-            $invalidState,
-            function() {
+        $map[self::SETTINGS_ERR_PHP_INVALID_RETURN_TYPE] = [
+            InvalidTypeException::class,
+            function(string $path, string $type) {
                 return sprintf(
-                    'The configuration provided does not return a valid PHP array or %s instance',
-                    Configuration::class
+                    'The type returned from a PHP settings file MUST be an array but "%s" returned a "%s".',
+                    $path,
+                    $type
                 );
             }
         ];
 
-        $map[self::CONFIG_ERR_FILE_NOT_EXIST] = [
-            $invalidArg,
-            function() {
-                return 'The configuration provided is not a valid file path that can be read from.';
+        $map[self::SETTINGS_ERR_JSON_INVALID_RETURN_TYPE] = [
+            InvalidTypeException::class,
+            function(string $path, string $type) {
+                return sprintf(
+                    'The type returned from a JSON settings file MUST be '.
+                    'a JSON object but "%s" was parsed into a "%s".',
+                    $path,
+                    $type,
+                );
             }
         ];
 
-        $map[self::CONFIG_ERR_FILE_UNSUPPORTED_EXTENSION] = [
+        $map[self::SETTINGS_ERR_PATH_NOT_FOUND] = [
             $invalidArg,
-            function() {
-                return 'The file extension for the provided configuration is not supported.';
+            function(string $path) {
+                return sprintf('The settings path "%s" could not be found.', $path);
+            }
+        ];
+
+        $map[self::SETTINGS_ERR_PATH_UNSUPPORTED] = [
+            $invalidArg,
+            function(string $path) {
+                $message = 'Unable to load settings for path "%s". ' .
+                    'This path is unsupported by any configured SettingsStorageHandler.';
+                return sprintf($message, $path);
+            }
+        ];
+
+        $map[self::SETTINGS_ERR_ENV_VAR_OVERRIDE_NOT_FOUND] = [
+            NotFoundException::class,
+            function(string $envVar) {
+                return sprintf('Expected environment variable "%s" to have a value but it was null.', $envVar);
+            }
+        ];
+
+        $map[self::SETTINGS_ERR_KEY_NOT_FOUND] = [
+            NotFoundException::class,
+            function(string $key) {
+                return sprintf('The setting "%s" could not be found.', $key);
+            }
+        ];
+
+        $map[self::SETTINGS_ERR_MULTIPLE_ENVIRONMENT_CONFIGS] = [
+            InvalidStateException::class,
+            function(string $environment) {
+                return sprintf(
+                    'Multiple settings files were found for the "%s" environment. ' .
+                        'Please reduce the number of environment settings file for each environment to a maximum of 1.',
+                    $environment
+                );
+            }
+        ];
+
+        $map[self::SETTINGS_ERR_CONFIG_DIRECTORY_NOT_FOUND] = [
+            NotFoundException::class,
+            function(string $configDir) {
+                return sprintf(
+                    'Attempted to create a default filesystem SettingsLoader but the config ' .
+                        'directory "%s" could not be found.',
+                    $configDir
+                );
+            }
+        ];
+
+        $map[self::SETTINGS_ERR_CONFIG_DIRECTORY_IS_FILE] = [
+            InvalidArgumentException::class,
+            function(string $configDir) {
+                return sprintf(
+                    'Attempted to create a default filesystem SettingsLoader but the config ' .
+                        'directory "%s" is a file.',
+                    $configDir
+                );
             }
         ];
 
@@ -297,6 +386,16 @@ final class Exceptions {
             DependencyInjectionException::class,
             function() {
                 return 'An error occurred creating the appropriate Injector for the DependencyGraph';
+            }
+        ];
+
+        $map[self::APP_ERR_MULTIPLE_START_CALLS] = [
+            InvalidStateException::class,
+            function() {
+                return sprintf(
+                    '%s::start MUST NOT be called while the Application is in a started or crashed state.',
+                    Application::class
+                );
             }
         ];
 

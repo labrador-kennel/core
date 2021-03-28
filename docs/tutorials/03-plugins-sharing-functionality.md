@@ -41,10 +41,10 @@ if you had a plugin called `Acme\Foo\BarPlugin` we'd register it on your applica
 
 // ... all of the previous code from the Getting Started guide
 
-$injector = (new DependencyGraph($logger))->wireObjectGraph();
+$injector = (new HelloWorldApplicationObjectGraph($environment, $logger))->wireObjectGraph();
 
 // We want to use the $injector to make these objects to ensure appropriate dependencies are autowired
-$app = $injector->make(HelloWorldApplication::class);
+$app = $injector->make(Application::class);
 $engine = $injector->make(Engine::class);
 
 $app->registerPlugin(BarPlugin::class);
@@ -55,7 +55,7 @@ $engine->run($app);
 Ultimately your application's `Auryn\Injector` will instantiate your Plugin. If you require a dependency that isn't 
 provided by another Plugin you should ensure that the appropriate object graph has been wired for the `$injector`. If 
 you're looking for more details on how to wire up your application's dependencies _that aren't provided by Plugins_ please
-check out [Creating your DependencyGraph](/docs/core/how-tos/creating-your-dependency-graph).
+check out [Getting Started](/docs/core/tutorials/getting-started) and the `ApplicationObjectGraph`.
 
 #### Plugin Loading
 

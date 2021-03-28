@@ -1,4 +1,4 @@
-name: 'PHP Unit Testing & Code Lint'
+name: 'Unit Testing & Code Lint'
 
 on:
   push:
@@ -7,21 +7,31 @@ on:
     branches: [ main ]
 
 jobs:
-  build:
+  build-test:
 
     runs-on: ubuntu-latest
 
     steps:
-    - uses: actions/checkout@v2
+      - uses: actions/checkout@v2
+      - name: Composer 7
+        uses: php-actions/composer@v5
+        with:
+          php_version: 7
+      - name: PHP 7 tests
+        uses: php-actions/phpunit@v2
+        with:
+          version: 8
+          php_version: 7
 
-    - name: Validate composer.json and composer.lock
-      run: composer validate
+      - name: Composer 8
+        uses: php-actions/composer@v5
+        with:
+          php_version: 8
+      - name: PHP 8 tests
+        uses: php-actions/phpunit@v2
+        with:
+          version: 8
+          php_version: 8
 
-    - name: Install dependencies
-      run: composer install --prefer-dist --no-progress --no-suggest
-
-    - name: Run test suite
-      run: composer run-script test
-
-    - name: Run code sniffer
-      run: composer run-script code-lint
+      - name: Run code sniffer
+        run: composer run code-lint

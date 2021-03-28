@@ -62,14 +62,15 @@ final class PluginManager implements Pluggable, LoggerAwareInterface {
         $this->emitter = $emitter;
     }
 
+    /**
+     * @inheritDoc
+     */
     public function registerPluginLoadHandler(string $pluginType, callable $pluginHandler, ...$arguments): void {
         $this->loadHandlers[$pluginType][] = [$pluginHandler, $arguments];
     }
 
     /**
-     * @param string $plugin
-     * @throws InvalidArgumentException
-     * @throws InvalidStateException
+     * @inheritDoc
      */
     public function registerPlugin(string $plugin) : void {
         /** @var InvalidArgumentException|InvalidStateException $exception */
@@ -112,6 +113,9 @@ final class PluginManager implements Pluggable, LoggerAwareInterface {
         return null;
     }
 
+    /**
+     * @inheritDoc
+     */
     public function loadPlugins() : Promise {
         return call(function() {
             $this->logger->info(sprintf(
@@ -129,6 +133,9 @@ final class PluginManager implements Pluggable, LoggerAwareInterface {
         });
     }
 
+    /**
+     * @inheritDoc
+     */
     public function removePlugin(string $name) : void {
         if (isset($this->plugins[$name])) {
             $plugin = $this->plugins[$name];
@@ -148,23 +155,29 @@ final class PluginManager implements Pluggable, LoggerAwareInterface {
         unset($this->plugins[$name]);
     }
 
+    /**
+     * @inheritDoc
+     */
     public function registerPluginRemoveHandler(string $pluginType, callable $pluginHandler, ...$arguments) : void {
         $this->removeHandlers[$pluginType][] = [$pluginHandler, $arguments];
     }
 
+    /**
+     * @inheritDoc
+     */
     public function hasPluginBeenRegistered(string $name) : bool {
         return array_key_exists($name, $this->plugins);
     }
 
+    /**
+     * @inheritDoc
+     */
     public function havePluginsLoaded() : bool {
         return $this->pluginsLoaded;
     }
 
     /**
-     * @param string $name
-     * @return Plugin
-     * @throws InvalidArgumentException
-     * @throws InvalidStateException
+     * @inheritDoc
      */
     public function getLoadedPlugin(string $name) : Plugin {
         if (!$this->hasPluginBeenRegistered($name)) {
@@ -189,6 +202,9 @@ final class PluginManager implements Pluggable, LoggerAwareInterface {
         return $this->plugins[$name];
     }
 
+    /**
+     * @inheritDoc
+     */
     public function getLoadedPlugins() : array {
         if (!$this->havePluginsLoaded()) {
             /** @var InvalidStateException $exception */
@@ -201,6 +217,9 @@ final class PluginManager implements Pluggable, LoggerAwareInterface {
         return array_values($this->plugins);
     }
 
+    /**
+     * @inheritDoc
+     */
     public function getRegisteredPlugins() : array {
         return array_keys($this->plugins);
     }

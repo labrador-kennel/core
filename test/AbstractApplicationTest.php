@@ -9,8 +9,10 @@ use Amp\Loop;
 use Amp\PHPUnit\AsyncTestCase;
 use Amp\Success;
 use Cspray\Labrador\AbstractApplication;
+use Cspray\Labrador\Application;
 use Cspray\Labrador\ApplicationState;
 use Cspray\Labrador\Exception\InvalidStateException;
+use Cspray\Labrador\Exceptions;
 use Cspray\Labrador\Plugin\Pluggable;
 use Cspray\Labrador\Test\Stub\PluginStub;
 use Psr\Log\Test\TestLogger;
@@ -188,14 +190,16 @@ class AbstractApplicationTest extends AsyncTestCase {
 
         $this->expectException(InvalidStateException::class);
         $this->expectExceptionMessage(
-            'Application must be in a Stopped state to start but it\'s current state is Started'
+            Application::class . '::start MUST NOT be called while the Application is in a started or crashed state.'
         );
+        $this->expectExceptionCode(Exceptions::APP_ERR_MULTIPLE_START_CALLS);
 
         $this->subject->start();
     }
 
     public function testHandleExceptionLogsErrorNoPreviousException() {
         $throwable = new \RuntimeException('Exception message', 99);
+        $line = __LINE__ - 1;
         $this->subject->handleException($throwable);
 
         $expectedRecords = [
@@ -205,7 +209,7 @@ class AbstractApplicationTest extends AsyncTestCase {
                 'context' => [
                     'class' => \RuntimeException::class,
                     'file' => __FILE__,
-                    'line' => 198,
+                    'line' => $line,
                     'code' => 99,
                     'stack_trace' => $throwable->getTrace(),
                     'previous' => null
@@ -220,6 +224,8 @@ class AbstractApplicationTest extends AsyncTestCase {
         $first = new \RuntimeException('First');
         $second = new \RuntimeException('Second', 0, $first);
         $throwable = new \RuntimeException('Exception message', 99, $second);
+        $line = __LINE__ - 3;
+
         $this->subject->handleException($throwable);
 
         $expectedRecords = [
@@ -229,7 +235,7 @@ class AbstractApplicationTest extends AsyncTestCase {
                 'context' => [
                     'class' => \RuntimeException::class,
                     'file' => __FILE__,
-                    'line' => 222,
+                    'line' => $line + 2,
                     'code' => 99,
                     'stack_trace' => $throwable->getTrace(),
                     'previous' => [
@@ -237,14 +243,14 @@ class AbstractApplicationTest extends AsyncTestCase {
                         'message' => 'Second',
                         'code' => 0,
                         'file' => __FILE__,
-                        'line' => 221,
+                        'line' => $line + 1,
                         'stack_trace' => $second->getTrace(),
                         'previous' => [
                             'class' => \RuntimeException::class,
                             'message' => 'First',
                             'code' => 0,
                             'file' => __FILE__,
-                            'line' => 220,
+                            'line' => $line,
                             'stack_trace' => $first->getTrace(),
                             'previous' => null
                         ]
