@@ -63,5 +63,4 @@ class SettingsLoaderFactoryTest extends TestCase {
         $this->assertEquals($settings->get('foo.qux.foobaz'), 2);
         $this->assertEquals($settings->get('foo.qux.fooqux'), 'labrador-kennel-user');
     }
-
 }

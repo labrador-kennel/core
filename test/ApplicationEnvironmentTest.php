@@ -11,5 +11,4 @@ class ApplicationEnvironmentTest extends TestCase {
         $dev = EnvironmentType::valueOf('development');
         $this->assertSame(EnvironmentType::Development(), $dev);
     }
-
 }

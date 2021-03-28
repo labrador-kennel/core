@@ -19,7 +19,10 @@ final class JsonFileSystemSettingsStorageHandler extends AbstractFileSystemSetti
         $data = json_decode(file_get_contents($filePath), true);
         if (!is_array($data)) {
             throw Exceptions::createException(
-                Exceptions::SETTINGS_ERR_JSON_INVALID_RETURN_TYPE, null, $filePath, gettype($data)
+                Exceptions::SETTINGS_ERR_JSON_INVALID_RETURN_TYPE,
+                null,
+                $filePath,
+                gettype($data)
             );
         }
 

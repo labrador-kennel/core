@@ -19,7 +19,10 @@ final class PhpFileSystemSettingsStorageHandler extends AbstractFileSystemSettin
         $settings = include $filePath;
         if (!is_array($settings)) {
             throw Exceptions::createException(
-                Exceptions::SETTINGS_ERR_PHP_INVALID_RETURN_TYPE, null, $filePath, gettype($settings)
+                Exceptions::SETTINGS_ERR_PHP_INVALID_RETURN_TYPE,
+                null,
+                $filePath,
+                gettype($settings)
             );
         }
 

@@ -41,7 +41,7 @@ final class DefaultsWithEnvironmentOverrideSettingsLoader implements SettingsLoa
 
         if (count($envFiles) > 1) {
             throw Exceptions::createException(Exceptions::SETTINGS_ERR_MULTIPLE_ENVIRONMENT_CONFIGS, null, $envType);
-        } else if (count($envFiles) === 1) {
+        } elseif (count($envFiles) === 1) {
             $envSettings = $this->storageHandler->loadSettings($envFiles[0]);
             $settings->mergeRecursiveDistinct($envSettings);
         }

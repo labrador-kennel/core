@@ -97,7 +97,8 @@ class CoreApplicationObjectGraphTest extends AsyncTestCase {
         $settings = __DIR__ . '/resources/config/settings.json';
         $environmentDir = __DIR__ . '/resources/config/environment';
         $storageHandler = new ChainedSettingsStorageHandler(
-            new PhpFileSystemSettingsStorageHandler(), new JsonFileSystemSettingsStorageHandler()
+            new PhpFileSystemSettingsStorageHandler(),
+            new JsonFileSystemSettingsStorageHandler()
         );
         $loader = new DefaultsWithEnvironmentOverrideSettingsLoader($storageHandler, $settings, $environmentDir);
         $injector = $this->getInjector($loader);
@@ -122,7 +123,8 @@ class CoreApplicationObjectGraphTest extends AsyncTestCase {
         $this->logger = new NullLogger();
         $environment = new StandardEnvironment(EnvironmentType::Test());
         return $this->getMockForAbstractClass(
-            CoreApplicationObjectGraph::class, [$environment, $this->logger, $settingsLoader]
+            CoreApplicationObjectGraph::class,
+            [$environment, $this->logger, $settingsLoader]
         )->wireObjectGraph();
     }
 }
