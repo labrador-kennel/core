@@ -14,7 +14,9 @@ class LoadPluginCalledApplication extends TestApplication {
     public function __construct(Pluggable $pluggable) {
         parent::__construct(
             $pluggable,
-            function() { $this->callOrder[] = 'doStart'; }
+            function() {
+                $this->callOrder[] = 'doStart';
+            }
         );
     }
 
