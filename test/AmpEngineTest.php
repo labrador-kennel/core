@@ -297,12 +297,12 @@ class AmpEngineTest extends UnitTestCase {
 
         $this->getEngine()->run($app);
 
-        $expected = ['load', 'execute'];
+        $expected = ['load', 'doStart'];
 
         $this->assertSame(
             $expected,
             $app->callOrder(),
-            'Expected the Application::loadPlugins to be called before Application::execute'
+            'Expected the Application::loadPlugins to be called before Application::start'
         );
     }
 
@@ -342,7 +342,7 @@ class AmpEngineTest extends UnitTestCase {
 
         $this->getEngine()->run($app);
 
-        $expected = ['execute'];
+        $expected = ['doStart'];
 
         $this->assertSame(
             $expected,
