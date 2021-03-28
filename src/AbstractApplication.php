@@ -55,7 +55,7 @@ abstract class AbstractApplication implements Application {
     /**
      * @inheritDoc
      */
-    public function start() : Promise {
+    final public function start() : Promise {
         if (!$this->state->equals(ApplicationState::Stopped())) {
             throw Exceptions::createException(Exceptions::APP_ERR_MULTIPLE_START_CALLS);
         }
@@ -65,7 +65,7 @@ abstract class AbstractApplication implements Application {
         // invoking the Application::stop method.
         $this->deferred = new Deferred();
 
-        $this->state = ApplicationState::Started();
+        $this->setState(ApplicationState::Started());
         $this->doStart()->onResolve(function($err) {
             // This ensures we properly handle the case where doStart may return a Promise that resolves immediately.
             // If we were to yield an instantaneous Promise we would call resolveDeferred(), which sets $deferred to
@@ -90,10 +90,10 @@ abstract class AbstractApplication implements Application {
 
     private function resolveDeferred(Throwable $throwable = null) : void {
         if (isset($throwable)) {
-            $this->state = ApplicationState::Crashed();
+            $this->setState(ApplicationState::Crashed());
             $this->deferred->fail($throwable);
         } else {
-            $this->state = ApplicationState::Stopped();
+            $this->setState(ApplicationState::Stopped());
             $this->deferred->resolve();
         }
         $this->deferred = null;
@@ -102,8 +102,12 @@ abstract class AbstractApplication implements Application {
     /**
      * @inheritDoc
      */
-    public function getState() : ApplicationState {
+    final public function getState() : ApplicationState {
         return $this->state;
+    }
+
+    final protected function setState(ApplicationState $state) : void {
+        $this->state = $state;
     }
 
     abstract protected function doStart() : Promise;
