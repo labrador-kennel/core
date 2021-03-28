@@ -45,7 +45,11 @@ class PhpSettingsFileHandlerTest extends TestCase {
         $subject = new PhpFileSystemSettingsStorageHandler();
 
         $this->expectException(InvalidArgumentException::class);
-        $this->expectExceptionMessage('Unable to load settings for path "'. $path . '". This path is unsupported by any configured SettingsStorageHandler.');
+        $this->expectExceptionMessage(
+            'Unable to load settings for path "' .
+            $path .
+            '". This path is unsupported by any configured SettingsStorageHandler.'
+        );
         $this->expectExceptionCode(Exceptions::SETTINGS_ERR_PATH_UNSUPPORTED);
 
         $subject->loadSettings($path);
@@ -56,7 +60,11 @@ class PhpSettingsFileHandlerTest extends TestCase {
         $subject = new PhpFileSystemSettingsStorageHandler();
 
         $this->expectException(InvalidTypeException::class);
-        $this->expectExceptionMessage('The type returned from a PHP settings file MUST be an array but "' . $path . '" returned a "string".');
+        $this->expectExceptionMessage(
+            'The type returned from a PHP settings file MUST be an array but "' .
+            $path .
+            '" returned a "string".'
+        );
         $this->expectExceptionCode(Exceptions::SETTINGS_ERR_PHP_INVALID_RETURN_TYPE);
 
         $subject->loadSettings($path);

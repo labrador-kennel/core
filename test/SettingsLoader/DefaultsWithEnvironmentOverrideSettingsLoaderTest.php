@@ -22,10 +22,17 @@ class DefaultsWithEnvironmentOverrideSettingsLoaderTest extends TestCase {
     private $environmentConfigDir;
 
     public function setUp() : void {
-        $fileHandler = new ChainedSettingsStorageHandler(new PhpFileSystemSettingsStorageHandler(), new JsonFileSystemSettingsStorageHandler());
+        $fileHandler = new ChainedSettingsStorageHandler(
+            new PhpFileSystemSettingsStorageHandler(),
+            new JsonFileSystemSettingsStorageHandler()
+        );
         $this->settingsPath = dirname(__DIR__) . '/resources/config/settings.json';
         $this->environmentConfigDir = dirname(__DIR__) . '/resources/config/environment';
-        $this->subject = new DefaultsWithEnvironmentOverrideSettingsLoader($fileHandler, $this->settingsPath, $this->environmentConfigDir);
+        $this->subject = new DefaultsWithEnvironmentOverrideSettingsLoader(
+            $fileHandler,
+            $this->settingsPath,
+            $this->environmentConfigDir
+        );
     }
 
     public function testNoEnvironmentOverrideReturnsSettingsUnchanged() {
@@ -69,7 +76,10 @@ class DefaultsWithEnvironmentOverrideSettingsLoaderTest extends TestCase {
             ->willReturn(EnvironmentType::Development());
 
         $this->expectException(InvalidStateException::class);
-        $this->expectExceptionMessage('Multiple settings files were found for the "development" environment. Please reduce the number of environment settings file for each environment to a maximum of 1.');
+        $this->expectExceptionMessage(
+            'Multiple settings files were found for the "development" environment. ' .
+            'Please reduce the number of environment settings file for each environment to a maximum of 1.'
+        );
 
         $this->subject->loadSettings($environment);
     }
@@ -79,10 +89,18 @@ class DefaultsWithEnvironmentOverrideSettingsLoaderTest extends TestCase {
         $environment = $this->getMockBuilder(Environment::class)->getMock();
         $environment->expects($this->never())->method('getType');
         $fileHandler = new ChainedSettingsStorageHandler(new PhpFileSystemSettingsStorageHandler());
-        $subject = new DefaultsWithEnvironmentOverrideSettingsLoader($fileHandler, $this->settingsPath, $this->environmentConfigDir);
+        $subject = new DefaultsWithEnvironmentOverrideSettingsLoader(
+            $fileHandler,
+            $this->settingsPath,
+            $this->environmentConfigDir
+        );
 
         $this->expectException(InvalidArgumentException::class);
-        $this->expectExceptionMessage('Unable to load settings for path "' . $this->settingsPath . '". This path is unsupported by any configured SettingsStorageHandler.');
+        $this->expectExceptionMessage(
+            'Unable to load settings for path "' .
+            $this->settingsPath .
+            '". This path is unsupported by any configured SettingsStorageHandler.'
+        );
         $this->expectExceptionCode(Exceptions::SETTINGS_ERR_PATH_UNSUPPORTED);
 
         $subject->loadSettings($environment);

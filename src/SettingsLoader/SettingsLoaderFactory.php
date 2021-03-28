@@ -16,13 +16,23 @@ class SettingsLoaderFactory {
 
     public static function defaultFileSystemSettingsLoader(string $configDirectory) : SettingsLoader {
         if (is_file($configDirectory)) {
-            throw Exceptions::createException(Exceptions::SETTINGS_ERR_CONFIG_DIRECTORY_IS_FILE, null, $configDirectory);
+            throw Exceptions::createException(
+                Exceptions::SETTINGS_ERR_CONFIG_DIRECTORY_IS_FILE,
+                null,
+                $configDirectory
+            );
         } elseif (!is_dir($configDirectory)) {
-            throw Exceptions::createException(Exceptions::SETTINGS_ERR_CONFIG_DIRECTORY_NOT_FOUND, null, $configDirectory);
+            throw Exceptions::createException(
+                Exceptions::SETTINGS_ERR_CONFIG_DIRECTORY_NOT_FOUND,
+                null,
+                $configDirectory
+            );
         } else {
             $settingsFiles = glob(sprintf('%s/settings.*', $configDirectory));
             if (count($settingsFiles) > 1) {
-                $msg = 'Attempted to create a default filesystem SettingsLoader but the config directory "%s" has multiple main settings files. Please reduce the number of main settings files in the config directory to a maximum of 1.';
+                $msg = 'Attempted to create a default filesystem SettingsLoader but the config ' .
+                    'directory "%s" has multiple main settings files. Please reduce the number of main ' .
+                    'settings files in the config directory to a maximum of 1.';
                 throw new InvalidStateException(sprintf($msg, $configDirectory));
             } elseif (count($settingsFiles) === 1) {
                 $storageHandler = new ChainedSettingsStorageHandler(

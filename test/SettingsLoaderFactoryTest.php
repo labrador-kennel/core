@@ -21,7 +21,10 @@ class SettingsLoaderFactoryTest extends TestCase {
 
     public function testConfigDirectoryDoesNotExistThrowsException() {
         $this->expectException(NotFoundException::class);
-        $this->expectExceptionMessage('Attempted to create a default filesystem SettingsLoader but the config directory "/bad/dir" could not be found.');
+        $this->expectExceptionMessage(
+            'Attempted to create a default filesystem SettingsLoader but the config ' .
+            'directory "/bad/dir" could not be found.'
+        );
 
         SettingsLoaderFactory::defaultFileSystemSettingsLoader('/bad/dir');
     }
@@ -29,7 +32,10 @@ class SettingsLoaderFactoryTest extends TestCase {
     public function testConfigDirectoryIsFileThrowsException() {
         $configPath = __DIR__ . '/resources/config/settings.json';
         $this->expectException(InvalidArgumentException::class);
-        $this->expectExceptionMessage('Attempted to create a default filesystem SettingsLoader but the config directory "' . $configPath . '" is a file.');
+        $this->expectExceptionMessage(
+            'Attempted to create a default filesystem SettingsLoader but the config ' .
+            'directory "' . $configPath . '" is a file.'
+        );
 
         SettingsLoaderFactory::defaultFileSystemSettingsLoader($configPath);
     }
@@ -37,7 +43,11 @@ class SettingsLoaderFactoryTest extends TestCase {
     public function testConfigDirectoryHasMultipleSettingsFileThrowsException() {
         $configPath = __DIR__ . '/resources/duplicate-config';
         $this->expectException(InvalidStateException::class);
-        $this->expectExceptionMessage('Attempted to create a default filesystem SettingsLoader but the config directory "' . $configPath . '" has multiple main settings files. Please reduce the number of main settings files in the config directory to a maximum of 1.');
+        $this->expectExceptionMessage(
+            'Attempted to create a default filesystem SettingsLoader but the config ' .
+            'directory "' . $configPath . '" has multiple main settings files. Please reduce the number of main ' .
+            'settings files in the config directory to a maximum of 1.'
+        );
 
         SettingsLoaderFactory::defaultFileSystemSettingsLoader($configPath);
     }

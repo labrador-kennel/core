@@ -311,7 +311,8 @@ final class Exceptions {
             InvalidTypeException::class,
             function(string $path, string $type) {
                 return sprintf(
-                    'The type returned from a JSON settings file MUST be a JSON object but "%s" was parsed into a "%s".',
+                    'The type returned from a JSON settings file MUST be '.
+                    'a JSON object but "%s" was parsed into a "%s".',
                     $path,
                     $type,
                 );
@@ -328,7 +329,8 @@ final class Exceptions {
         $map[self::SETTINGS_ERR_PATH_UNSUPPORTED] = [
             $invalidArg,
             function(string $path) {
-                $message = 'Unable to load settings for path "%s". This path is unsupported by any configured SettingsStorageHandler.';
+                $message = 'Unable to load settings for path "%s". ' .
+                    'This path is unsupported by any configured SettingsStorageHandler.';
                 return sprintf($message, $path);
             }
         ];
@@ -351,7 +353,8 @@ final class Exceptions {
             InvalidStateException::class,
             function(string $environment) {
                 return sprintf(
-                    'Multiple settings files were found for the "%s" environment. Please reduce the number of environment settings file for each environment to a maximum of 1.',
+                    'Multiple settings files were found for the "%s" environment. ' .
+                        'Please reduce the number of environment settings file for each environment to a maximum of 1.',
                     $environment
                 );
             }
@@ -361,7 +364,8 @@ final class Exceptions {
             NotFoundException::class,
             function(string $configDir) {
                 return sprintf(
-                    'Attempted to create a default filesystem SettingsLoader but the config directory "%s" could not be found.',
+                    'Attempted to create a default filesystem SettingsLoader but the config ' .
+                        'directory "%s" could not be found.',
                     $configDir
                 );
             }
@@ -371,7 +375,8 @@ final class Exceptions {
             InvalidArgumentException::class,
             function(string $configDir) {
                 return sprintf(
-                    'Attempted to create a default filesystem SettingsLoader but the config directory "%s" is a file.',
+                    'Attempted to create a default filesystem SettingsLoader but the config ' .
+                        'directory "%s" is a file.',
                     $configDir
                 );
             }
@@ -387,7 +392,10 @@ final class Exceptions {
         $map[self::APP_ERR_MULTIPLE_START_CALLS] = [
             InvalidStateException::class,
             function() {
-                return sprintf('%s::start MUST NOT be called while the Application is in a started or crashed state.', Application::class);
+                return sprintf(
+                    '%s::start MUST NOT be called while the Application is in a started or crashed state.',
+                    Application::class
+                );
             }
         ];
 

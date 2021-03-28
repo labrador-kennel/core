@@ -23,7 +23,11 @@ abstract class CoreApplicationObjectGraph implements ApplicationObjectGraph {
 
     private $settingsLoader;
 
-    public function __construct(Environment $environment, LoggerInterface $logger, SettingsLoader $settingsLoader = null) {
+    public function __construct(
+        Environment $environment,
+        LoggerInterface $logger,
+        SettingsLoader $settingsLoader = null
+    ) {
         $this->environment = $environment;
         $this->logger = $logger;
         $this->settingsLoader = $settingsLoader;

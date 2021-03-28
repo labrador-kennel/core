@@ -45,7 +45,11 @@ class JsonSettingsFileHandlerTest extends TestCase {
         $subject = new JsonFileSystemSettingsStorageHandler();
 
         $this->expectException(InvalidArgumentException::class);
-        $this->expectExceptionMessage('Unable to load settings for path "'. $path . '". This path is unsupported by any configured SettingsStorageHandler.');
+        $this->expectExceptionMessage(
+            'Unable to load settings for path "' .
+            $path .
+            '". This path is unsupported by any configured SettingsStorageHandler.'
+        );
         $this->expectExceptionCode(Exceptions::SETTINGS_ERR_PATH_UNSUPPORTED);
 
         $subject->loadSettings($path);
@@ -56,7 +60,11 @@ class JsonSettingsFileHandlerTest extends TestCase {
         $subject = new JsonFileSystemSettingsStorageHandler();
 
         $this->expectException(InvalidTypeException::class);
-        $this->expectExceptionMessage('The type returned from a JSON settings file MUST be a JSON object but "' . $path . '" was parsed into a "string".');
+        $this->expectExceptionMessage(
+            'The type returned from a JSON settings file MUST be a JSON object but "' .
+            $path .
+            '" was parsed into a "string".'
+        );
         $this->expectExceptionCode(Exceptions::SETTINGS_ERR_JSON_INVALID_RETURN_TYPE);
 
         $subject->loadSettings($path);

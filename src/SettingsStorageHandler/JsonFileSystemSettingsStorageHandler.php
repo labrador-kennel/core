@@ -4,12 +4,13 @@ namespace Cspray\Labrador\SettingsStorageHandler;
 
 use Cspray\Labrador\SettingsStorageHandler;
 use Cspray\Labrador\Exceptions;
+use Cspray\Labrador\SettingsStorageHandler\AbstractFileSystemSettingsStorageHandler as FSSettingsStorageHandler;
 
 /**
  * @package Cspray\Labrador\SettingsLoader
  * @license See LICENSE in source root
  */
-final class JsonFileSystemSettingsStorageHandler extends AbstractFileSystemSettingsStorageHandler implements SettingsStorageHandler {
+final class JsonFileSystemSettingsStorageHandler extends FSSettingsStorageHandler implements SettingsStorageHandler {
 
     protected function getExtension() : string {
         return 'json';

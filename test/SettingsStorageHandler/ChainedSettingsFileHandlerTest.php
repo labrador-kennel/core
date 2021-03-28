@@ -22,7 +22,11 @@ class ChainedSettingsFileHandlerTest extends TestCase {
         $this->barFileHandler = new SettingsStorageHandlerStub('/path/to/file.bar', ['bar']);
         $this->bazFileHandler = new SettingsStorageHandlerStub('/path/to/file.baz', ['baz']);
 
-        $this->subject = new ChainedSettingsStorageHandler($this->fooFileHandler, $this->barFileHandler, $this->bazFileHandler);
+        $this->subject = new ChainedSettingsStorageHandler(
+            $this->fooFileHandler,
+            $this->barFileHandler,
+            $this->bazFileHandler
+        );
     }
 
     public function testCanHandleExtensionWithNoFileHandlers() {
@@ -42,7 +46,10 @@ class ChainedSettingsFileHandlerTest extends TestCase {
 
     public function testLoadingFileWithBadExtension() {
         $this->expectException(InvalidArgumentException::class);
-        $this->expectExceptionMessage('Unable to load settings for path "/bad/path/to/foo.qux". This path is unsupported by any configured SettingsStorageHandler.');
+        $this->expectExceptionMessage(
+            'Unable to load settings for path "/bad/path/to/foo.qux". ' .
+            'This path is unsupported by any configured SettingsStorageHandler.'
+        );
         $this->expectExceptionCode(Exceptions::SETTINGS_ERR_PATH_UNSUPPORTED);
 
         $this->subject->loadSettings('/bad/path/to/foo.qux');

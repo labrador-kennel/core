@@ -54,10 +54,14 @@ final class EnvironmentVariableValueSettingsLoader implements SettingsLoader {
             foreach ($items as $key => $value) {
                 if (is_array($value)) {
                     $cleanItems[$key] = $setEnvVars($value);
-                } elseif (is_string($value) && preg_match(self::ENV_VAR_OVERRIDE_PATTERN, $value, $matches)) {
+                } elseif (preg_match(self::ENV_VAR_OVERRIDE_PATTERN, (string) $value, $matches)) {
                     $envValue = $environment->getVar($matches['env_var']);
                     if (is_null($envValue)) {
-                        throw Exceptions::createException(Exceptions::SETTINGS_ERR_ENV_VAR_OVERRIDE_NOT_FOUND, null, $matches['env_var']);
+                        throw Exceptions::createException(
+                            Exceptions::SETTINGS_ERR_ENV_VAR_OVERRIDE_NOT_FOUND,
+                            null,
+                            $matches['env_var']
+                        );
                     }
                     $cleanItems[$key] = $envValue;
                 } else {
