@@ -17,7 +17,7 @@ class StandardEnvironmentTest extends TestCase {
     public function testReturnsValueFromGetEnvIfNoOverride() {
         $subject = new StandardEnvironment(EnvironmentType::Development());
 
-        $this->assertSame(get_current_user(), $subject->getVar('USER'));
+        $this->assertSame(getenv('USER'), $subject->getVar('USER'));
     }
 
     public function testReturnsValueFromOverrideIfPresent() {
