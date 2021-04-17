@@ -212,7 +212,6 @@ class AbstractApplicationTest extends AsyncTestCase {
         try {
             $this->subject->handleException($throwable);
         } catch (\RuntimeException $runtimeException) {
-
         }
 
         $expectedRecords = [
@@ -242,7 +241,6 @@ class AbstractApplicationTest extends AsyncTestCase {
         try {
             $this->subject->handleException($throwable);
         } catch (\RuntimeException $runtimeException) {
-
         }
 
         $expectedRecords = [
