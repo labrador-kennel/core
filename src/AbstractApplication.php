@@ -117,6 +117,7 @@ abstract class AbstractApplication implements Application {
      */
     public function handleException(Throwable $throwable) : void {
         $this->logException($throwable);
+        throw $throwable;
     }
 
     /**

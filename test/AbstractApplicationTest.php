@@ -197,10 +197,22 @@ class AbstractApplicationTest extends AsyncTestCase {
         $this->subject->start();
     }
 
+    public function testHandleExceptionRethrows() {
+        $throwable = new \RuntimeException();
+
+        $this->expectExceptionObject($throwable);
+
+        $this->subject->handleException($throwable);
+    }
+
     public function testHandleExceptionLogsErrorNoPreviousException() {
         $throwable = new \RuntimeException('Exception message', 99);
         $line = __LINE__ - 1;
-        $this->subject->handleException($throwable);
+
+        try {
+            $this->subject->handleException($throwable);
+        } catch (\RuntimeException $runtimeException) {
+        }
 
         $expectedRecords = [
             [
@@ -226,7 +238,10 @@ class AbstractApplicationTest extends AsyncTestCase {
         $throwable = new \RuntimeException('Exception message', 99, $second);
         $line = __LINE__ - 3;
 
-        $this->subject->handleException($throwable);
+        try {
+            $this->subject->handleException($throwable);
+        } catch (\RuntimeException $runtimeException) {
+        }
 
         $expectedRecords = [
             [
