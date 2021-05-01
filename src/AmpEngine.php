@@ -77,14 +77,16 @@ final class AmpEngine implements Engine {
             throw $exception;
         }
 
-        $signalWatcher = Loop::onSignal(2, function() use($application, &$signalWatcher) {
-            if ($this->engineState->isRunning()) {
-                yield $application->stop();
-                yield $this->emitEngineShutDownEvent($application);
-            }
-            Loop::disable($signalWatcher);
-            exit;
-        });
+        if (Loop::get() instanceof Loop\NativeDriver && extension_loaded('pcntl')) {
+            $signalWatcher = Loop::onSignal(SIGINT, function() use($application, &$signalWatcher) {
+                if ($this->engineState->isRunning()) {
+                    yield $application->stop();
+                    yield $this->emitEngineShutDownEvent($application);
+                }
+                Loop::disable($signalWatcher);
+                exit;
+            });
+        }
 
         Loop::setErrorHandler(function(Throwable $error) use($application, $signalWatcher) {
             // This is here to ensure we guard against the possibility that some event listener in
