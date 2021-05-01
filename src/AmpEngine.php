@@ -93,7 +93,9 @@ final class AmpEngine implements Engine {
             // emitEngineShutDownEvent throws an exception which would cause the Loop error handler to be called
             // again, which would cause the process powering our app to go into an infinite loop until maximum memory
             // is used.
-            Loop::disable($signalWatcher);
+            if (isset($signalWatcher)) {
+                Loop::disable($signalWatcher);
+            }
             if (!$this->engineState->isCrashed()) {
                 $this->engineState = EngineState::Crashed();
                 $application->handleException($error);
@@ -133,7 +135,9 @@ final class AmpEngine implements Engine {
             yield $this->emitEngineShutDownEvent($application);
             $this->logger->info('Completed Application cleanup process. Engine shutting down.');
             $this->engineState = EngineState::Idle();
-            Loop::disable($signalWatcher);
+            if (isset($signalWatcher)) {
+                Loop::disable($signalWatcher);
+            }
         });
     }
 
