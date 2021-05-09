@@ -5,7 +5,7 @@ All notable changes to this project will be documented in this file.
 The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/),
 and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
-## 3.2.0 - 2020-??-??
+## 3.2.0 - 2021-05-09
 
 #### Added
 
@@ -20,6 +20,7 @@ the local filesystem. You should read over /docs/tutorials/02-application-settin
 - An `ApplicationObjectGraph` interface that will facilitate more robust bootstrapping code in the future. An instance, 
 the `CoreApplicationObjectGraph`, takes over the responsibilities of the `DependencyGraph` while also providing in the 
 injector an `Environment` instance and, an optional, `Settings` instance.
+- If `pcntl` extension is loaded the `AmpEngine` will respond to signals to stop the application.
 
 #### Deprecated
 
