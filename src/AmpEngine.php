@@ -78,7 +78,7 @@ final class AmpEngine implements Engine {
         }
 
         $signalWatcher = null;
-        if (Loop::get() instanceof Loop\NativeDriver && extension_loaded('pcntl')) {
+        if (extension_loaded('pcntl')) {
             $signalWatcher = Loop::onSignal(SIGINT, function() use($application, &$signalWatcher) {
                 if ($this->engineState->isRunning()) {
                     yield $application->stop();
