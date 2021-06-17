@@ -19,7 +19,6 @@ use Cspray\Labrador\Exception\InvalidStateException;
 use Cspray\Labrador\Exception\Exception;
 use Cspray\Labrador\Exceptions;
 use Cspray\Labrador\Plugin\Pluggable;
-use Cspray\Labrador\Plugin\Plugin;
 use Cspray\Labrador\Test\Stub\LoadPluginCalledApplication;
 use Cspray\Labrador\Test\Stub\NoopApplication;
 use Cspray\Labrador\AsyncEvent\AmpEventEmitter;
@@ -30,6 +29,7 @@ use PHPUnit\Framework\MockObject\MockObject;
 use PHPUnit\Framework\TestCase as UnitTestCase;
 use Psr\Log\Test\TestLogger;
 use RuntimeException;
+use stdClass;
 use Throwable;
 
 class AmpEngineTest extends UnitTestCase {
@@ -56,21 +56,21 @@ class AmpEngineTest extends UnitTestCase {
         return $engine;
     }
 
-    private function mockPluggable(array $registeredPlugins = []) : Pluggable {
+    private function mockPluggable() : Pluggable {
         /** @var MockObject|Pluggable $pluggable */
         $pluggable = $this->getMockBuilder(Pluggable::class)->getMock();
         $pluggable->expects($this->once())->method('loadPlugins')->willReturn(new Success());
         return $pluggable;
     }
 
-    private function noopApp(array $registeredPlugins = []) : Application {
-        $app = new NoopApplication($this->mockPluggable($registeredPlugins));
+    private function noopApp() : Application {
+        $app = new NoopApplication($this->mockPluggable());
         $app->setLogger($this->logger);
         return $app;
     }
 
-    private function stubApp(callable $callback, array $registeredPlugins = []) : Application {
-        $app = new TestApplication($this->mockPluggable($registeredPlugins), $callback);
+    private function stubApp(callable $callback) : Application {
+        $app = new TestApplication($this->mockPluggable(), $callback);
         $app->setLogger($this->logger);
         return $app;
     }
@@ -79,16 +79,13 @@ class AmpEngineTest extends UnitTestCase {
         callable $appCallback,
         callable $handler
     ) : Application {
-        /** @var MockObject|Pluggable $pluggable */
-        $pluggable = $this->getMockBuilder(Pluggable::class)->getMock();
-        $pluggable->expects($this->once())->method('loadPlugins')->willReturn(new Success());
-        $app = new TestApplication($pluggable, $appCallback, $handler);
+        $app = new TestApplication($this->mockPluggable(), $appCallback, $handler);
         $app->setLogger($this->logger);
         return $app;
     }
 
     public function testEventsExecutedInOrder() {
-        $data = new \stdClass();
+        $data = new stdClass();
         $data->data = [];
         $bootUpCb = function() use($data) {
             $data->data[] = 1;
@@ -118,7 +115,7 @@ class AmpEngineTest extends UnitTestCase {
     }
 
     public function testExecuteAppFinishesBeforeAppCleanup() {
-        $data = new \stdClass();
+        $data = new stdClass();
         $data->data = [];
         $executeAppCb = function() use($data) {
             $data->data[] = 1;
@@ -151,7 +148,7 @@ class AmpEngineTest extends UnitTestCase {
 
     public function testApplicationHandlerInvokedIfApplicationExecuteThrowsException() {
         $engine = $this->getEngine();
-        $data = new \stdClass();
+        $data = new stdClass();
         $data->exception = null;
 
         $throwExceptionCb = function() {
@@ -195,7 +192,7 @@ class AmpEngineTest extends UnitTestCase {
     }
 
     public function testAppCleanupEventHasCorrectTarget() {
-        $data = new \stdClass();
+        $data = new stdClass();
         $data->data = null;
         $this->emitter->on(Engine::SHUT_DOWN_EVENT, function(Event $event) use($data) {
             $data->data = $event->getTarget();
@@ -208,7 +205,7 @@ class AmpEngineTest extends UnitTestCase {
     }
 
     public function testCallingRunMultipleTimesThrowsException() {
-        $data = new \stdClass();
+        $data = new stdClass();
         $data->data = null;
 
         $engine = $this->getEngine();
@@ -236,7 +233,7 @@ class AmpEngineTest extends UnitTestCase {
 
     public function testEngineStateDuringRunIsRunning() {
         $engine = $this->getEngine();
-        $data = new \stdClass();
+        $data = new stdClass();
         $app = $this->stubApp(function() use($engine, $data) {
             $data->state = $engine->getState();
         });
@@ -268,7 +265,7 @@ class AmpEngineTest extends UnitTestCase {
     }
 
     public function testEngineBootupEventCalledOnceOnMultipleRunCalls() {
-        $data = new \stdClass();
+        $data = new stdClass();
         $data->data = [];
         $this->emitter->on(Engine::START_UP_EVENT, function() use($data) {
             $data->data[] = 1;
@@ -378,7 +375,7 @@ class AmpEngineTest extends UnitTestCase {
     }
 
     public function testLogMessagesOnSuccessfulApplicationRunWithPlugins() {
-        $app = $this->noopApp([Plugin::class]);
+        $app = $this->noopApp();
         $engine = $this->getEngine();
 
         $engine->run($app);
