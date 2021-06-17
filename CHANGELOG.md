@@ -5,9 +5,17 @@ All notable changes to this project will be documented in this file.
 The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/),
 and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
+## 3.2.1 - 2021-06-17
+
+### Fixed
+
+- Fixes an error where `PluginManager::getLoadedPlugins` would throw an error after the plugin loading process should 
+have taken place if there were no registered Plugins. Now, when calling `getLoadedPlugins` with no registered Plugins 
+found an empty array will be returned.
+
 ## 3.2.0 - 2021-05-09
 
-#### Added
+### Added
 
 - An `ApplicationEnvironment` enum that determines the environment of the host machine running your Labrador app.
 - An `Environment` interface and implementations that encapsulates access to the `ApplicationEnvironment` and 
@@ -22,49 +30,49 @@ the `CoreApplicationObjectGraph`, takes over the responsibilities of the `Depend
 injector an `Environment` instance and, an optional, `Settings` instance.
 - If `pcntl` extension is loaded the `AmpEngine` will respond to signals to stop the application.
 
-#### Deprecated
+### Deprecated
 
 - The `DependecyGraph` is deprecated and will be removed in the next major release. Users should transition to use the 
 `CoreApplicationObjectGraph` instead.
 
 ## 3.1.0 - 2020-08-02
 
-#### Added
+### Added
 
 - Added a protected method `AbstractApplication::logException` that logs detailed information about an exception as well 
 as additional application specific information as context to the Logger.
 
 ## 3.0.0 - 2020-08-02
 
-#### Added
+### Added
 
 - Added convenience methods on to `ApplicationState` and `EngineState` to make it easier to determine if either one is 
 in a specific state.
 
-#### Fixed
+### Fixed
 
 - Fixed a problem in `AmpEngine` where an exception thrown in an event listener to the `Engine::SHUT_DOWN_EVENT` would 
 result in a memory leak and subsequent hard crash of the application as it went into an infinite loop invoking the Loop's 
 error handler over and over again.
 
-#### Changed
+### Changed
 
 - Simplified the contents of the in-repo documentation to facilitate easier in-repo use and to allow integration with 
 the new website repo powering labrador-kennel.io.
 
 ## 3.0.0-beta7 2019-11-03
 
-#### Added
+### Added
 
 - Adds `Application::getState` which returns an enum `ApplicationState` signifying whether the Application is Started, 
 Stopped, or Crashed.
 
-#### Changed
+### Changed
 
 - The DependencyGraph object now expects you to provide a Logger implementation as a constructor dependency instead of 
 the DependencyGraph creating the Logger object based off of a configuration.
 
-#### Removed
+### Removed
 
 - Removed the Configuration interface and corresponding ConfigurationFactory. In practice this Configuration was 
 tied to a process for providing an out-of-the-box solution for invoking Applications that was clunky and not well 
@@ -76,7 +84,7 @@ it is released live.
 
 ## 3.0.0-beta6 2019-11-02
 
-#### Fixed
+### Fixed
 
 - Fixes the DependencyGraph aliases to ensure that the appropriate services are shared and aliased to the correct 
 default implementation.
@@ -86,7 +94,7 @@ default implementation.
 This release represents a major refactor to the Plugin system in an attempt to make the more common use 
 case easier to facilitate and to provide more async support for Plugins.
 
-#### Added
+### Added
 
 - Adds the `cspray/yape` library to create type-safe, powerful enums. Adds a new EngineState 
 enum.
@@ -115,7 +123,7 @@ docs for more information.
 - Introduces a `labrador-app-skeleton` binary that is meant to easily get started with Labrador by creating some 
 boilerplate configuration, Application skeleton, and a DependencyGraph.
 
-#### Changed
+### Changed
 
 - The `Engine::getState` method now returns an EngineState enum as opposed to an arbitrary string.
 - The DependencyGraph implementation now expects a Configuration instance as its only constructor 
@@ -147,7 +155,7 @@ with its accompanying event.
 - Changed the name of the `Engine::APP_CLEANUP_EVENT` -> `Engine::SHUT_DOWN_EVENT` to be more 
 semantic with its counterpart.
 
-#### Removed
+### Removed
 
 - Removed the `PluginDependencyNotProvidedException` and replaced its uses with either an 
 `InvalidStateException` or an `InvalidArgumentException`.
@@ -159,12 +167,12 @@ out of the box.
 The previous 3.0 Release Candidate has been found lacking key features that should be implemented for 
 a stable release. The codebase will become more stable before a 2nd RC is released.
 
-#### Added
+### Added
 
 - A new method `Pluggable::loadPlugins` that must be explicitly called to load Plugins. Additionally, 
 this method is expected to be asynchronous to take advantage of async Plugin booting.
 
-#### Changed
+### Changed
 
 - Refactors the `Bootable::boot` method to return a callable that can be invoked in context of the 
 event loop, meaning you can yield Promises etc, and has all dependencies resolved with your Injector.
@@ -179,12 +187,12 @@ for the `DependencyGraph` object convention.
 
 ## 3.0.0-rc1 - 2019-02-16
 
-#### Added
+### Added
 
 - Adds a `CODE_OF_CONDUCT.md` which directs users to the Labrador Governance repository.
 - Improved the documentation around Plugins and Engines.
 
-#### Changed
+### Changed
 
 - Renames `CoreEngine` -> `AmpEngine` to make it clear which event loop implementation is 
 powering the given Engine.
@@ -195,7 +203,7 @@ the Injector as a Service Locator.
 - Updates the code style to match the Labrador Coding Standard. 
 - Changed the Contributing guide to point to the Labrador Governance repository.
 
-#### Removed
+### Removed
 
 - Removed the `bootstrap()` function. You should now invoke `DependencyGraph::wireObjectGraph()` 
 directly instead.
@@ -204,7 +212,7 @@ handling functionality you will be required to add this dependency directly to c
 
 ## v3.0.0-beta3 - 2019-01-19
 
-#### Fixed
+### Fixed
 
 - Fixed a bug in the `PluginManager` handling custom Plugin types that are instances of an 
 interface. Previously only custom Plugins that were direct instances of the custom type would 
@@ -213,7 +221,7 @@ implementing an interface for a register Plugin handler.
 
 ## v3.0.0-beta2 - 2019-01-13
 
-#### Added
+### Added
 
 - Added a `Pluggable::registerPluginHandler` method that allows developers to assign their 
 own custom function to be executed when a Plugin of a specific type is initialized. This 
@@ -228,7 +236,7 @@ handlers to Plugins that you provided specifically for your Application or proje
 and move to an async architecture.** It should be assumed that most items below will 
 represent a break in previous versions.
 
-#### Added
+### Added
 
 - Added new `Application` interface to act as one conventional place to configure an 
   app's services and event listeners. It also acts as the primary form of execution for 
@@ -236,7 +244,7 @@ represent a break in previous versions.
   when the app is done executing and wishes to close.
 - Added the amphp/amp 2.0 library.
 
-#### Changed
+### Changed
 
 - The `CoreEngine` instance now runs inside an Amp Event Loop. All applications running 
   inside a Labrador Engine are expected to be asynchronous in nature.
@@ -247,7 +255,7 @@ represent a break in previous versions.
 - Changed methods that are not expected to return anything to return `void`. All method 
   signatures should now include a return type.
   
-#### Removed
+### Removed
 
 - Removed the league/event library in exchange for cspray/labrador-async-event.
 - Removes all custom event types in exchange for emitting StandardEvents provided by 
@@ -257,25 +265,25 @@ represent a break in previous versions.
 
 ## v2.0.0 - 2016-03-20
 
-#### Changed
+### Changed
 
 - Updates Auryn to 1.4.0
 - Updates Whoops to 2.1.0
 
-#### Removed
+### Removed
 
 - **BC BREAK** Removes the `Plugin::boot` method and introduces a new `BootablePlugin` interface. In practice very few
   Plugins actually needed to use the `boot` method. If your Plugin *does*  make use of this method you'll need to make 
   sure that you implement this new interface otherwise your Plugin **WILL NOT** boot. If you *don't* make use of this 
   method you can now remove the useless code from your codebase.
 
-#### Fixed
+### Fixed
 
 - Fixes deprecated uses of `setExpectedException` in test suite.
 
 ## v1.2.1 - 2016-03-13
 
-#### Changed
+### Changed
 
 - Updates Auryn to 1.2.
 - Updates several dev dependencies.
@@ -283,13 +291,13 @@ represent a break in previous versions.
 
 ## v1.2.0 - 2016-02-14
 
-#### Added
+### Added
 
 - Adds the ability to create a custom event object with the StandardEventFactory through the `StandardEventFactory::register(eventName, factoryFn)` 
   method. The `factoryFn` MUST return an instance of `League\Event\EventInterface` with a name that matches `eventName`. An 
   exception will be thrown if an invalid value is returned.
 
-#### Changed
+### Changed
 
 - **BC BREAK** Renames the `Services::createInjector` to `Services::wireObjectGraph` and allows the passing of an Auryn\Injector 
   that services will be added to instead of simply creating a service container.
@@ -298,15 +306,15 @@ represent a break in previous versions.
 
 ## v1.1.0 - 2016-02-13
 
-#### Changed
+### Changed
 
 - Adds support for classes extending CoreEngine to append arguments passed to listeners for all triggered events.
 
-#### Removed
+### Removed
 
 - **BC BREAK** Removes UnsupportedOperationException and EventStub as they were not used in the codebase
 
-#### Fixed
+### Fixed
 
 - Fixes a bug where the Engine::ENGINE_BOOTUP_EVENT could possibly be triggered multiple times if `CoreEngine::run()` is
   called multiple times.
@@ -314,46 +322,46 @@ represent a break in previous versions.
 
 ## v1.0.0 - 2016-01-13
 
-#### Fixed
+### Fixed
 
 - Moves test suite to PSR-4 autoloading
 - Cleans up use statements to use PHP7 syntax
 - Fixes a couple typos
 
-#### Removed
+### Removed
 
 - **BC BREAK** Removes SafeHashMap and ImmutableSafeHashMap as they were not used in the codebase
 
 ## v0.3.1 - 2016-01-08
 
-#### Changed
+### Changed
 
 - Update dependencies to use Whoops 2.0 over dev-master
 
 ## v0.3.0 - 2015-12-17
 
-#### Changed
+### Changed
 
 - **BC BREAK** Renames EnvironmentInitializeEvent -> EngineBootupEvent
 - Moves autoloading from PSR-0 to PSR-4
 
-#### Removed
+### Removed
 
 - **BC BREAK** Removes Telluris dependency
 
 ## v0.2.0 - 2015-08-17
 
-#### Added
+### Added
 
 - Adds `Cspray\Labrador\bootstrap()` function that will set error and exception handlers
   with Whoops and create an Auryn\Injector with Labrador HTTP's required services.
 
-#### Changed
+### Changed
 
 - Updates Telluris version
 - Uses shields.io for README badges
 
-#### Removed
+### Removed
 
 - **BC BREAK** Removes following classes:
     - Cspray\Labrador\ErrorToExceptionHandler
@@ -361,7 +369,7 @@ represent a break in previous versions.
 
 ## v0.1.1 - 2015-08-16
 
-#### Changed
+### Changed
 
 - Updates Ardent to use morrisonlevi repo. Installing requies --ignore-platform-reqs due to
   PHP7 requirements.
@@ -369,7 +377,7 @@ represent a break in previous versions.
 
 ## v0.1.0 - 2015-08-16
 
-#### Added
+### Added
 
 - Initial launch
 - Engine interface and CoreEngine implementation

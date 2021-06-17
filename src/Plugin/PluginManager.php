@@ -2,6 +2,7 @@
 
 namespace Cspray\Labrador\Plugin;
 
+use Amp\Success;
 use Cspray\Labrador\AsyncEvent\EventEmitter;
 use Cspray\Labrador\Exception\DependencyInjectionException;
 use Cspray\Labrador\Exceptions;
@@ -118,11 +119,17 @@ final class PluginManager implements Pluggable, LoggerAwareInterface {
      */
     public function loadPlugins() : Promise {
         return call(function() {
+            $registeredPlugins = $this->getRegisteredPlugins();
+            if (empty($registeredPlugins)) {
+                $this->pluginsLoaded = true;
+                $this->logger->info('No Plugins were registered.');
+                return new Success();
+            }
             $this->logger->info(sprintf(
                 'Initiating Plugin loading. Loading %d registered Plugins, not including dependencies.',
                 count($this->plugins)
             ));
-            foreach ($this->getRegisteredPlugins() as $pluginName) {
+            foreach ($registeredPlugins as $pluginName) {
                 yield $this->loadPlugin($pluginName);
             }
             $this->logger->info(sprintf(

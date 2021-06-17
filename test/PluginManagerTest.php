@@ -1042,4 +1042,12 @@ class PluginManagerTest extends AsyncTestCase {
 
         $this->assertSame($expected, $this->logger->records);
     }
+
+    public function testPluginsHaveBeenLoadedIfNoRegisteredPlugins() {
+        $subject = $this->getPluginManager();
+
+        yield $subject->loadPlugins();
+
+        $this->assertTrue($subject->havePluginsLoaded());
+    }
 }
