@@ -12,15 +12,16 @@ jobs:
     runs-on: ubuntu-latest
 
     steps:
+      - uses: actions/checkout@v2
       - name: Composer 8
         uses: php-actions/composer@v5
         with:
-          php_version: 8
+          php_version: 8.1
       - name: PHP 8 tests
         uses: php-actions/phpunit@v2
         with:
-          version: 8
-          php_version: 8
+          version: 9
+          php_version: 8.1
 
       - name: Run code sniffer
         run: composer run code-lint
