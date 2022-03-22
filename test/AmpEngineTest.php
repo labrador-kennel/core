@@ -9,8 +9,6 @@
 
 namespace Cspray\Labrador\Test;
 
-use Amp\Delayed;
-use Amp\Success;
 use Cspray\Labrador\Application;
 use Cspray\Labrador\Engine;
 use Cspray\Labrador\AmpEngine;
@@ -25,12 +23,14 @@ use Cspray\Labrador\AsyncEvent\AmpEventEmitter;
 use Cspray\Labrador\AsyncEvent\EventEmitter;
 use Cspray\Labrador\AsyncEvent\Event;
 use Cspray\Labrador\Test\Stub\TestApplication;
+use Monolog\Handler\TestHandler;
+use Monolog\Logger;
 use PHPUnit\Framework\MockObject\MockObject;
 use PHPUnit\Framework\TestCase as UnitTestCase;
-use Psr\Log\Test\TestLogger;
 use RuntimeException;
 use stdClass;
 use Throwable;
+use function Amp\delay;
 
 class AmpEngineTest extends UnitTestCase {
 
@@ -39,14 +39,13 @@ class AmpEngineTest extends UnitTestCase {
      */
     private $emitter;
 
-    /**
-     * @var TestLogger
-     */
+    private TestHandler $logHandler;
     private $logger;
 
     public function setUp() : void {
         $this->emitter = new AmpEventEmitter();
-        $this->logger = new TestLogger();
+        $this->logHandler = new TestHandler();
+        $this->logger = new Logger('labrador-core-test', [$this->logHandler]);
     }
 
     private function getEngine(EventEmitter $eventEmitter = null) : AmpEngine {
@@ -59,7 +58,7 @@ class AmpEngineTest extends UnitTestCase {
     private function mockPluggable() : Pluggable {
         /** @var MockObject|Pluggable $pluggable */
         $pluggable = $this->getMockBuilder(Pluggable::class)->getMock();
-        $pluggable->expects($this->once())->method('loadPlugins')->willReturn(new Success());
+        $pluggable->expects($this->once())->method('loadPlugins');
         return $pluggable;
     }
 
@@ -89,20 +88,20 @@ class AmpEngineTest extends UnitTestCase {
         $data->data = [];
         $bootUpCb = function() use($data) {
             $data->data[] = 1;
-            yield new Delayed(0);
+            delay(0);
             $data->data[] = 2;
-            yield new Delayed(0);
+            delay(0);
             $data->data[] = 3;
-            yield new Delayed(0);
+            delay(0);
         };
 
         $cleanupCb = function() use($data) {
             $data->data[] = 4;
-            yield new Delayed(0);
+            delay(0);
             $data->data[] = 5;
-            yield new Delayed(0);
+            delay(0);
             $data->data[] = 6;
-            yield new Delayed(0);
+            delay(0);
         };
 
         $engine = $this->getEngine();
@@ -119,21 +118,20 @@ class AmpEngineTest extends UnitTestCase {
         $data->data = [];
         $executeAppCb = function() use($data) {
             $data->data[] = 1;
-            yield new Delayed(0);
+            delay(0);
             $data->data[] = 2;
-            yield new Delayed(0);
+            delay(0);
             $data->data[] = 3;
-            yield new Delayed(0);
-            return new Success();
+            delay(0);
         };
 
         $cleanupCb = function() use($data) {
             $data->data[] = 4;
-            yield new Delayed(0);
+            delay(0);
             $data->data[] = 5;
-            yield new Delayed(0);
+            delay(0);
             $data->data[] = 6;
-            yield new Delayed(0);
+            delay(0);
         };
 
         $app = $this->stubApp($executeAppCb);
@@ -298,37 +296,6 @@ class AmpEngineTest extends UnitTestCase {
         );
     }
 
-    public function testApplicationHandleExceptionThrowsException() {
-        $application = $this->getMockBuilder(Application::class)->getMock();
-        $application->expects($this->once())
-            ->method('loadPlugins')
-            ->willReturn(new Success());
-        $application->expects($this->once())
-            ->method('start')
-            ->willThrowException($exception = new RuntimeException());
-        $application->expects($this->once())
-            ->method('handleException')
-            ->with($exception)
-            ->willThrowException(new RuntimeException('Throw from handleException'));
-
-        $this->expectException(RuntimeException::class);
-        $this->expectExceptionMessage('Throw from handleException');
-
-        $this->getEngine()->run($application);
-    }
-
-    public function testShutdownEventListenerThrowsException() {
-        $eventEmitter = new AmpEventEmitter();
-        $eventEmitter->on(Engine::SHUT_DOWN_EVENT, function() {
-            throw new RuntimeException('Thrown from shutdown event.');
-        });
-
-        $this->expectException(RuntimeException::class);
-        $this->expectExceptionMessage('Thrown from shutdown event.');
-
-        $this->getEngine($eventEmitter)->run($this->noopApp());
-    }
-
     public function testLogMessagesOnSuccessfulApplicationRunNoPlugins() {
         $app = $this->noopApp();
         $engine = $this->getEngine();
@@ -336,42 +303,43 @@ class AmpEngineTest extends UnitTestCase {
 
         $expectedRecords = [
             [
-                'level' => 'info',
+                'level' => 'INFO',
                 'message' => 'Starting Plugin loading process.',
-                'context' => []
             ],
 
             // We don't expect logging output from the PluginManager here because all of our test apps are using
             // mock pluggables
 
             [
-                'level' => 'info',
+                'level' => 'INFO',
                 'message' => 'Completed Plugin loading process.',
-                'context' => []
             ],
             [
-                'level' => 'info',
+                'level' => 'INFO',
                 'message' => 'Starting Application process.',
-                'context' => []
             ],
             [
-                'level' => 'info',
+                'level' => 'INFO',
                 'message' => 'Completed Application process.',
-                'context' => []
             ],
             [
-                'level' => 'info',
+                'level' => 'INFO',
                 'message' => 'Starting Application cleanup process.',
-                'context' => []
             ],
             [
-                'level' => 'info',
+                'level' => 'INFO',
                 'message' => 'Completed Application cleanup process. Engine shutting down.',
-                'context' => []
             ]
         ];
 
-        $this->assertSame($expectedRecords, $this->logger->records);
+        $actual = [];
+        foreach ($this->logHandler->getRecords() as $record) {
+            $actual[] = [
+                'level' => $record['level_name'],
+                'message' => $record['message']
+            ];
+        }
+        $this->assertSame($expectedRecords, $actual);
     }
 
     public function testLogMessagesOnSuccessfulApplicationRunWithPlugins() {
@@ -382,37 +350,38 @@ class AmpEngineTest extends UnitTestCase {
 
         $expectedRecords = [
             [
-                'level' => 'info',
+                'level' => 'INFO',
                 'message' => 'Starting Plugin loading process.',
-                'context' => []
             ],
             [
-                'level' => 'info',
+                'level' => 'INFO',
                 'message' => 'Completed Plugin loading process.',
-                'context' => []
             ],
             [
-                'level' => 'info',
+                'level' => 'INFO',
                 'message' => 'Starting Application process.',
-                'context' => []
             ],
             [
-                'level' => 'info',
+                'level' => 'INFO',
                 'message' => 'Completed Application process.',
-                'context' => []
             ],
             [
-                'level' => 'info',
+                'level' => 'INFO',
                 'message' => 'Starting Application cleanup process.',
-                'context' => []
             ],
             [
-                'level' => 'info',
+                'level' => 'INFO',
                 'message' => 'Completed Application cleanup process. Engine shutting down.',
-                'context' => []
             ]
         ];
 
-        $this->assertSame($expectedRecords, $this->logger->records);
+        $actual = [];
+        foreach ($this->logHandler->getRecords() as $record) {
+            $actual[] = [
+                'level' => $record['level_name'],
+                'message' => $record['message']
+            ];
+        }
+        $this->assertSame($expectedRecords, $actual);
     }
 }

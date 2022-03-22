@@ -9,8 +9,11 @@
 
 namespace Cspray\Labrador\Test;
 
-use function Amp\call;
-use Amp\Delayed;
+use Cspray\Labrador\AsyncEvent\EventEmitter;
+use Monolog\Handler\TestHandler;
+use Monolog\Logger;
+use Psr\Log\LoggerInterface;
+use function Amp\async;
 use Amp\PHPUnit\AsyncTestCase;
 use Cspray\Labrador\Engine;
 use Cspray\Labrador\Exception\InvalidStateException;
@@ -38,24 +41,23 @@ use Cspray\Labrador\Test\Stub\ServicesRegisteredPlugin;
 use Cspray\Labrador\AsyncEvent\AmpEventEmitter;
 use Auryn\Injector;
 use Auryn\ConfigException;
-use Psr\Log\Test\TestLogger;
 use stdClass;
 use Generator;
+use function Amp\delay;
 
 class PluginManagerTest extends AsyncTestCase {
 
-    private $emitter;
-    /** @var Injector */
-    private $injector;
-
-    /** @var TestLogger */
-    private $logger;
+    private EventEmitter $emitter;
+    private Injector $injector;
+    private TestHandler $logHandler;
+    private LoggerInterface $logger;
 
     public function setUp() : void {
         parent::setUp();
         $this->emitter = new AmpEventEmitter();
         $this->injector = new Injector();
-        $this->logger = new TestLogger();
+        $this->logHandler = new TestHandler();
+        $this->logger = new Logger('labrador-core-test', [$this->logHandler]);
     }
 
     private function getPluginManager() : PluginManager {
@@ -107,7 +109,6 @@ class PluginManagerTest extends AsyncTestCase {
     }
 
     /**
-     * @return Generator
      * @throws CircularDependencyException
      * @throws ConfigException
      * @throws InvalidArgumentException
@@ -119,7 +120,7 @@ class PluginManagerTest extends AsyncTestCase {
         $manager = $this->getPluginManager();
         $manager->registerPlugin(EventsRegisteredPlugin::class);
 
-        yield $manager->loadPlugins();
+        $manager->loadPlugins();
 
         $manager->removePlugin(EventsRegisteredPlugin::class);
 
@@ -127,7 +128,6 @@ class PluginManagerTest extends AsyncTestCase {
     }
 
     /**
-     * @return Generator
      * @throws CircularDependencyException
      * @throws ConfigException
      * @throws InvalidArgumentException
@@ -142,7 +142,7 @@ class PluginManagerTest extends AsyncTestCase {
             $plugin->myCustomPlugin();
         });
 
-        yield $manager->loadPlugins();
+        $manager->loadPlugins();
 
         $manager->removePlugin(CustomPluginStub::class);
 
@@ -150,7 +150,6 @@ class PluginManagerTest extends AsyncTestCase {
     }
 
     /**
-     * @return Generator
      * @throws CircularDependencyException
      * @throws ConfigException
      * @throws InvalidArgumentException
@@ -176,7 +175,7 @@ class PluginManagerTest extends AsyncTestCase {
             $plugin->myMethod();
         });
 
-        yield $manager->loadPlugins();
+        $manager->loadPlugins();
 
         $manager->removePlugin(get_class($plugin));
 
@@ -184,7 +183,6 @@ class PluginManagerTest extends AsyncTestCase {
     }
 
     /**
-     * @return Generator
      * @throws CircularDependencyException
      * @throws InvalidArgumentException
      * @throws InvalidStateException
@@ -206,7 +204,7 @@ class PluginManagerTest extends AsyncTestCase {
             [2,3,4]
         );
 
-        yield $manager->loadPlugins();
+        $manager->loadPlugins();
 
         $manager->removePlugin(PluginStub::class);
 
@@ -216,7 +214,6 @@ class PluginManagerTest extends AsyncTestCase {
     }
 
     /**
-     * @return Generator
      * @throws CircularDependencyException
      * @throws ConfigException
      * @throws InvalidArgumentException
@@ -243,7 +240,7 @@ class PluginManagerTest extends AsyncTestCase {
             }
         );
 
-        yield $manager->loadPlugins();
+        $manager->loadPlugins();
 
         $manager->removePlugin(CustomPluginStub::class);
 
@@ -268,7 +265,6 @@ class PluginManagerTest extends AsyncTestCase {
      *
      * @param Plugin $plugin
      * @param callable $getWasCalled
-     * @return Generator
      * @throws InvalidArgumentException
      * @throws InvalidStateException
      * @throws CircularDependencyException
@@ -279,13 +275,12 @@ class PluginManagerTest extends AsyncTestCase {
         $manager = $this->getPluginManager();
         $manager->registerPlugin(get_class($plugin));
 
-        yield $manager->loadPlugins();
+        $manager->loadPlugins();
 
         $this->assertTrue($getWasCalled($plugin));
     }
 
     /**
-     * @return Generator
      * @throws CircularDependencyException
      * @throws InvalidArgumentException
      * @throws InvalidStateException
@@ -298,13 +293,12 @@ class PluginManagerTest extends AsyncTestCase {
 
         $manager->registerPlugin(FooPluginDependentStub::class);
 
-        yield $manager->loadPlugins();
+        $manager->loadPlugins();
 
         $this->assertTrue($plugin->wasDependsOnProvided(), 'Depends on services not provided');
     }
 
     /**
-     * @return Generator
      * @throws CircularDependencyException
      * @throws InvalidArgumentException
      * @throws InvalidStateException
@@ -317,13 +311,12 @@ class PluginManagerTest extends AsyncTestCase {
 
         $manager->registerPlugin(get_class($dependentPlugin));
 
-        yield $manager->loadPlugins();
+        $manager->loadPlugins();
 
         $this->assertSame(1, $plugin->getNumberTimesBootCalled());
     }
 
     /**
-     * @return Generator
      * @throws CircularDependencyException
      * @throws InvalidArgumentException
      * @throws InvalidStateException
@@ -336,7 +329,7 @@ class PluginManagerTest extends AsyncTestCase {
 
         $manager->registerPlugin(get_class($plugin));
 
-        yield $manager->loadPlugins();
+        $manager->loadPlugins();
 
         $this->assertTrue($plugin->wasDependsOnProvided(), 'Depends on services not provided');
     }
@@ -351,7 +344,6 @@ class PluginManagerTest extends AsyncTestCase {
     }
 
     /**
-     * @return Generator
      * @throws CircularDependencyException
      * @throws ConfigException
      * @throws InvalidArgumentException
@@ -364,7 +356,7 @@ class PluginManagerTest extends AsyncTestCase {
 
         $manager->registerPlugin(get_class($plugin));
 
-        yield $manager->loadPlugins();
+        $manager->loadPlugins();
 
         $this->assertTrue(
             $manager->havePluginsLoaded(),
@@ -373,7 +365,6 @@ class PluginManagerTest extends AsyncTestCase {
     }
 
     /**
-     * @return Generator
      * @throws CircularDependencyException
      * @throws ConfigException
      * @throws InvalidArgumentException
@@ -386,7 +377,7 @@ class PluginManagerTest extends AsyncTestCase {
 
         $manager->registerPlugin(get_class($plugin));
 
-        yield $manager->loadPlugins();
+        $manager->loadPlugins();
 
         $registeredPlugins = $manager->getRegisteredPlugins();
         $expected = [
@@ -401,7 +392,6 @@ class PluginManagerTest extends AsyncTestCase {
 
 
     /**
-     * @return Generator
      * @throws CircularDependencyException
      * @throws ConfigException
      * @throws InvalidArgumentException
@@ -418,7 +408,7 @@ class PluginManagerTest extends AsyncTestCase {
         $manager->registerPlugin(PluginStub::class);
         $manager->registerPlugin(FooPluginStub::class);
 
-        yield $manager->loadPlugins();
+        $manager->loadPlugins();
 
         $loadedPlugins = $manager->getLoadedPlugins();
         $expected = [$pluginStub, $fooStub];
@@ -441,7 +431,6 @@ class PluginManagerTest extends AsyncTestCase {
     }
 
     /**
-     * @return Generator
      * @throws CircularDependencyException
      * @throws ConfigException
      * @throws InvalidArgumentException
@@ -456,7 +445,7 @@ class PluginManagerTest extends AsyncTestCase {
 
         $manager->registerPlugin(PluginStub::class);
 
-        yield $manager->loadPlugins();
+        $manager->loadPlugins();
 
         $actual = $manager->getLoadedPlugin(PluginStub::class);
 
@@ -486,7 +475,6 @@ class PluginManagerTest extends AsyncTestCase {
     }
 
     /**
-     * @return Generator
      * @throws CircularDependencyException
      * @throws InvalidArgumentException
      * @throws InvalidStateException
@@ -504,11 +492,10 @@ class PluginManagerTest extends AsyncTestCase {
         $this->expectException($exc);
         $this->expectExceptionMessage($msg);
 
-        yield $manager->loadPlugins();
+        $manager->loadPlugins();
     }
 
     /**
-     * @return Generator
      * @throws CircularDependencyException
      * @throws InvalidArgumentException
      * @throws InvalidStateException
@@ -523,11 +510,10 @@ class PluginManagerTest extends AsyncTestCase {
         $msg .= 'on a type, ' . Engine::class . ', that does not implement ' . Plugin::class;
         $this->expectExceptionMessage($msg);
 
-        yield $manager->loadPlugins();
+        $manager->loadPlugins();
     }
 
     /**
-     * @return Generator
      * @throws CircularDependencyException
      * @throws InvalidArgumentException
      * @throws InvalidStateException
@@ -535,7 +521,7 @@ class PluginManagerTest extends AsyncTestCase {
     public function testExceptionThrownIfPluginRegisteredAfterLoading() {
         $manager = $this->getPluginManager();
 
-        yield $manager->loadPlugins();
+        $manager->loadPlugins();
 
         $this->expectException(InvalidStateException::class);
         $msg = "Plugins have already been loaded and you MUST NOT register plugins after this has taken place.";
@@ -579,7 +565,6 @@ class PluginManagerTest extends AsyncTestCase {
     }
 
     /**
-     * @return Generator
      * @throws CircularDependencyException
      * @throws InvalidArgumentException
      * @throws InvalidStateException
@@ -594,13 +579,12 @@ class PluginManagerTest extends AsyncTestCase {
         });
         $manager->registerPlugin(get_class($plugin));
 
-        yield $manager->loadPlugins();
+        $manager->loadPlugins();
 
         $this->assertSame(1, $plugin->getTimesCalled());
     }
 
     /**
-     * @return Generator
      * @throws CircularDependencyException
      * @throws InvalidArgumentException
      * @throws InvalidStateException
@@ -618,13 +602,12 @@ class PluginManagerTest extends AsyncTestCase {
         });
         $manager->registerPlugin(get_class($plugin));
 
-        yield $manager->loadPlugins();
+        $manager->loadPlugins();
 
         $this->assertSame(2, $plugin->getTimesCalled());
     }
 
     /**
-     * @return Generator
      * @throws CircularDependencyException
      * @throws InvalidArgumentException
      * @throws InvalidStateException
@@ -643,14 +626,13 @@ class PluginManagerTest extends AsyncTestCase {
         );
         $manager->registerPlugin(CustomPluginOrderStub::class);
 
-        yield $manager->loadPlugins();
+        $manager->loadPlugins();
 
         $expected = ['depends', 'services', 'events', 'custom', 'boot'];
         $this->assertSame($expected, $callOrder->callOrder);
     }
 
     /**
-     * @return Generator
      * @throws CircularDependencyException
      * @throws InvalidArgumentException
      * @throws InvalidStateException
@@ -667,13 +649,12 @@ class PluginManagerTest extends AsyncTestCase {
         $manager->registerPluginLoadHandler(CustomPluginStub::class, $handler, 'a', 'b', 'c');
         $manager->registerPlugin(CustomPluginStub::class);
 
-        yield $manager->loadPlugins();
+        $manager->loadPlugins();
 
         $this->assertSame(['a', 'b', 'c'], $handlerArgs->data);
     }
 
     /**
-     * @return Generator
      * @throws CircularDependencyException
      * @throws InvalidArgumentException
      * @throws InvalidStateException
@@ -694,7 +675,7 @@ class PluginManagerTest extends AsyncTestCase {
         $this->injector->share($plugin);
         $manager->registerPlugin(get_class($plugin));
 
-        yield $manager->loadPlugins();
+        $manager->loadPlugins();
 
         $this->assertSame($plugin, $handlerArgs->data);
     }
@@ -711,17 +692,17 @@ class PluginManagerTest extends AsyncTestCase {
         $actual->counter = 0;
         $manager->registerPlugin(FooPluginStub::class);
         $manager->registerPluginLoadHandler(FooPluginStub::class, function() use($actual) {
-            return call(function() use($actual) {
-                yield new Delayed(1);
+            async(function() use($actual) {
+                delay(0);
                 $actual->counter++;
-                yield new Delayed(1);
+                delay(0);
                 $actual->counter++;
-                yield new Delayed(1);
+                delay(0);
                 $actual->counter++;
-            });
+            })->await();
         });
 
-        yield $manager->loadPlugins();
+        $manager->loadPlugins();
 
         $this->assertSame(3, $actual->counter);
     }
@@ -729,259 +710,152 @@ class PluginManagerTest extends AsyncTestCase {
     public function testRegisterPluginLogsMessage() {
         $this->getPluginManager()->registerPlugin(PluginStub::class);
 
-        $expected = [
-            [
-                'level' => 'info',
-                'message' => 'Registered Plugin "' . PluginStub::class . '".',
-                'context' => []
-            ]
-        ];
-
-        $this->assertSame($expected, $this->logger->records);
+        $this->assertTrue($this->logHandler->hasInfoThatContains('Registered Plugin "' . PluginStub::class . '".'));
     }
 
     public function testRemovingPluginNotLoaded() {
         $this->getPluginManager()->removePlugin(PluginStub::class);
 
-        $expected = [
-            [
-                'level' => 'info',
-                'message' => 'Removed Plugin "' . PluginStub::class . '".',
-                'context' => []
-            ]
-        ];
-
-        $this->assertSame($expected, $this->logger->records);
+        $this->assertTrue($this->logHandler->hasInfoThatContains('Removed Plugin "' . PluginStub::class . '".'));
     }
 
     public function testLoadingPluginOnlyIdentifyingInterface() {
         $pluginManager = $this->getPluginManager();
         $pluginManager->registerPlugin(PluginStub::class);
         $this->logger->reset();
-        yield $pluginManager->loadPlugins();
+        $pluginManager->loadPlugins();
 
-        $expected = [
-            [
-                'level' => 'info',
-                'message' => 'Initiating Plugin loading. Loading 1 registered Plugins, not including dependencies.',
-                'context' => []
-            ],
-            [
-                'level' => 'info',
-                'message' => 'Starting to load ' . PluginStub::class . '.',
-                'context' => []
-            ],
-            [
-                'level' => 'info',
-                'message' => 'Finished loading ' . PluginStub::class . '.',
-                'context' => []
-            ],
-            [
-                'level' => 'info',
-                'message' => 'Finished loading 1 Plugins, including dependencies.',
-                'context' => []
-            ]
-        ];
-
-        $this->assertSame($expected, $this->logger->records);
+        $this->assertTrue($this->logHandler->hasInfoThatContains(
+            'Initiating Plugin loading. Loading 1 registered Plugins, not including dependencies.'
+        ));
+        $this->assertTrue($this->logHandler->hasInfoThatContains(
+            'Starting to load ' . PluginStub::class . '.'
+        ));
+        $this->assertTrue($this->logHandler->hasInfoThatContains(
+            'Finished loading ' . PluginStub::class . '.'
+        ));
+        $this->assertTrue($this->logHandler->hasInfoThatContains(
+            'Finished loading 1 Plugins, including dependencies.'
+        ));
     }
 
     public function testLoadingPluginOnlyInjectorAwareInterface() {
         $pluginManager = $this->getPluginManager();
         $pluginManager->registerPlugin(ServicesRegisteredPlugin::class);
         $this->logger->reset();
-        yield $pluginManager->loadPlugins();
+        $pluginManager->loadPlugins();
 
-        $expected = [
-            [
-                'level' => 'info',
-                'message' => 'Initiating Plugin loading. Loading 1 registered Plugins, not including dependencies.',
-                'context' => []
-            ],
-            [
-                'level' => 'info',
-                'message' => 'Starting to load ' . ServicesRegisteredPlugin::class . '.',
-                'context' => []
-            ],
-            [
-                'level' => 'info',
-                'message' => 'Wiring object graph for ' . ServicesRegisteredPlugin::class . '.',
-                'context' => []
-
-            ],
-            [
-                'level' => 'info',
-                'message' => 'Finished loading ' . ServicesRegisteredPlugin::class . '.',
-                'context' => []
-            ],
-            [
-                'level' => 'info',
-                'message' => 'Finished loading 1 Plugins, including dependencies.',
-                'context' => []
-            ]
-        ];
-
-        $this->assertSame($expected, $this->logger->records);
+        $this->assertTrue($this->logHandler->hasInfoThatContains(
+            'Initiating Plugin loading. Loading 1 registered Plugins, not including dependencies.'
+        ));
+        $this->assertTrue($this->logHandler->hasInfoThatContains(
+            'Starting to load ' . ServicesRegisteredPlugin::class . '.'
+        ));
+        $this->assertTrue($this->logHandler->hasInfoThatContains(
+            'Wiring object graph for ' . ServicesRegisteredPlugin::class . '.'
+        ));
+        $this->assertTrue($this->logHandler->hasInfoThatContains(
+            'Finished loading ' . ServicesRegisteredPlugin::class . '.'
+        ));
+        $this->assertTrue($this->logHandler->hasInfoThatContains(
+            'Finished loading 1 Plugins, including dependencies.'
+        ));
     }
 
     public function testLoadingPluginOnlyEventAwareInterface() {
         $pluginManager = $this->getPluginManager();
         $pluginManager->registerPlugin(EventsRegisteredPlugin::class);
         $this->logger->reset();
-        yield $pluginManager->loadPlugins();
+        $pluginManager->loadPlugins();
 
-        $expected = [
-            [
-                'level' => 'info',
-                'message' => 'Initiating Plugin loading. Loading 1 registered Plugins, not including dependencies.',
-                'context' => []
-            ],
-            [
-                'level' => 'info',
-                'message' => 'Starting to load ' . EventsRegisteredPlugin::class . '.',
-                'context' => []
-            ],
-            [
-                'level' => 'info',
-                'message' => 'Registering event listeners for ' . EventsRegisteredPlugin::class . '.',
-                'context' => []
-
-            ],
-            [
-                'level' => 'info',
-                'message' => 'Finished loading ' . EventsRegisteredPlugin::class . '.',
-                'context' => []
-            ],
-            [
-                'level' => 'info',
-                'message' => 'Finished loading 1 Plugins, including dependencies.',
-                'context' => []
-            ]
-        ];
-
-        $this->assertSame($expected, $this->logger->records);
+        $this->assertTrue($this->logHandler->hasInfoThatContains(
+            'Initiating Plugin loading. Loading 1 registered Plugins, not including dependencies.'
+        ));
+        $this->assertTrue($this->logHandler->hasInfoThatContains(
+            'Starting to load ' . EventsRegisteredPlugin::class . '.'
+        ));
+        $this->assertTrue($this->logHandler->hasInfoThatContains(
+            'Registering event listeners for ' . EventsRegisteredPlugin::class . '.'
+        ));
+        $this->assertTrue($this->logHandler->hasInfoThatContains(
+            'Finished loading ' . EventsRegisteredPlugin::class . '.'
+        ));
+        $this->assertTrue($this->logHandler->hasInfoThatContains(
+            'Finished loading 1 Plugins, including dependencies.'
+        ));
     }
 
     public function testLoadingPluginOnlyBootableInterface() {
         $pluginManager = $this->getPluginManager();
         $pluginManager->registerPlugin(BootCalledPlugin::class);
         $this->logger->reset();
-        yield $pluginManager->loadPlugins();
+        $pluginManager->loadPlugins();
 
-        $expected = [
-            [
-                'level' => 'info',
-                'message' => 'Initiating Plugin loading. Loading 1 registered Plugins, not including dependencies.',
-                'context' => []
-            ],
-            [
-                'level' => 'info',
-                'message' => 'Starting to load ' . BootCalledPlugin::class . '.',
-                'context' => []
-            ],
-            [
-                'level' => 'info',
-                'message' => 'Starting ' . BootCalledPlugin::class . ' boot procedure.',
-                'context' => []
-
-            ],
-            [
-                'level' => 'info',
-                'message' => 'Finished ' . BootCalledPlugin::class . ' boot procedure.',
-                'context' => []
-            ],
-            [
-                'level' => 'info',
-                'message' => 'Finished loading ' . BootCalledPlugin::class . '.',
-                'context' => []
-            ],
-            [
-                'level' => 'info',
-                'message' => 'Finished loading 1 Plugins, including dependencies.',
-                'context' => []
-            ]
-        ];
-
-        $this->assertSame($expected, $this->logger->records);
+        $this->assertTrue($this->logHandler->hasInfoThatContains(
+            'Initiating Plugin loading. Loading 1 registered Plugins, not including dependencies.'
+        ));
+        $this->assertTrue($this->logHandler->hasInfoThatContains(
+            'Starting to load ' . BootCalledPlugin::class . '.'
+        ));
+        $this->assertTrue($this->logHandler->hasInfoThatContains(
+            'Starting ' . BootCalledPlugin::class . ' boot procedure.'
+        ));
+        $this->assertTrue($this->logHandler->hasInfoThatContains(
+            'Finished ' . BootCalledPlugin::class . ' boot procedure.'
+        ));
+        $this->assertTrue($this->logHandler->hasInfoThatContains(
+            'Finished loading ' . BootCalledPlugin::class . '.'
+        ));
+        $this->assertTrue($this->logHandler->hasInfoThatContains(
+            'Finished loading 1 Plugins, including dependencies.'
+        ));
     }
 
     public function testLoadingPluginWithPluginDependentPluginInterface() {
         $pluginManager = $this->getPluginManager();
         $pluginManager->registerPlugin(FooPluginDependentStub::class);
         $this->logger->reset();
-        yield $pluginManager->loadPlugins();
+        $pluginManager->loadPlugins();
 
-        $expected = [
-            [
-                'level' => 'info',
-                'message' => 'Initiating Plugin loading. Loading 1 registered Plugins, not including dependencies.',
-                'context' => []
-            ],
-            [
-                'level' => 'info',
-                'message' => 'Starting to load ' . FooPluginDependentStub::class . '.',
-                'context' => []
-            ],
-            [
-                'level' => 'info',
-                'message' => 'Loading dependencies for ' . FooPluginDependentStub::class . '.',
-                'context' => []
-            ],
-            [
-                'level' => 'info',
-                'message' => 'Starting to load ' . FooPluginStub::class . '.',
-                'context' => []
-            ],
-            [
-                'level' => 'info',
-                'message' => 'Wiring object graph for ' . FooPluginStub::class . '.',
-                'context' => []
-            ],
-            [
-                'level' => 'info',
-                'message' => 'Starting ' . FooPluginStub::class . ' boot procedure.',
-                'context' => []
-
-            ],
-            [
-                'level' => 'info',
-                'message' => 'Finished ' . FooPluginStub::class . ' boot procedure.',
-                'context' => []
-            ],
-            [
-                'level' => 'info',
-                'message' => 'Finished loading ' . FooPluginStub::class . '.',
-                'context' => []
-            ],
-            [
-                'level' => 'info',
-                'message' => 'Finished loading dependencies for ' . FooPluginDependentStub::class . '.',
-                'context' => []
-            ],
-            [
-                'level' => 'info',
-                'message' => 'Starting ' . FooPluginDependentStub::class . ' boot procedure.',
-                'context' => []
-
-            ],
-            [
-                'level' => 'info',
-                'message' => 'Finished ' . FooPluginDependentStub::class . ' boot procedure.',
-                'context' => []
-            ],
-            [
-                'level' => 'info',
-                'message' => 'Finished loading ' . FooPluginDependentStub::class . '.',
-                'context' => []
-            ],
-            [
-                'level' => 'info',
-                'message' => 'Finished loading 2 Plugins, including dependencies.',
-                'context' => []
-            ]
-        ];
-
-        $this->assertSame($expected, $this->logger->records);
+        $this->assertTrue($this->logHandler->hasInfoThatContains(
+            'Initiating Plugin loading. Loading 1 registered Plugins, not including dependencies.'
+        ));
+        $this->assertTrue($this->logHandler->hasInfoThatContains(
+            'Starting to load ' . FooPluginDependentStub::class . '.'
+        ));
+        $this->assertTrue($this->logHandler->hasInfoThatContains(
+            'Loading dependencies for ' . FooPluginDependentStub::class . '.'
+        ));
+        $this->assertTrue($this->logHandler->hasInfoThatContains(
+            'Starting to load ' . FooPluginStub::class . '.'
+        ));
+        $this->assertTrue($this->logHandler->hasInfoThatContains(
+            'Wiring object graph for ' . FooPluginStub::class . '.'
+        ));
+        $this->assertTrue($this->logHandler->hasInfoThatContains(
+            'Starting ' . FooPluginStub::class . ' boot procedure.'
+        ));
+        $this->assertTrue($this->logHandler->hasInfoThatContains(
+            'Finished ' . FooPluginStub::class . ' boot procedure.'
+        ));
+        $this->assertTrue($this->logHandler->hasInfoThatContains(
+            'Finished loading ' . FooPluginStub::class . '.'
+        ));
+        $this->assertTrue($this->logHandler->hasInfoThatContains(
+            'Finished loading dependencies for ' . FooPluginDependentStub::class . '.'
+        ));
+        $this->assertTrue($this->logHandler->hasInfoThatContains(
+            'Starting ' . FooPluginDependentStub::class . ' boot procedure.'
+        ));
+        $this->assertTrue($this->logHandler->hasInfoThatContains(
+            'Finished ' . FooPluginDependentStub::class . ' boot procedure.'
+        ));
+        $this->assertTrue($this->logHandler->hasInfoThatContains(
+            'Finished loading ' . FooPluginDependentStub::class . '.'
+        ));
+        $this->assertTrue($this->logHandler->hasInfoThatContains(
+            'Finished loading 2 Plugins, including dependencies.'
+        ));
     }
 
     public function testLoadingPluginOnlyCustomHandler() {
@@ -1003,50 +877,32 @@ class PluginManagerTest extends AsyncTestCase {
             }
         );
         $this->logger->reset();
-        yield $pluginManager->loadPlugins();
+        $pluginManager->loadPlugins();
 
-        $expected = [
-            [
-                'level' => 'info',
-                'message' => 'Initiating Plugin loading. Loading 1 registered Plugins, not including dependencies.',
-                'context' => []
-            ],
-            [
-                'level' => 'info',
-                'message' => 'Starting to load ' . CustomPluginStub::class . '.',
-                'context' => []
-            ],
-            [
-                'level' => 'info',
-                'message' => 'Found 3 custom handlers for ' . CustomPluginStub::class . '.',
-                'context' => []
-
-            ],
-            [
-                'level' => 'info',
-                'message' => 'Finished loading custom handlers for ' . CustomPluginStub::class . '.',
-                'context' => []
-
-            ],
-            [
-                'level' => 'info',
-                'message' => 'Finished loading ' . CustomPluginStub::class . '.',
-                'context' => []
-            ],
-            [
-                'level' => 'info',
-                'message' => 'Finished loading 1 Plugins, including dependencies.',
-                'context' => []
-            ]
-        ];
-
-        $this->assertSame($expected, $this->logger->records);
+        $this->assertTrue($this->logHandler->hasInfoThatContains(
+            'Initiating Plugin loading. Loading 1 registered Plugins, not including dependencies.'
+        ));
+        $this->assertTrue($this->logHandler->hasInfoThatContains(
+            'Starting to load ' . CustomPluginStub::class . '.'
+        ));
+        $this->assertTrue($this->logHandler->hasInfoThatContains(
+            'Found 3 custom handlers for ' . CustomPluginStub::class . '.'
+        ));
+        $this->assertTrue($this->logHandler->hasInfoThatContains(
+            'Finished loading custom handlers for ' . CustomPluginStub::class . '.'
+        ));
+        $this->assertTrue($this->logHandler->hasInfoThatContains(
+            'Finished loading ' . CustomPluginStub::class . '.'
+        ));
+        $this->assertTrue($this->logHandler->hasInfoThatContains(
+            'Finished loading 1 Plugins, including dependencies.'
+        ));
     }
 
     public function testPluginsHaveBeenLoadedIfNoRegisteredPlugins() {
         $subject = $this->getPluginManager();
 
-        yield $subject->loadPlugins();
+        $subject->loadPlugins();
 
         $this->assertTrue($subject->havePluginsLoaded());
     }

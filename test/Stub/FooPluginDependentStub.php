@@ -8,30 +8,28 @@ declare(strict_types = 1);
 
 namespace Cspray\Labrador\Test\Stub;
 
-use Amp\Promise;
-use Amp\Success;
 use Cspray\Labrador\Plugin\BootablePlugin;
 use Cspray\Labrador\Plugin\PluginDependentPlugin;
 use Auryn\Injector;
 
 class FooPluginDependentStub implements PluginDependentPlugin, BootablePlugin {
 
-    private $injector;
-    private $dependsOnProvided;
+    private Injector $injector;
+    private bool $dependsOnProvided;
 
     public function __construct(Injector $injector) {
         $this->injector = $injector;
+        $this->dependsOnProvided = false;
     }
 
     /**
      * Perform any actions that should be completed by your Plugin before the
      * primary execution of your app is kicked off.
      */
-    public function boot() : Promise {
+    public function boot() : void {
         $injectorInfo = $this->injector->inspect();
         $shares = $injectorInfo[Injector::I_SHARES];
         $this->dependsOnProvided = array_key_exists('cspray\labrador\test\stub\fooservice', $shares);
-        return new Success();
     }
 
     public function wasDependsOnProvided() {

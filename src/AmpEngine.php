@@ -2,13 +2,12 @@
 
 namespace Cspray\Labrador;
 
-use Amp\Promise;
 use Cspray\Labrador\AsyncEvent\EventEmitter;
 use Cspray\Labrador\AsyncEvent\EventFactory;
 use Cspray\Labrador\AsyncEvent\StandardEventFactory;
 use Cspray\Labrador\Exception\InvalidStateException;
-use Amp\Loop;
 use Psr\Log\LoggerAwareTrait;
+use Revolt\EventLoop;
 use Throwable;
 
 /**
@@ -21,10 +20,10 @@ final class AmpEngine implements Engine {
 
     use LoggerAwareTrait;
 
-    private $emitter;
-    private $eventFactory;
-    private $engineState;
-    private $engineBooted = false;
+    private EventEmitter $emitter;
+    private EventFactory $eventFactory;
+    private EngineState $engineState;
+    private bool $engineBooted = false;
 
     public function __construct(
         EventEmitter $emitter,
@@ -79,81 +78,85 @@ final class AmpEngine implements Engine {
 
         $signalWatcher = null;
         if (extension_loaded('pcntl')) {
-            $signalWatcher = Loop::onSignal(SIGINT, function() use($application, &$signalWatcher) {
+            $signalWatcher = EventLoop::onSignal(SIGINT, function() use($application, &$signalWatcher) {
                 if ($this->engineState->isRunning()) {
-                    yield $application->stop();
-                    yield $this->emitEngineShutDownEvent($application);
+                    $application->stop()->await();
+                    $this->emitEngineShutDownEvent($application);
                 }
-                Loop::disable($signalWatcher);
+                EventLoop::disable($signalWatcher);
+                EventLoop::getDriver()->stop();
                 exit;
             });
+            EventLoop::unreference($signalWatcher);
         }
 
-        Loop::setErrorHandler(function(Throwable $error) use($application, $signalWatcher) {
-            // This is here to ensure we guard against the possibility that some event listener in
-            // emitEngineShutDownEvent throws an exception which would cause the Loop error handler to be called
-            // again, which would cause the process powering our app to go into an infinite loop until maximum memory
-            // is used.
-            if (isset($signalWatcher)) {
-                Loop::disable($signalWatcher);
-            }
-            if (!$this->engineState->isCrashed()) {
-                $this->engineState = EngineState::Crashed();
-                $application->handleException($error);
-                Loop::defer(function() use($application) {
-                    $this->logger->info('Starting Application cleanup process from exception handler.');
-                    yield $this->emitEngineShutDownEvent($application);
-                    $this->logger->info(
-                        'Completed Application cleanup process from exception handler. Engine shutting down.'
-                    );
-                });
-            } else {
-                throw $error;
-            }
-        });
+        EventLoop::setErrorHandler(fn(Throwable $err) => $this->handleThrowable($err, $application, $signalWatcher));
 
-        Loop::run(function() use($application, $signalWatcher) {
+        EventLoop::queue(function() use($application, $signalWatcher) {
             $this->engineState = EngineState::Running();
 
             $this->logger->info('Starting Plugin loading process.');
-            yield $application->loadPlugins();
+            $application->loadPlugins();
             $this->logger->info('Completed Plugin loading process.');
 
             if (!$this->engineBooted) {
-                yield $this->emitEngineStartUpEvent();
+                $this->emitEngineStartUpEvent();
                 $this->engineBooted = true;
             }
 
             $this->logger->info('Starting Application process.');
-            yield $application->start();
+            $application->start()->await();
             $this->logger->info('Completed Application process.');
 
             $this->logger->info('Starting Application cleanup process.');
-            yield $this->emitEngineShutDownEvent($application);
+            $this->emitEngineShutDownEvent($application);
             $this->logger->info('Completed Application cleanup process. Engine shutting down.');
             $this->engineState = EngineState::Idle();
             if (isset($signalWatcher)) {
-                Loop::disable($signalWatcher);
+                EventLoop::disable($signalWatcher);
             }
         });
+        EventLoop::run();
     }
 
     /**
-     * @return Promise
+     * @return void
      * @throws Exception\InvalidTypeException
      */
-    private function emitEngineStartUpEvent() : Promise {
+    private function emitEngineStartUpEvent() : void {
         $event = $this->eventFactory->create(self::START_UP_EVENT, $this);
-        return $this->emitter->emit($event);
+        $this->emitter->emit($event)->await();
     }
 
     /**
      * @param Application $application
-     * @return Promise
+     * @return void
      * @throws Exception\InvalidTypeException
      */
-    private function emitEngineShutDownEvent(Application $application) : Promise {
+    private function emitEngineShutDownEvent(Application $application) : void {
         $event = $this->eventFactory->create(self::SHUT_DOWN_EVENT, $application);
-        return $this->emitter->emit($event);
+        $this->emitter->emit($event)->await();
+    }
+
+    private function handleThrowable(
+        Throwable $throwable,
+        Application $application,
+        ?string $signalWatcher = null
+    ) : void {
+        if (isset($signalWatcher)) {
+            EventLoop::disable($signalWatcher);
+        }
+
+        $this->engineState = EngineState::Crashed();
+        try {
+            $application->handleException($throwable);
+            $this->emitEngineShutDownEvent($application);
+        } catch (Throwable $throwable) {
+            $this->logger->critical(
+                'An exception was thrown from Application::handleException. This method must not throw exceptions.'
+            );
+        } finally {
+            EventLoop::getDriver()->stop();
+        }
     }
 }

@@ -4,8 +4,6 @@
 namespace Cspray\Labrador\Test\Stub;
 
 use Cspray\Labrador\Plugin\Pluggable;
-use function Amp\call;
-use Amp\Promise;
 
 class LoadPluginCalledApplication extends TestApplication {
 
@@ -20,10 +18,8 @@ class LoadPluginCalledApplication extends TestApplication {
         );
     }
 
-    public function loadPlugins(): Promise {
-        return call(function() {
-            $this->callOrder[] = "load";
-        });
+    public function loadPlugins(): void {
+        $this->callOrder[] = "load";
     }
 
     public function callOrder() : array {

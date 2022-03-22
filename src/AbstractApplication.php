@@ -2,13 +2,12 @@
 
 namespace Cspray\Labrador;
 
-use Amp\Deferred;
-use Amp\Loop;
-use Amp\Promise;
-use Amp\Success;
+use Amp\DeferredFuture;
+use Amp\Future;
 use Cspray\Labrador\Plugin\Pluggable;
 use Cspray\Labrador\Plugin\Plugin;
 use Psr\Log\LoggerAwareTrait;
+use Revolt\EventLoop;
 use Throwable;
 
 /**
@@ -29,20 +28,9 @@ abstract class AbstractApplication implements Application {
 
     use LoggerAwareTrait;
 
-    /**
-     * @var Pluggable
-     */
-    private $pluggable;
-
-    /**
-     * @var Deferred
-     */
-    private $deferred;
-
-    /**
-     * @var ApplicationState
-     */
-    private $state;
+    private Pluggable $pluggable;
+    private ?DeferredFuture $deferred;
+    private ApplicationState $state;
 
     /**
      * @param Pluggable $pluggable
@@ -55,46 +43,42 @@ abstract class AbstractApplication implements Application {
     /**
      * @inheritDoc
      */
-    final public function start() : Promise {
+    final public function start() : Future {
         if (!$this->state->equals(ApplicationState::Stopped())) {
             throw Exceptions::createException(Exceptions::APP_ERR_MULTIPLE_START_CALLS);
         }
 
-        // We use the deferred object instead of simply returning the result of Amp\call because there are two ways for
-        // the start Promise to be resolved. Either implicitly when the Application stops running or explicitly by
-        // invoking the Application::stop method.
-        $this->deferred = new Deferred();
+        $this->deferred = new DeferredFuture();
 
         $this->setState(ApplicationState::Started());
-        $this->doStart()->onResolve(function($err) {
-            // This ensures we properly handle the case where doStart may return a Promise that resolves immediately.
-            // If we were to yield an instantaneous Promise we would call resolveDeferred(), which sets $deferred to
-            // null, before we actually returned the Promise for the $deferred required by Application::start(). By
-            // resolving the Promise for when this is done executing on the next tick of the event loop we ensure
-            // there's actually something to return for the start() method.
-            Loop::defer(function() use($err) {
-                $this->resolveDeferred($err);
-            });
+        EventLoop::defer(function() {
+            try {
+                $this->doStart()
+                    ->map(fn() => $this->resolveDeferred())
+                    ->await();
+            } catch (Throwable $throwable) {
+                $this->resolveDeferred($throwable);
+            }
         });
 
-        return $this->deferred->promise();
+        return $this->deferred->getFuture();
     }
 
     /**
      * @inheritDoc
      */
-    public function stop() : Promise {
+    public function stop() : Future {
         $this->resolveDeferred();
-        return new Success();
+        return Future::complete();
     }
 
     private function resolveDeferred(Throwable $throwable = null) : void {
         if (isset($throwable)) {
             $this->setState(ApplicationState::Crashed());
-            $this->deferred->fail($throwable);
+            $this->deferred->error($throwable);
         } else {
             $this->setState(ApplicationState::Stopped());
-            $this->deferred->resolve();
+            $this->deferred->complete();
         }
         $this->deferred = null;
     }
@@ -110,14 +94,13 @@ abstract class AbstractApplication implements Application {
         $this->state = $state;
     }
 
-    abstract protected function doStart() : Promise;
+    abstract protected function doStart() : Future;
 
     /**
      * @inheritDoc
      */
     public function handleException(Throwable $throwable) : void {
         $this->logException($throwable);
-        throw $throwable;
     }
 
     /**
@@ -169,8 +152,8 @@ abstract class AbstractApplication implements Application {
         $this->pluggable->registerPlugin($plugin);
     }
 
-    public function loadPlugins() : Promise {
-        return $this->pluggable->loadPlugins();
+    public function loadPlugins() : void {
+        $this->pluggable->loadPlugins();
     }
 
     public function removePlugin(string $pluginType) : void {

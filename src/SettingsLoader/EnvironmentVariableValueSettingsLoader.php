@@ -35,7 +35,7 @@ final class EnvironmentVariableValueSettingsLoader implements SettingsLoader {
 
     private const ENV_VAR_OVERRIDE_PATTERN = '/^!env\((?P<env_var>.+)\)$/';
 
-    private $settingsLoader;
+    private SettingsLoader $settingsLoader;
 
     public function __construct(SettingsLoader $settingsLoader) {
         $this->settingsLoader = $settingsLoader;

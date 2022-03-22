@@ -17,11 +17,11 @@ use Psr\Log\LoggerInterface;
  */
 abstract class CoreApplicationObjectGraph implements ApplicationObjectGraph {
 
-    private $logger;
+    private LoggerInterface $logger;
 
-    private $environment;
+    private Environment $environment;
 
-    private $settingsLoader;
+    private ?SettingsLoader $settingsLoader;
 
     public function __construct(
         Environment $environment,

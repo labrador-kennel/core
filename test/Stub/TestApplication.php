@@ -2,11 +2,12 @@
 
 namespace Cspray\Labrador\Test\Stub;
 
+use Amp\Future;
 use Amp\Promise;
 use Cspray\Labrador\AbstractApplication;
 use Cspray\Labrador\Plugin\Pluggable;
 use Throwable;
-use function Amp\call;
+use function Amp\async;
 
 class TestApplication extends AbstractApplication {
 
@@ -19,8 +20,8 @@ class TestApplication extends AbstractApplication {
         $this->exceptionHandler = $exceptionHandler;
     }
 
-    protected function doStart() : Promise {
-        return call($this->closure);
+    protected function doStart() : Future {
+        return async($this->closure);
     }
 
     public function handleException(Throwable $throwable) : void {
