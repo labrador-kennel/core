@@ -138,7 +138,11 @@ final class AmpEngine implements Engine {
         $this->emitter->emit($event)->await();
     }
 
-    private function handleThrowable(Throwable $throwable, Application $application, ?string $signalWatcher = null) : void {
+    private function handleThrowable(
+        Throwable $throwable,
+        Application $application,
+        ?string $signalWatcher = null
+    ) : void {
         if (isset($signalWatcher)) {
             EventLoop::disable($signalWatcher);
         }
@@ -147,8 +151,10 @@ final class AmpEngine implements Engine {
         try {
             $application->handleException($throwable);
             $this->emitEngineShutDownEvent($application);
-        } catch(Throwable $throwable) {
-            $this->logger->critical('An exception was thrown from Application::handleException. This method must not throw exceptions.');
+        } catch (Throwable $throwable) {
+            $this->logger->critical(
+                'An exception was thrown from Application::handleException. This method must not throw exceptions.'
+            );
         } finally {
             EventLoop::getDriver()->stop();
         }
