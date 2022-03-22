@@ -19,9 +19,9 @@ use Cspray\Labrador\SettingsStorageHandler;
  */
 final class DefaultsWithEnvironmentOverrideSettingsLoader implements SettingsLoader {
 
-    private $storageHandler;
-    private $settingsFile;
-    private $envDir;
+    private SettingsStorageHandler $storageHandler;
+    private string $settingsFile;
+    private string $envDir;
 
     public function __construct(
         SettingsStorageHandler $storageHandler,

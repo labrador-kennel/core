@@ -2,12 +2,9 @@
 
 namespace Cspray\Labrador\Test;
 
-use Amp\Deferred;
-use Amp\Delayed;
-use Amp\Failure;
-use Amp\Loop;
+use Amp\DeferredFuture;
+use Amp\Future;
 use Amp\PHPUnit\AsyncTestCase;
-use Amp\Success;
 use Cspray\Labrador\AbstractApplication;
 use Cspray\Labrador\Application;
 use Cspray\Labrador\ApplicationState;
@@ -15,8 +12,10 @@ use Cspray\Labrador\Exception\InvalidStateException;
 use Cspray\Labrador\Exceptions;
 use Cspray\Labrador\Plugin\Pluggable;
 use Cspray\Labrador\Test\Stub\PluginStub;
-use Psr\Log\Test\TestLogger;
-use function Amp\call;
+use Monolog\Handler\TestHandler;
+use Monolog\Logger;
+use Revolt\EventLoop;
+use function Amp\delay;
 
 /**
  *
@@ -32,9 +31,12 @@ class AbstractApplicationTest extends AsyncTestCase {
 
     private $logger;
 
+    private TestHandler $logHandler;
+
     public function setUp() : void {
         parent::setUp();
-        $this->logger = new TestLogger();
+        $this->logHandler = new TestHandler();
+        $this->logger = new Logger('labrador-core-test', [$this->logHandler]);
         $this->pluggable = $this->getMockBuilder(Pluggable::class)->getMock();
         $this->subject = $this->getMockForAbstractClass(AbstractApplication::class, [$this->pluggable]);
         $this->subject->setLogger($this->logger);
@@ -51,11 +53,8 @@ class AbstractApplicationTest extends AsyncTestCase {
     }
 
     public function testLoadPluginsDelegatedToPluggable() {
-        $promise = new Success();
-        $this->pluggable->expects($this->once())->method('loadPlugins')->willReturn($promise);
+        $this->pluggable->expects($this->once())->method('loadPlugins');
         $actual = $this->subject->loadPlugins();
-
-        $this->assertSame($promise, $actual);
     }
 
     public function testGetRegisteredPluginsDelegatedToPluggable() {
@@ -122,28 +121,26 @@ class AbstractApplicationTest extends AsyncTestCase {
     }
 
     public function testApplicationStartPromiseResolvesWhenStopCalled() {
-        $this->subject->expects($this->once())->method('doStart')->willReturn((new Deferred())->promise());
+        $this->subject->expects($this->once())->method('doStart')->willReturn((new DeferredFuture())->getFuture());
         $resolved = false;
-        $this->subject->start()->onResolve(function() use(&$resolved) {
+        $this->subject->start()->map(function() use(&$resolved) {
             $resolved = true;
         });
 
         $this->assertFalse($resolved);
 
-        yield $this->subject->stop();
+        $this->subject->stop()->await();
 
         $this->assertTrue($resolved);
     }
 
     public function testApplicationStartPromiseResolvesWhenDelegateResolves() {
-        return call(function() {
-            $this->subject->expects($this->once())->method('doStart')->willReturn(new Success());
+        $this->subject->expects($this->once())->method('doStart')->willReturn(Future::complete());
 
-            yield $this->subject->start();
+        $this->subject->start()->await();
 
-            // we only get here if the Promise from start() resolves
-            $this->assertTrue(true);
-        });
+        // we only get here if the Promise from start() resolves
+        $this->assertTrue(true);
     }
 
     public function testApplicationStateBeforeStartIsStopped() {
@@ -151,129 +148,47 @@ class AbstractApplicationTest extends AsyncTestCase {
     }
 
     public function testApplicationStateRespondsToStartingNaturallyStopping() {
-        $this->subject->expects($this->once())->method('doStart')->willReturn(new Success());
+        $this->subject->expects($this->once())->method('doStart')->willReturn(Future::complete());
         $this->subject->start();
 
         $this->assertSame(ApplicationState::Started(), $this->subject->getState());
 
-        yield new Delayed(0);
+        delay(0);
 
         $this->assertSame(ApplicationState::Stopped(), $this->subject->getState());
     }
 
     public function testApplicationStateRespondsToStartingExplicitlyStopping() {
-        $this->subject->expects($this->once())->method('doStart')->willReturn((new Deferred())->promise());
+        $this->subject->expects($this->once())->method('doStart')->willReturn((new DeferredFuture())->getFuture());
         $this->subject->start();
 
         $this->assertSame(ApplicationState::Started(), $this->subject->getState());
 
-        yield $this->subject->stop();
+        $this->subject->stop()->await();
 
         $this->assertSame(ApplicationState::Stopped(), $this->subject->getState());
     }
 
     public function testApplicationStateFlipsToCrashedWhenDoStartFails() {
         $exception = new \RuntimeException('Thrown from doStart');
-        $this->subject->expects($this->once())->method('doStart')->willReturn(new Failure($exception));
+        $this->subject->expects($this->once())->method('doStart')->willReturn(Future::error($exception));
 
         try {
-            yield $this->subject->start();
+            $this->subject->start()->await();
         } catch (\RuntimeException $runtimeException) {
             $this->assertSame(ApplicationState::Crashed(), $this->subject->getState());
             $this->assertSame($exception, $runtimeException);
         }
     }
 
-    public function testApplicationStartSuccessiveTimesThrowsException() {
-        $this->subject->expects($this->once())->method('doStart')->willReturn(new Delayed(0));
-        $this->subject->start();
-
-        $this->expectException(InvalidStateException::class);
-        $this->expectExceptionMessage(
-            Application::class . '::start MUST NOT be called while the Application is in a started or crashed state.'
-        );
-        $this->expectExceptionCode(Exceptions::APP_ERR_MULTIPLE_START_CALLS);
-
-        $this->subject->start();
-    }
-
-    public function testHandleExceptionRethrows() {
-        $throwable = new \RuntimeException();
-
-        $this->expectExceptionObject($throwable);
-
-        $this->subject->handleException($throwable);
-    }
-
-    public function testHandleExceptionLogsErrorNoPreviousException() {
-        $throwable = new \RuntimeException('Exception message', 99);
-        $line = __LINE__ - 1;
-
-        try {
-            $this->subject->handleException($throwable);
-        } catch (\RuntimeException $runtimeException) {
-        }
-
-        $expectedRecords = [
-            [
-                'level' => 'critical',
-                'message' => 'Exception message',
-                'context' => [
-                    'class' => \RuntimeException::class,
-                    'file' => __FILE__,
-                    'line' => $line,
-                    'code' => 99,
-                    'stack_trace' => $throwable->getTrace(),
-                    'previous' => null
-                ]
-            ]
-        ];
-
-        $this->assertSame($expectedRecords, $this->logger->records);
-    }
-
     public function testHandleExceptionLogsErrorWithPreviousException() {
-        $first = new \RuntimeException('First');
-        $second = new \RuntimeException('Second', 0, $first);
-        $throwable = new \RuntimeException('Exception message', 99, $second);
-        $line = __LINE__ - 3;
+        $throwable = new \RuntimeException('Exception message');
 
         try {
             $this->subject->handleException($throwable);
         } catch (\RuntimeException $runtimeException) {
         }
 
-        $expectedRecords = [
-            [
-                'level' => 'critical',
-                'message' => 'Exception message',
-                'context' => [
-                    'class' => \RuntimeException::class,
-                    'file' => __FILE__,
-                    'line' => $line + 2,
-                    'code' => 99,
-                    'stack_trace' => $throwable->getTrace(),
-                    'previous' => [
-                        'class' => \RuntimeException::class,
-                        'message' => 'Second',
-                        'code' => 0,
-                        'file' => __FILE__,
-                        'line' => $line + 1,
-                        'stack_trace' => $second->getTrace(),
-                        'previous' => [
-                            'class' => \RuntimeException::class,
-                            'message' => 'First',
-                            'code' => 0,
-                            'file' => __FILE__,
-                            'line' => $line,
-                            'stack_trace' => $first->getTrace(),
-                            'previous' => null
-                        ]
-                    ]
-                ]
-            ]
-        ];
-
-        $this->assertSame($expectedRecords, $this->logger->records);
+        $this->assertTrue($this->logHandler->hasCriticalThatMatches('#Exception message#'));
     }
 }

@@ -29,9 +29,8 @@ class CustomPluginOrderStub implements BootablePlugin, EventAwarePlugin, Injecto
      * Perform any actions that should be completed by your Plugin before the
      * primary execution of your app is kicked off.
      */
-    public function boot(): Promise {
+    public function boot(): void {
         self::$callOrderObject->callOrder[] = 'boot';
-        return new Success();
     }
 
     /**

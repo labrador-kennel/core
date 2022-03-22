@@ -20,4 +20,5 @@ interface ApplicationObjectGraph {
      * @return Injector
      */
     public function wireObjectGraph() : Injector;
+
 }

@@ -2,13 +2,12 @@
 
 namespace Cspray\Labrador\Test\Stub;
 
-use Amp\Promise;
-use Amp\Success;
+use Amp\Future;
 use Cspray\Labrador\AbstractApplication;
 
 class NoopApplication extends AbstractApplication {
 
-    protected function doStart() : Promise {
-        return new Success();
+    protected function doStart() : Future {
+        return Future::complete();
     }
 }

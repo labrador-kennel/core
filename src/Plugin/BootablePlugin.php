@@ -15,7 +15,7 @@ interface BootablePlugin extends Plugin {
     /**
      * Return a Promise that resolves when the booting process is finished.
      *
-     * @return Promise<void>
+     * @return void
      */
-    public function boot() : Promise;
+    public function boot() : void;
 }

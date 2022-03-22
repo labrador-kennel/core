@@ -5,6 +5,17 @@ All notable changes to this project will be documented in this file.
 The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/),
 and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
+## 4.0.0-beta1 - 2022-??-??
+
+### Changed
+
+- The method signature for `Application::start()` and `Application::stop()` were changed to return an `Amp\Future`.
+- Property type-hints were added wherever applicable. Many places no longer require explicitly returning `Promise`.
+
+### Removed
+
+- Removed the deprecated `DependencyGraph` object.
+
 ## 3.2.1 - 2021-06-17
 
 ### Fixed

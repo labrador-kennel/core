@@ -2,7 +2,7 @@
 
 namespace Cspray\Labrador;
 
-use Amp\Promise;
+use Amp\Future;
 use Cspray\Labrador\Plugin\Pluggable;
 use Psr\Log\LoggerAwareInterface;
 use Throwable;
@@ -19,28 +19,28 @@ interface Application extends Pluggable, LoggerAwareInterface {
     /**
      * Start running your Application, performing whatever logic is necessary for the given implementation.
      *
-     * Resolve the Promise either when the Application has naturally reached a stopping point OR when the
+     * Resolve the Future either when the Application has naturally reached a stopping point OR when the
      * Application::stop is called. For some types of long-running Applications it is expected that this Promise will
      * not resolve unless Application::stop is explicitly invoked.
      *
-     * If start() is called successive times without allowing Promises to resolve completely an InvalidStateException
-     * MUST be thrown. It is not supported to attempt to start an already started or crashed Application. Whether or not
-     * the Application is in a valid state can be determined with getApplicationState().
+     * If start() is called successive times without allowing the Future to resolve completely an InvalidStateException
+     * MUST be thrown. Start an already started or crashed Application SHOULD NOT be supported. Whether the Application
+     * is in a valid state can be determined with getState().
      *
-     * @return Promise<void>
+     * @return Future<void>
      */
-    public function start() : Promise;
+    public function start() : Future;
 
     /**
-     * Force the Application to stop running; the Promise returned allows the Application to potentially gracefully
+     * Force the Application to stop running; the Future returned allows the Application to potentially gracefully
      * handle any remaining tasks.
      *
-     * The Promise returned from Application::start() MUST resolve before this Promise resolves or your Application may
+     * The Future returned from Application::start() MUST resolve before this Promise resolves or your Application may
      * enter a state where it cannot be stopped without forcefully killing the process.
      *
-     * @return Promise
+     * @return Future<void>
      */
-    public function stop() : Promise;
+    public function stop() : Future;
 
     /**
      * Return the state in which the Application is currently in.

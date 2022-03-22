@@ -2,7 +2,6 @@
 
 namespace Cspray\Labrador\Plugin;
 
-use Amp\Success;
 use Cspray\Labrador\AsyncEvent\EventEmitter;
 use Cspray\Labrador\Exception\DependencyInjectionException;
 use Cspray\Labrador\Exceptions;
@@ -10,13 +9,12 @@ use Cspray\Labrador\Exception\Exception;
 use Cspray\Labrador\Exception\InvalidArgumentException;
 use Cspray\Labrador\Exception\InvalidStateException;
 
-use Amp\Promise;
 use Auryn\Injector;
 
 use Psr\Log\LoggerAwareInterface;
 use Psr\Log\LoggerAwareTrait;
 
-use function Amp\call;
+use function Amp\async;
 
 /**
  * The default Pluggable implementation that manages the lifecycle of Plugins for all out-of-the-box Applications.
@@ -37,15 +35,15 @@ final class PluginManager implements Pluggable, LoggerAwareInterface {
 
     use LoggerAwareTrait;
 
-    private $emitter;
-    private $injector;
+    private EventEmitter $emitter;
+    private Injector $injector;
 
-    private $plugins = [];
-    private $loadHandlers = [];
-    private $removeHandlers = [];
-    private $loading = [];
+    private array $plugins = [];
+    private array $loadHandlers = [];
+    private array $removeHandlers = [];
+    private array $loading = [];
 
-    private $pluginsLoaded = false;
+    private bool $pluginsLoaded = false;
 
     /**
      * Constructs the PluginManager with dependencies required to be provided to certain Plugin types.
@@ -117,27 +115,25 @@ final class PluginManager implements Pluggable, LoggerAwareInterface {
     /**
      * @inheritDoc
      */
-    public function loadPlugins() : Promise {
-        return call(function() {
-            $registeredPlugins = $this->getRegisteredPlugins();
-            if (empty($registeredPlugins)) {
-                $this->pluginsLoaded = true;
-                $this->logger->info('No Plugins were registered.');
-                return new Success();
-            }
-            $this->logger->info(sprintf(
-                'Initiating Plugin loading. Loading %d registered Plugins, not including dependencies.',
-                count($this->plugins)
-            ));
-            foreach ($registeredPlugins as $pluginName) {
-                yield $this->loadPlugin($pluginName);
-            }
-            $this->logger->info(sprintf(
-                'Finished loading %d Plugins, including dependencies.',
-                count($this->plugins)
-            ));
+    public function loadPlugins() : void {
+        $registeredPlugins = $this->getRegisteredPlugins();
+        if (empty($registeredPlugins)) {
             $this->pluginsLoaded = true;
-        });
+            $this->logger->info('No Plugins were registered.');
+            return;
+        }
+        $this->logger->info(sprintf(
+            'Initiating Plugin loading. Loading %d registered Plugins, not including dependencies.',
+            count($this->plugins)
+        ));
+        foreach ($registeredPlugins as $pluginName) {
+            $this->loadPlugin($pluginName);
+        }
+        $this->logger->info(sprintf(
+            'Finished loading %d Plugins, including dependencies.',
+            count($this->plugins)
+        ));
+        $this->pluginsLoaded = true;
     }
 
     /**
@@ -231,21 +227,20 @@ final class PluginManager implements Pluggable, LoggerAwareInterface {
         return array_keys($this->plugins);
     }
 
-    private function loadPlugin(string $pluginName) : Promise {
-        return call(function() use($pluginName) {
-            if ($this->notLoaded($pluginName)) {
-                $this->startLoading($pluginName);
-                yield $this->handlePluginDependencies($pluginName);
+    private function loadPlugin(string $pluginName) : void {
+        if ($this->notLoaded($pluginName)) {
+            $this->startLoading($pluginName);
 
-                $plugin = $this->injector->make($pluginName);
+            $this->handlePluginDependencies($pluginName);
 
-                $this->handlePluginServices($plugin);
-                $this->handlePluginEvents($plugin);
-                yield $this->handleCustomPluginHandlers($plugin);
-                yield $this->bootPlugin($plugin);
-                $this->finishLoading($plugin);
-            }
-        });
+            $plugin = $this->injector->make($pluginName);
+
+            $this->handlePluginServices($plugin);
+            $this->handlePluginEvents($plugin);
+            $this->handleCustomPluginHandlers($plugin);
+            $this->bootPlugin($plugin);
+            $this->finishLoading($plugin);
+        }
     }
 
     private function notLoaded(string $plugin) {
@@ -268,27 +263,25 @@ final class PluginManager implements Pluggable, LoggerAwareInterface {
         return in_array($plugin, $this->loading);
     }
 
-    private function handlePluginDependencies(string $plugin) : Promise {
-        return call(function() use($plugin) {
-            $implementedTypes = class_implements($plugin);
-            if (in_array(PluginDependentPlugin::class, $implementedTypes)) {
-                foreach (call_user_func([$plugin, 'dependsOn']) as $reqPluginName) {
-                    if ($exception = $this->guardLoadingValidPluginDependency($plugin, $reqPluginName)) {
-                        throw $exception;
-                    }
-
-                    $this->logger->info(sprintf(
-                        'Loading dependencies for %s.',
-                        $plugin
-                    ));
-                    yield $this->loadPlugin($reqPluginName);
-                    $this->logger->info(sprintf(
-                        'Finished loading dependencies for %s.',
-                        $plugin
-                    ));
+    private function handlePluginDependencies(string $plugin) : void {
+        $implementedTypes = class_implements($plugin);
+        if (in_array(PluginDependentPlugin::class, $implementedTypes)) {
+            foreach (call_user_func([$plugin, 'dependsOn']) as $reqPluginName) {
+                if ($exception = $this->guardLoadingValidPluginDependency($plugin, $reqPluginName)) {
+                    throw $exception;
                 }
+
+                $this->logger->info(sprintf(
+                    'Loading dependencies for %s.',
+                    $plugin
+                ));
+                $this->loadPlugin($reqPluginName);
+                $this->logger->info(sprintf(
+                    'Finished loading dependencies for %s.',
+                    $plugin
+                ));
             }
-        });
+        }
     }
 
     /**
@@ -343,42 +336,38 @@ final class PluginManager implements Pluggable, LoggerAwareInterface {
         }
     }
 
-    private function handleCustomPluginHandlers(Plugin $plugin) : Promise {
-        return call(function() use($plugin) {
-            foreach ($this->loadHandlers as $type => $pluginHandlers) {
-                if ($plugin instanceof $type) {
-                    $pluginName = get_class($plugin);
-                    $this->logger->info(sprintf(
-                        'Found %d custom handlers for %s.',
-                        count($pluginHandlers),
-                        $pluginName
-                    ));
-                    foreach ($pluginHandlers as list($pluginHandler, $pluginHandlerArgs)) {
-                        yield call($pluginHandler, $plugin, ...$pluginHandlerArgs);
-                    }
-                    $this->logger->info(sprintf(
-                        'Finished loading custom handlers for %s.',
-                        $pluginName
-                    ));
-                }
-            }
-        });
-    }
-
-    private function bootPlugin(Plugin $plugin) : Promise {
-        return call(function() use($plugin) {
-            if ($plugin instanceof BootablePlugin) {
+    private function handleCustomPluginHandlers(Plugin $plugin) : void {
+        foreach ($this->loadHandlers as $type => $pluginHandlers) {
+            if ($plugin instanceof $type) {
                 $pluginName = get_class($plugin);
                 $this->logger->info(sprintf(
-                    'Starting %s boot procedure.',
+                    'Found %d custom handlers for %s.',
+                    count($pluginHandlers),
                     $pluginName
                 ));
-                yield $plugin->boot();
+                foreach ($pluginHandlers as list($pluginHandler, $pluginHandlerArgs)) {
+                    async($pluginHandler, $plugin, ...$pluginHandlerArgs)->await();
+                }
                 $this->logger->info(sprintf(
-                    'Finished %s boot procedure.',
+                    'Finished loading custom handlers for %s.',
                     $pluginName
                 ));
             }
-        });
+        }
+    }
+
+    private function bootPlugin(Plugin $plugin) : void {
+        if ($plugin instanceof BootablePlugin) {
+            $pluginName = get_class($plugin);
+            $this->logger->info(sprintf(
+                'Starting %s boot procedure.',
+                $pluginName
+            ));
+            $plugin->boot();
+            $this->logger->info(sprintf(
+                'Finished %s boot procedure.',
+                $pluginName
+            ));
+        }
     }
 }

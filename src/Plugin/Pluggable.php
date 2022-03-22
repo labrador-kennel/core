@@ -2,7 +2,6 @@
 
 namespace Cspray\Labrador\Plugin;
 
-use Amp\Promise;
 use Cspray\Labrador\Exception\CircularDependencyException;
 use Cspray\Labrador\Exception\InvalidArgumentException;
 use Cspray\Labrador\Exception\InvalidStateException;
@@ -98,11 +97,11 @@ interface Pluggable {
      * If a PluginDependentPlugin depends on a class that does not implement the Plugin interface you MUST throw an
      * InvalidStateException as a registered Plugin's state does not allow the loading of its dependencies.
      *
-     * @return Promise<void> Will resolve when all Plugins have completed the loading process
+     * @return void
      * @throws CircularDependencyException
      * @throws InvalidStateException
      */
-    public function loadPlugins() : Promise;
+    public function loadPlugins() : void;
 
     /**
      * Removes the Plugin from the list of both registered and loaded plugins, assuming loadPlugins has been invoked.
